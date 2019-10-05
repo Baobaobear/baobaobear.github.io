@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on 抱抱熊</title>
+    <link>https://baobaobear.github.io/categories/</link>
+    <description>Recent content in Categories on 抱抱熊</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 05 Oct 2019 23:12:10 +0800</lastBuildDate>
+    
+	<atom:link href="https://baobaobear.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>杂事</title>
+      <link>https://baobaobear.github.io/categories/%E6%9D%82%E4%BA%8B/</link>
+      <pubDate>Sat, 05 Oct 2019 23:12:10 +0800</pubDate>
+      
+      <guid>https://baobaobear.github.io/categories/%E6%9D%82%E4%BA%8B/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>
