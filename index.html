@@ -24,7 +24,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://baobaobear.github.io/" />
 
-<meta property="og:updated_time" content="2019-10-06T00:00:00+08:00" /><meta property="og:site_name" content="Title" />
+<meta property="og:updated_time" content="2019-10-06T13:04:08+08:00" /><meta property="og:site_name" content="Title" />
 
 
     
@@ -88,6 +88,14 @@
         <div>
 	<ul class="sidebar-nav">
 		 
+		 
+			 
+				<li>
+					<a href="/">
+						<span>Home</span>
+					</a>
+				</li>
+			 
 		 
 			 
 				<li>
@@ -165,6 +173,29 @@
   <div class="post-list">
     
     
+      
+        
+      
+      <div class="post-list__item">
+        <span class="item__title--big">
+          <a href="/post/20191006-mingw-bug/" >Mingw的Bug</a>
+        </span>
+        <span class="item__date">
+          Oct 6, 2019
+        </span>
+        <span >
+        
+        <p>这个问题最早的时候是今年8月，我在测试排序算法的速度，发现mingw上总有点不一样，而linux下的gcc是正常的，也在群里问过人，没人明白到底怎么回事，先描述一下当时遇到的情况。</p>
+
+<p>一开始我使用<code>std::random_shuffle</code>打乱数组并用<code>std::sort</code>排序，在VS上并没有发现什么问题，gcc也正常。但在mingw上，这样打乱的数组排序所花的时间，比起其它打乱方式的，例如直接赋值一个随机数的方式，要明显慢了近1倍，这个诡异的问题一直没想通是为啥。当时觉得可能是<code>std::sort</code>对这种方式打乱的数据排序有点问题导致变慢。</p>
+        
+        </span>
+        
+          ... <a class="read-more-symbol" href="/post/20191006-mingw-bug/">➦</a>
+        
+        </div>
+        
+     
       
         
       

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>抱抱熊</title>
-    <link>https://baobaobear.github.io/</link>
-    <description>Recent content on 抱抱熊</description>
+    <title>杂谈 on 抱抱熊</title>
+    <link>https://baobaobear.github.io/categories/%E6%9D%82%E8%B0%88/</link>
+    <description>Recent content in 杂谈 on 抱抱熊</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Sun, 06 Oct 2019 13:04:08 +0800</lastBuildDate>
     
-	<atom:link href="https://baobaobear.github.io/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://baobaobear.github.io/categories/%E6%9D%82%E8%B0%88/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -20,17 +20,6 @@
       <description>&lt;p&gt;这个问题最早的时候是今年8月，我在测试排序算法的速度，发现mingw上总有点不一样，而linux下的gcc是正常的，也在群里问过人，没人明白到底怎么回事，先描述一下当时遇到的情况。&lt;/p&gt;
 
 &lt;p&gt;一开始我使用&lt;code&gt;std::random_shuffle&lt;/code&gt;打乱数组并用&lt;code&gt;std::sort&lt;/code&gt;排序，在VS上并没有发现什么问题，gcc也正常。但在mingw上，这样打乱的数组排序所花的时间，比起其它打乱方式的，例如直接赋值一个随机数的方式，要明显慢了近1倍，这个诡异的问题一直没想通是为啥。当时觉得可能是&lt;code&gt;std::sort&lt;/code&gt;对这种方式打乱的数据排序有点问题导致变慢。&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>About</title>
-      <link>https://baobaobear.github.io/about/</link>
-      <pubDate>Sun, 06 Oct 2019 00:00:00 +0800</pubDate>
-      
-      <guid>https://baobaobear.github.io/about/</guid>
-      <description>关于作者 抱抱熊
-Github: https://github.com/Baobaobear
-如对文章内容评论，请通过这个 issues 页面</description>
     </item>
     
     <item>

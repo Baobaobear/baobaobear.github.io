@@ -3,18 +3,43 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://baobaobear.github.io/about/</loc>
-    <lastmod>2019-10-06T00:00:00+08:00</lastmod>
+    <loc>https://baobaobear.github.io/categories/</loc>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://baobaobear.github.io/post/20191006-mingw-bug/</loc>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://baobaobear.github.io/post/</loc>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://baobaobear.github.io/tags/stl/</loc>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://baobaobear.github.io/tags/</loc>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
   </url>
   
   <url>
     <loc>https://baobaobear.github.io/</loc>
-    <lastmod>2019-10-06T00:00:00+08:00</lastmod>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/categories/</loc>
-    <lastmod>2019-10-05T23:12:10+08:00</lastmod>
+    <loc>https://baobaobear.github.io/categories/%E6%9D%82%E8%B0%88/</loc>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://baobaobear.github.io/about/</loc>
+    <lastmod>2019-10-06T00:00:00+08:00</lastmod>
   </url>
   
   <url>
@@ -23,22 +48,7 @@
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/post/</loc>
-    <lastmod>2019-10-05T23:12:10+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://baobaobear.github.io/tags/</loc>
-    <lastmod>2019-10-05T23:12:10+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://baobaobear.github.io/post/20191005-first-post/</loc>
-    <lastmod>2019-10-05T23:12:10+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://baobaobear.github.io/categories/%E6%9D%82%E4%BA%8B/</loc>
     <lastmod>2019-10-05T23:12:10+08:00</lastmod>
   </url>
   
