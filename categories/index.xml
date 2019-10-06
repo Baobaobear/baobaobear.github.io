@@ -6,10 +6,19 @@
     <description>Recent content in Categories on 抱抱熊</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 06 Oct 2019 13:04:08 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 06 Oct 2019 18:18:22 +0800</lastBuildDate>
     
 	<atom:link href="https://baobaobear.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>算法</title>
+      <link>https://baobaobear.github.io/categories/%E7%AE%97%E6%B3%95/</link>
+      <pubDate>Sun, 06 Oct 2019 18:18:22 +0800</pubDate>
+      
+      <guid>https://baobaobear.github.io/categories/%E7%AE%97%E6%B3%95/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>杂谈</title>

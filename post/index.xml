@@ -6,13 +6,22 @@
     <description>Recent content in Posts on 抱抱熊</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sun, 06 Oct 2019 13:04:08 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 06 Oct 2019 18:18:22 +0800</lastBuildDate>
     
 	<atom:link href="https://baobaobear.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Mingw的Bug</title>
+      <title>Quick sort(快速排序)杂谈 1</title>
+      <link>https://baobaobear.github.io/post/20191007-qsort-talk-1/</link>
+      <pubDate>Sun, 06 Oct 2019 18:18:22 +0800</pubDate>
+      
+      <guid>https://baobaobear.github.io/post/20191007-qsort-talk-1/</guid>
+      <description>&lt;p&gt;我们现在使用的排序，很大比例在使用quick sort，因为它是平均速度最快的排序，但与此同时它可能也是坑最深的排序，现在我们就来讨论讨论它，因为内容较多，我计划写多篇，本篇是第一篇。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Mingw 的 Bug</title>
       <link>https://baobaobear.github.io/post/20191006-mingw-bug/</link>
       <pubDate>Sun, 06 Oct 2019 13:04:08 +0800</pubDate>
       

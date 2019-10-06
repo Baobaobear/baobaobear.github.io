@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    
+
+
+    <head>
+    <link href="https://gmpg.org/xfn/11" rel="profile">
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Cache-Control" content="public" />
+<!-- Enable responsiveness on mobile devices -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="generator" content="Hugo 0.58.3" />
+
+    
+    
+    
+
+<title>Quick sort(快速排序)杂谈 1 • 抱抱熊</title>
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Quick sort(快速排序)杂谈 1"/>
+<meta name="twitter:description" content="我们现在使用的排序，很大比例在使用quick sort，因为它是平均速度最快的排序，但与此同时它可能也是坑最深的排序，现在我们就来讨论讨论它，因为内容较多，我计划写多篇，本篇是第一篇。"/>
+
+<meta property="og:title" content="Quick sort(快速排序)杂谈 1" />
+<meta property="og:description" content="我们现在使用的排序，很大比例在使用quick sort，因为它是平均速度最快的排序，但与此同时它可能也是坑最深的排序，现在我们就来讨论讨论它，因为内容较多，我计划写多篇，本篇是第一篇。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://baobaobear.github.io/post/20191007-qsort-talk-1/" />
+<meta property="article:published_time" content="2019-10-06T18:18:22+08:00" />
+<meta property="article:modified_time" content="2019-10-06T18:18:22+08:00" /><meta property="og:site_name" content="抱抱熊" />
+
+
+    
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-dark.min.css">
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/scss/hyde-hyde.92c66d107d7b219f0792cfd67223179af884b03f386ac46894f9f735932bbca3.css" integrity="sha256-ksZtEH17IZ8Hks/WciMXmviEsD84asRolPn3NZMrvKM=">
+
+
+<link rel="stylesheet" href="/scss/print.2744dcbf8a0b2e74f8a50e4b34e5f441be7cf93cc7de27029121c6a09f9e77bc.css" integrity="sha256-J0Tcv4oLLnT4pQ5LNOX0Qb58&#43;TzH3icCkSHGoJ&#43;ed7w=" media="print">
+
+
+
+
+<link rel="stylesheet" href="/scss/hugo-toc.8549a64d301421b4256ea9a0d5ca8b99178799f569d5d2daeb95f24cef3ce6b7.css" integrity="sha256-hUmmTTAUIbQlbqmg1cqLmReHmfVp1dLa65XyTO885rc=">
+
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+    <link rel="shortcut icon" href="/favicon.png">
+    
+</head>
+
+
+    <body class="theme-base-0b ">
+    
+<div class="sidebar">
+  <div class="container ">
+    <div class="sidebar-about">
+      <span class="site__title">
+        <a href="https://baobaobear.github.io/">抱抱熊</a>
+      </span>
+      
+        
+        
+        
+        <div class="author-image">
+          <img src="https://baobaobear.github.io/img/hugo.png" alt="Author Image" class="img--circle img--headshot element--center">
+        </div>
+        
+      
+      
+      <p class="site__description">
+        
+      </p>
+    </div>
+    <div class="collapsible-menu">
+      <input type="checkbox" id="menuToggle">
+      <label for="menuToggle">抱抱熊</label>
+      <div class="menu-content">
+        <div>
+	<ul class="sidebar-nav">
+		 
+		 
+			 
+				<li>
+					<a href="/">
+						<span>Home</span>
+					</a>
+				</li>
+			 
+		 
+			 
+				<li>
+					<a href="/post/">
+						<span>Posts</span>
+					</a>
+				</li>
+			 
+		 
+			 
+				<li>
+					<a href="/categories/">
+						<span>Categories</span>
+					</a>
+				</li>
+			 
+		 
+			 
+				<li>
+					<a href="/tags/">
+						<span>Tags</span>
+					</a>
+				</li>
+			 
+		 
+			 
+				<li>
+					<a href="/about">
+						<span>About</span>
+					</a>
+				</li>
+			 
+		
+	</ul>
+</div>
+
+        <section class="social">
+	
+	
+	
+	<a href="https://github.com/baobaobear" rel="me"><i class="fab fa-github fa-lg" aria-hidden="true"></i></a>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</section>
+
+      </div>
+    </div>
+    
+<div class="copyright">
+  &copy; 2019 baobaobear
+  
+    <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>
+  
+</div>
+
+
+
+  </div>
+</div>
+
+        <div class="content container">
+            
+    
+<article>
+  <header>
+    <h1>Quick sort(快速排序)杂谈 1</h1>
+    
+    
+<div class="post__meta">
+    
+    
+      <i class="fas fa-calendar-alt"></i> Oct 6, 2019
+    
+    
+    
+      
+      
+          in
+          
+          
+              <a class="badge badge-category" href="/categories/%E7%AE%97%E6%B3%95">算法</a>
+              
+          
+      
+    
+    
+    
+      
+      
+          <br/>
+           <i class="fas fa-tags"></i>
+          
+          <a class="badge badge-tag" href="/tags/%E7%AE%97%E6%B3%95">算法</a>
+           
+      
+          <a class="badge badge-tag" href="/tags/qsort">qsort</a>
+          
+      
+    
+    
+    <br/>
+    <i class="fas fa-clock"></i> 2 min read
+</div>
+
+
+  </header>
+  
+  
+  
+    <div class="toc-wrapper">
+      <input type="checkbox" id="tocToggle">
+      <label for="tocToggle">Table of Content</label>
+      
+          <nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#快排的思路">快排的思路</a></li>
+<li><a href="#划分结果分类">划分结果分类</a></li>
+<li><a href="#划分手段分类">划分手段分类</a>
+<ul>
+<li><a href="#1-lomuto-partition-scheme">1. Lomuto partition scheme</a></li>
+<li><a href="#2-不知名字的方法">2. 不知名字的方法</a></li>
+<li><a href="#3-hoare-partition-scheme">3. Hoare partition scheme</a></li>
+<li><a href="#4-vs-partition-scheme">4. VS partition scheme</a></li>
+</ul></li>
+<li><a href="#总结">总结</a></li>
+</ul></li>
+</ul>
+</nav>
+      
+    </div>
+  
+  
+  <div class="post">
+    <p>我们现在使用的排序，很大比例在使用quick sort，因为它是平均速度最快的排序，但与此同时它可能也是坑最深的排序，现在我们就来讨论讨论它，因为内容较多，我计划写多篇，本篇是第一篇。</p>
+
+<h2 id="快排的思路">快排的思路</h2>
+
+<p>我们先来介绍一下快排的思路。快排的思路其实很简单，在数组中选一个元素，我们就称呼这个元素为pivot，通过与这个元素的比较，把数组划分成不比pivot大的在一边，不比pivot小的在另一边，于是就分成了两个更小的数据，对它们分别再排序就行了。但是，这个描述特别的含糊，首先是怎么选中间元素，这里面有很多不同的做法。然后就是划分了，这个划分方法非常的多，水也特别深，这里主要介绍最为常见的划分方法。</p>
+
+<h2 id="划分结果分类">划分结果分类</h2>
+
+<p>首先，就是划分的结果，划分的结果有什么好讲的呢？其实算法的描述只说了划分成不比pivot大的在一边，不比pivot小的在另一边，并没有说等于的数怎么办。事实上，关键就在等于的数怎么处理，你既可以划在其中一边，也可以两边都有，也可以划成3分，中间那块就是等于pivot的，左边是小于等于，右边是大于等于，三种划分结果都是可以的。但是，不能容许的一种情况是划分后只有一块，例如你选的pivot正好是最小的数，于是划分后，整个数组就一块，全是大于等于pivot的，这样很可能导致无限递归，这次划分也白干了。</p>
+
+<p>所以很多人单凭算法思路来实现的时候，往往陷入栈溢出异常，其实就是划分结果上出了问题，并没有保证每次划分后，至少划分成两块。</p>
+
+<h2 id="划分手段分类">划分手段分类</h2>
+
+<p>划分手段的典型方法至少有5种，本篇介绍其中的4种</p>
+
+<h3 id="1-lomuto-partition-scheme">1. Lomuto partition scheme</h3>
+
+<p>首先我们来看以下代码：</p>
+
+<pre><code class="language-cpp">sort_element_t * partition(
+    sort_element_t * beg,
+    sort_element_t * end)
+{
+    sort_element_t pivot = *beg;
+    sort_element_t * p = beg;
+    for (sort_element_t * i = beg + 1; i &lt; end; i++)
+    {
+        if (*i &lt; pivot)
+        {
+            sort_element_swap(++p, i);
+        }
+    }
+    sort_element_swap(p, beg);
+    return p;
+}
+
+void quick_sort_recursive(
+    sort_element_t * beg,
+    sort_element_t * end)
+{
+    if (end - beg &gt; 1)
+    {
+        sort_element_t * p = partition(beg, end);
+        quick_sort_recursive(beg, p);
+        quick_sort_recursive(p + 1, end);
+    }
+}
+</code></pre>
+
+<p>这种划分方法wiki上有描述，叫做 <a href="https://en.wikipedia.org/wiki/Quicksort#Lomuto_partition_scheme"><code>Lomuto partition scheme</code></a> 它的思路挺好理解，首先p就是划分边界，一开始<code>p = left</code>，遍历数组，发现比pivot小的，就交换到p的位置，并且p++，那么p左边的就全是比p要小的。而在最后面，把pivot交换到p的位置，所以这个方法期望把数组划分成三块，小于pivot的，等于pivot的，大于等于pivot的，而且能保证至少划分出两块（中间那块等于pivot的一定存在，不过只有一个元素）。这个方法的优点是可以通过简单的修改就变成3路划分（小于、等于、大于三块），缺点是它这种划分方法速度最慢，交换次数较多。</p>
+
+<h3 id="2-不知名字的方法">2. 不知名字的方法</h3>
+
+<p>这种方法来源不明，如果你知道请告诉我，在我看来有点像 Hoare partition scheme 的变种，来看代码</p>
+
+<pre><code class="language-cpp">sort_element_t* partition(
+    sort_element_t * first,
+    sort_element_t * last)
+{
+    sort_element_t pivot = *first;
+    while (first &lt; last)
+    {
+        while (first &lt; last &amp;&amp; pivot &lt; *last)
+            last--;
+        *first = *last;
+        while (first &lt; last &amp;&amp; pivot &gt;= *first)
+            first++;
+        *last = *first;
+    }
+    *first = pivot;
+    return first;
+}
+
+void quick_sort_recursive(
+    sort_element_t * beg,
+    sort_element_t * end)
+{
+    if (end - beg &gt; 1)
+    {
+        sort_element_t* p = partition(beg, end - 1);
+        quick_sort_recursive(beg, p);
+        quick_sort_recursive(p + 1, end);
+    }
+}
+</code></pre>
+
+<p>这个方法通过在右边寻找应该放在左边的元素，与pivot交换，然后在左边寻找应该放在右边的元素，再次与pivot交换，这样pivot通过多数交换换到划分位置上。不过上面代码做了一个简单优化，通过赋值而不是直接交换以减少赋值的次数，这种方法在网上非常常见。</p>
+
+<h3 id="3-hoare-partition-scheme">3. Hoare partition scheme</h3>
+
+<p>后来有个叫做 C.A.R. Hoare 的人发明了这种划分方法，见代码</p>
+
+<pre><code class="language-cpp">sort_element_t* partition(
+    sort_element_t * first,
+    sort_element_t * last)
+{
+    sort_element_t * begin = first;
+    sort_element_t pivot = *first;
+    while (first &lt; last)
+    {
+        while (first &lt; last &amp;&amp; *last &gt;= pivot)
+            --last;
+        while (first &lt; last &amp;&amp; pivot &gt;= *first)
+            ++first;
+        if (first &lt; last)
+            sort_element_swap(first, last);
+    }
+    sort_element_swap(first, begin);
+    return first;
+}
+
+void quick_sort_recursive(
+    sort_element_t * beg,
+    sort_element_t * end)
+{
+    if (end - beg &gt; 1)
+    {
+        sort_element_t* p = partition(beg, end - 1);
+        quick_sort_recursive(beg, p);
+        quick_sort_recursive(p + 1, end);
+    }
+}
+</code></pre>
+
+<p>注意的是，这个写法和 <a href="https://en.wikipedia.org/wiki/Quicksort#Hoare_partition_scheme">wiki</a> 上的略有差别。这个方法与前一个的不同点是，通过在左边寻找应该放在右边的元素，而在右边寻找应该放在左边的元素，然后交换。这个方法是以上三种里面速度最快的，但与此同时是坑最多的。例如，原描述是左边找小于，右边找大于的交换，而上面代码的实现是左边找小于等于，右边找大于等于；原描述是先找左边再找右边，上面实现是先找右边再找左边。也就是说，取不取等于号有4种组合，再乘以先左或先右两种，共8种组合，这8种有一些要求pivot取最左边，有一些要求pivot取最右边，有些左右都行，有些pivot任意位置都行。所以当你写这种划分方法的时候，看起来没什么区别的代码，偏偏出现栈溢出各种问题，其实就隐藏在这些细节上。如果你想练习调试的本领，就把这8种组合的划分全写出来，你肯定收获不少。至于哪种组合最佳，我不知道，但我知道最差的组合，就是两边都取等于号的那两种。</p>
+
+<p>这个写法还有一个四路划分的变种，即先划分成以下这样</p>
+
+<table>
+    <tr>
+        <td>=</td>
+        <td><</td>
+        <td>></td>
+        <td>=</td>
+   </tr>
+</table>
+
+<p>划分好后再把两端的相等元素交换到中间得到</p>
+
+<table>
+    <tr>
+        <td><</td>
+        <td>=</td>
+        <td>></td>
+   </tr>
+</table>
+
+<p>这里不具体展开，有兴趣可以自行实现</p>
+
+<h3 id="4-vs-partition-scheme">4. VS partition scheme</h3>
+
+<p>之所以这么叫是因为我目前只看到在Visual Studio系列STL的<code>std::sort</code>是这么写的，这个写成代码有点长，但思路和上面说的四路划分有点类似，这里简单讲讲它的思路。首先pivot选择在中间，形成这样的状态</p>
+
+<table>
+    <tr>
+        <td><</td>
+        <td>?</td>
+        <td>=</td>
+        <td>?</td>
+        <td>></td>
+   </tr>
+</table>
+
+<p>找到等于的元素就交换到等于那块的旁边扩大它就行了，核心思想就这样，还有很多其它的细节，这里不展开。这种方法网上几乎没有人这么写，因为写起来确实挺麻烦的。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>本篇先介绍到这里，大家写快排练习建议使用 <code>Hoare partition scheme</code> ，如果你觉得你的能力更好，那你可以写 <code>VS partition scheme</code> 自己琢磨一下细节问题，相信你是能写出来的。那么下一篇会介绍优化的部分。</p>
+  </div>
+  
+
+<div class="navigation navigation-single">
+    
+    <a href="/post/20191006-mingw-bug/" class="navigation-prev">
+      <i aria-hidden="true" class="fa fa-chevron-left"></i>
+      <span class="navigation-tittle">Mingw 的 Bug</span>
+    </a>
+    
+    
+</div>
+
+
+  
+
+  
+    
+        <div id="disqus_thread"></div>
+<script type="text/javascript">
+    
+
+    (function () {
+    if (location.hostname === "localhost" ||
+      location.hostname === "127.0.0.1" ||
+      location.hostname === "") {
+      return;
+    }
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    var disqus_shortname = 'baobaobear';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || 
+      document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+<noscript>
+  Please enable JavaScript to view the
+  <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+<a href="http://disqus.com/" class="dsq-brlink">comments powered by
+  <span class="logo-disqus">Disqus</span>
+</a>
+
+    
+
+
+</article>
+
+
+        </div>
+        
+    
+
+<script defer src="https://use.fontawesome.com/releases/v5.5.0/js/all.js" integrity="sha384-GqVMZRt5Gn7tB9D9q7ONtcp4gtHIUEW/yG7h98J7IpE3kpi+srfFyyB/04OV6pG0" crossorigin="anonymous"></script>
+
+<script type="text/javascript"
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+    
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+        
+    
+    <script type="text/javascript">
+        
+        hljs.initHighlightingOnLoad();
+    </script>
+    
+
+
+
+
+
+
+    
+
+
+
+    </body>
+</html>
