@@ -3,73 +3,130 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://baobaobear.github.io/categories/</loc>
-    <lastmod>2019-10-06T18:18:22+08:00</lastmod>
+    <loc>/tags/algorithm/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/post/</loc>
-    <lastmod>2019-10-06T18:18:22+08:00</lastmod>
+    <loc>/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/tags/qsort/</loc>
-    <lastmod>2019-10-06T18:18:22+08:00</lastmod>
+    <loc>/tags/bubblesort/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/post/20191007-qsort-talk-1/</loc>
-    <lastmod>2019-10-06T18:18:22+08:00</lastmod>
+    <loc>/tags/c/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/tags/</loc>
-    <lastmod>2019-10-06T18:18:22+08:00</lastmod>
+    <loc>/tags/c&#43;&#43;/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/</loc>
-    <lastmod>2019-10-06T18:18:22+08:00</lastmod>
+    <loc>/categories/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/categories/%E7%AE%97%E6%B3%95/</loc>
-    <lastmod>2019-10-06T18:18:22+08:00</lastmod>
+    <loc>/post/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/tags/%E7%AE%97%E6%B3%95/</loc>
-    <lastmod>2019-10-06T18:18:22+08:00</lastmod>
+    <loc>/tags/selectionsort/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/post/20191006-mingw-bug/</loc>
+    <loc>/tags/sorting/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/categories/%E7%AE%97%E6%B3%95/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/20191008-sorting-1/</loc>
+    <lastmod>2019-10-08T13:15:36+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/partition/</loc>
+    <lastmod>2019-10-07T14:18:22+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/20191007-qsort-talk-1/</loc>
+    <lastmod>2019-10-07T14:18:22+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/quicksort/</loc>
+    <lastmod>2019-10-07T14:18:22+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/mingw/</loc>
     <lastmod>2019-10-06T13:04:08+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/tags/stl/</loc>
+    <loc>/post/20191006-mingw-bug/</loc>
     <lastmod>2019-10-06T13:04:08+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/categories/%E6%9D%82%E8%B0%88/</loc>
+    <loc>/tags/random_shuffle/</loc>
     <lastmod>2019-10-06T13:04:08+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/about/</loc>
-    <lastmod>2019-10-06T00:00:00+08:00</lastmod>
+    <loc>/tags/stl/</loc>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/tags/hugo/</loc>
+    <loc>/categories/%E6%9D%82%E8%B0%88/</loc>
+    <lastmod>2019-10-06T13:04:08+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/hugo/</loc>
     <lastmod>2019-10-05T23:12:10+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://baobaobear.github.io/post/20191005-first-post/</loc>
+    <loc>/tags/table/</loc>
     <lastmod>2019-10-05T23:12:10+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/20191005-first-post/</loc>
+    <lastmod>2019-10-05T23:12:10+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/authors/admin/</loc>
+  </url>
+  
+  <url>
+    <loc>/authors/</loc>
+  </url>
+  
+  <url>
+    <loc>/publication_types/</loc>
   </url>
   
 </urlset>

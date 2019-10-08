@@ -1,25 +1,118 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>stl on 抱抱熊</title>
-    <link>https://baobaobear.github.io/tags/stl/</link>
-    <description>Recent content in stl on 抱抱熊</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en</language>
-    <lastBuildDate>Sun, 06 Oct 2019 13:04:08 +0800</lastBuildDate>
-    
-	<atom:link href="https://baobaobear.github.io/tags/stl/index.xml" rel="self" type="application/rss+xml" />
-    
+    <title>stl | Baobaobear</title>
+    <link>/tags/stl/</link>
+      <atom:link href="/tags/stl/index.xml" rel="self" type="application/rss+xml" />
+    <description>stl</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sun, 06 Oct 2019 13:04:08 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>stl</title>
+      <link>/tags/stl/</link>
+    </image>
     
     <item>
       <title>Mingw 的 Bug</title>
-      <link>https://baobaobear.github.io/post/20191006-mingw-bug/</link>
+      <link>/post/20191006-mingw-bug/</link>
       <pubDate>Sun, 06 Oct 2019 13:04:08 +0800</pubDate>
-      
-      <guid>https://baobaobear.github.io/post/20191006-mingw-bug/</guid>
+      <guid>/post/20191006-mingw-bug/</guid>
       <description>&lt;p&gt;这个问题最早的时候是今年8月，我在测试排序算法的速度，发现mingw上总有点不一样，而linux下的gcc是正常的，也在群里问过人，没人明白到底怎么回事，先描述一下当时遇到的情况。&lt;/p&gt;
 
-&lt;p&gt;一开始我使用&lt;code&gt;std::random_shuffle&lt;/code&gt;打乱数组并用&lt;code&gt;std::sort&lt;/code&gt;排序，在VS上并没有发现什么问题，gcc也正常。但在mingw上，这样打乱的数组排序所花的时间，比起其它打乱方式的，例如直接赋值一个随机数的方式，要明显慢了近1倍，这个诡异的问题一直没想通是为啥。当时觉得可能是&lt;code&gt;std::sort&lt;/code&gt;对这种方式打乱的数据排序有点问题导致变慢。&lt;/p&gt;</description>
+&lt;p&gt;一开始我使用&lt;code&gt;std::random_shuffle&lt;/code&gt;打乱数组并用&lt;code&gt;std::sort&lt;/code&gt;排序，在VS上并没有发现什么问题，gcc也正常。但在mingw上，这样打乱的数组排序所花的时间，比起其它打乱方式的，例如直接赋值一个随机数的方式，要明显慢了近1倍，这个诡异的问题一直没想通是为啥。当时觉得可能是&lt;code&gt;std::sort&lt;/code&gt;对这种方式打乱的数据排序有点问题导致变慢。&lt;/p&gt;
+
+&lt;p&gt;后来，为了和std函数脱钩，我自己重新写了随机数函数和random_shuffle函数，结果发现我的random_shuffle函数打乱的结果，&lt;code&gt;std::sort&lt;/code&gt;的时间是完全正常的，非得&lt;code&gt;std::random_shuffle&lt;/code&gt;才会出现两倍的情况，一时间我还以为是我写的有问题，还更换了不同随机函数，怎么也发现不了原因，终于把怀疑转向&lt;code&gt;std::random_shuffle&lt;/code&gt;，我就对这个函数的执行结果输出到文件，这一输出立即把我搞懵了，输出的结果分布特别有规律，初值我用的是&lt;code&gt;arr[i] = i&lt;/code&gt;，打乱后结果前32768个数都是数组里最大的数值，一时没明白怎么回事，难道它的实现很不寻常吗？我就去翻了一下源代码，在&lt;a href=&#34;https://en.cppreference.com/w/cpp/algorithm/random_shuffle&#34; target=&#34;_blank&#34;&gt;cppreference&lt;/a&gt;下源代码长下面这样：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template&amp;lt; class RandomIt &amp;gt;
+void random_shuffle( RandomIt first, RandomIt last )
+{
+    typename std::iterator_traits&amp;lt;RandomIt&amp;gt;::difference_type i, n;
+    n = last - first;
+    for (i = n-1; i &amp;gt; 0; --i) {
+        using std::swap;
+        swap(first[i], first[std::rand() % (i+1)]);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个代码我看着就不对，这个是生成不了我的执行结果的，于是又找到了下面这个：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template &amp;lt;class RandomAccessIterator&amp;gt;
+inline void random_shuffle(RandomAccessIterator first,
+                           RandomAccessIterator last) {
+  __random_shuffle(first, last, distance_type(first));
+}
+ 
+ 
+template &amp;lt;class RandomAccessIterator, class RandomNumberGenerator&amp;gt;
+void random_shuffle(RandomAccessIterator first, RandomAccessIterator last,
+                    RandomNumberGenerator&amp;amp; rand) {
+  if (first == last) return;
+  for (RandomAccessIterator i = first + 1; i != last; ++i)
+    iter_swap(i, first + rand((i - first) + 1));
+}
+ 
+ 
+template &amp;lt;class RandomAccessIterator, class Distance&amp;gt;
+void __random_shuffle(RandomAccessIterator first, RandomAccessIterator last,
+                      Distance*) {
+  if (first == last) return;
+  for (RandomAccessIterator i = first + 1; i != last; ++i) 
+#ifdef __STL_NO_DRAND48
+    iter_swap(i, first + Distance(rand() % ((i - first) + 1)));
+#else
+  iter_swap(i, first + Distance(lrand48() % ((i - first) + 1)));
+#endif
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;看了这个代码，我瞬间明白这到底是怎么回事了，你能从中发现些什么吗？&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;p&gt;.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;我发现的是，前面的代码用的是rand，而之前我发现的，是数组里前32768个数都特别大，我的直觉是这个rand函数最大值就是32767从而导致以上问题，结果一查，还真的只有mingw的rand函数的最大值这么小，也就是说如果你希望代码跨平台，使用&lt;code&gt;std::random_shuffle&lt;/code&gt;要慎重，当然最好是减少依赖。&lt;/p&gt;</description>
     </item>
     
   </channel>

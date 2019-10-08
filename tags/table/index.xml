@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>table | Baobaobear</title>
+    <link>/tags/table/</link>
+      <atom:link href="/tags/table/index.xml" rel="self" type="application/rss+xml" />
+    <description>table</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 05 Oct 2019 23:12:10 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>table</title>
+      <link>/tags/table/</link>
+    </image>
+    
+    <item>
+      <title>博客第一文，附hugo表格的坑</title>
+      <link>/post/20191005-first-post/</link>
+      <pubDate>Sat, 05 Oct 2019 23:12:10 +0800</pubDate>
+      <guid>/post/20191005-first-post/</guid>
+      <description>&lt;p&gt;第一次使用这个hugo就遇到一堆坑，主题并不是随便用，会有SHA-256校验，而在windows平台下用git，clone下来会把&lt;code&gt;\n&lt;/code&gt;自动换成&lt;code&gt;\r\n&lt;/code&gt;从而导致主题应用失败，服了。&lt;/p&gt;
+
+&lt;p&gt;另一个坑就是hugo的表格，你不能像以下这么写&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;a|b|c
+-|-|-
+1|2|3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样hugo的引擎是不认为这是表格，正确的做法是改成下面这样&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;a  | b | c
+---|---|---
+1  | 2 | 3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;显示结果就是这样&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;区别是什么呢？在表格的第二行是&lt;code&gt;---|---|---&lt;/code&gt;，这一行是用来描述对齐方式的，不过hugo的引擎要求每列至少3个字符，所以刚好3个字符时只能是&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;---
+:--
+--:
+:-:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;中四选一，任何一个只剩下两个字符就不算是表格。&lt;/p&gt;
+
+&lt;p&gt;本博客计划是发布我的研究成果，当然主要是算法方面，而且主要是网上不会轻易搜索到的东西。&lt;/p&gt;
+
+&lt;p&gt;更多的东西可以关注我的 Github &lt;a href=&#34;https://github.com/Baobaobear&#34; target=&#34;_blank&#34;&gt;账号&lt;/a&gt;。&lt;/p&gt;
+
+&lt;!--more--&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;#define _CRT_SECURE_NO_WARNINGS
+#include &amp;lt;stdio.h&amp;gt;
+ 
+int g_eof;
+int get_lv(char c) {
+	return !(c == &#39;+&#39; || c == &#39;-&#39;);
+}
+ 
+double get_val(double v[], char op) {
+	if (op == &#39;+&#39;) return v[0] + v[1];
+	if (op == &#39;-&#39;) return v[0] - v[1];
+	if (op == &#39;*&#39;) return v[0] * v[1];
+	if (op == &#39;/&#39;) return v[0] / v[1];
+	return v[0];
+}
+ 
+double calc(char* op, int level, double val, char o, int i) {
+	char c[2] = { o };
+	double v[2] = { val };
+	if ((g_eof = scanf(&amp;quot;%lf&amp;quot;, &amp;amp;v[i])) != EOF)
+		scanf(&amp;quot;%c&amp;quot;, &amp;amp;c[i]);
+	if (c[i] == &#39;(&#39;) {
+		v[i] = calc(&amp;amp;c[i], 0, 0, 0, 0);
+		scanf(&amp;quot;%c&amp;quot;, &amp;amp;c[i]);
+	}
+	if (i &amp;gt; 0) {
+		if (!(c[i] == &#39;\n&#39; || c[i] == &#39;)&#39;
+			|| get_lv(c[0]) &amp;gt;= get_lv(c[1])))
+			v[i] = calc(&amp;amp;c[1], get_lv(c[1]), v[1], c[1], get_lv(c[1]) &amp;gt; 0);
+		v[0] = get_val(v, c[0]);
+		c[0] = c[1];
+	}
+	if (c[0] == &#39;\n&#39; || c[0] == &#39;)&#39; || get_lv(c[0]) &amp;lt; level) {
+		*op = c[0];
+		return v[0];
+	}
+	return calc(op, level, v[0], c[0], 1);
+}
+ 
+int main(void) {
+	char op;
+	while (g_eof != EOF)
+		printf(&amp;quot;= %.15g\n&amp;quot;, calc(&amp;amp;op, 0, 0, &#39;\n&#39;, 0));
+	return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

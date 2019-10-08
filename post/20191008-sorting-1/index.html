@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有
+void sort(type arr[], int len)
+也许你也见过
+void sort(iter beg, iter end)
+这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 sort(arr, arr &#43; len) ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 sort(arr, arr &#43; len - 1) 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素&#43;1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以
+void sort(iter beg, iter end)
+这种方式写的，至于这样写有什么好处，接下来我们就看示例。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20191008-sorting-1/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.5ade2c9b6234e2dcb04af12f9ea61012.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20191008-sorting-1/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20191008-sorting-1/">
+  <meta property="og:title" content="选择和冒泡排序优化思路 | Baobaobear">
+  <meta property="og:description" content="本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有
+void sort(type arr[], int len)
+也许你也见过
+void sort(iter beg, iter end)
+这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 sort(arr, arr &#43; len) ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 sort(arr, arr &#43; len - 1) 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素&#43;1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以
+void sort(iter beg, iter end)
+这种方式写的，至于这样写有什么好处，接下来我们就看示例。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2019-10-08T13:15:36&#43;08:00">
+    
+    <meta property="article:modified_time" content="2019-10-08T13:15:36&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20191008-sorting-1/"
+  },
+  "headline": "选择和冒泡排序优化思路",
+  
+  "datePublished": "2019-10-08T13:15:36+08:00",
+  "dateModified": "2019-10-08T13:15:36+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有\u003cbr /\u003e\n\u003ccode\u003evoid sort(type arr[], int len)\u003c/code\u003e\u003cbr /\u003e\n也许你也见过\u003cbr /\u003e\n\u003ccode\u003evoid sort(iter beg, iter end)\u003c/code\u003e\u003cbr /\u003e\n这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 \u003ccode\u003esort(arr, arr + len)\u003c/code\u003e ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 \u003ccode\u003esort(arr, arr + len - 1)\u003c/code\u003e 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以\u003cbr /\u003e\n\u003ccode\u003evoid sort(iter beg, iter end)\u003c/code\u003e\u003cbr /\u003e\n这种方式写的，至于这样写有什么好处，接下来我们就看示例。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>选择和冒泡排序优化思路 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>选择和冒泡排序优化思路</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Oct 8, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    6 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191008-sorting-1/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%ae%97%e6%b3%95">算法</a></span>
+  
+
+  
+    
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有<br />
+<code>void sort(type arr[], int len)</code><br />
+也许你也见过<br />
+<code>void sort(iter beg, iter end)</code><br />
+这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 <code>sort(arr, arr + len)</code> ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 <code>sort(arr, arr + len - 1)</code> 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以<br />
+<code>void sort(iter beg, iter end)</code><br />
+这种方式写的，至于这样写有什么好处，接下来我们就看示例。</p>
+
+<h2 id="选择排序">选择排序</h2>
+
+<h3 id="基本实现">基本实现</h3>
+
+<p>我们先来看选择排序，因为它编写简单，而且最不容易出错，我们来看以下两种不同的接口写法，我们定义要排序的数据类型名字是<code>sort_element_t</code>，定义交换函数</p>
+
+<pre><code class="language-cpp">void sort_element_swap(sort_element_t *x, sort_element_t *y)
+{
+    sort_element_t t = *x;
+    *x = *y;
+    *y = t;
+}
+</code></pre>
+
+<p>具体实现</p>
+
+<pre><code class="language-cpp">void select_sort(sort_element_t arr[], size_t len) //方式1
+{
+    for (size_t i = 0; i &lt; len; ++i)
+    {
+        size_t head = i;
+        for (size_t j = i + 1; j &lt; len; ++j)
+        {
+            if (arr[j] &lt; arr[head])
+                head = j;
+        }
+        sort_element_swap(arr + i, arr + head);
+    }
+}
+
+void select_sort(sort_element_t * beg, sort_element_t * end) //方式2
+{
+    for (; beg &lt; end; ++beg)
+    {
+        sort_element_t* head = beg;
+        for (sort_element_t* i = beg + 1; i &lt; end; ++i)
+        {
+            if (*i &lt; *head)
+                head = i;
+        }
+        sort_element_swap(beg, head);
+    }
+}
+</code></pre>
+
+<p>就这么一眼看过去，看起来还真差不多，这样，我们再细分一下，选择排序的中间那步，其实就是找一个最小的元素，我们单独提取成一个独立函数再来看看</p>
+
+<pre><code class="language-cpp">//方式1
+size_t find_min(sort_element_t arr[], size_t beg, size_t len)
+{
+    size_t head = beg;
+    for (size_t j = beg + 1; j &lt; len; ++j)
+    {
+        if (arr[j] &lt; arr[head])
+            head = j;
+    }
+    return head;
+}
+
+void select_sort(sort_element_t arr[], size_t len)
+{
+    for (size_t i = 0; i &lt; len; ++i)
+    {
+        sort_element_swap(arr + i, arr + find_min(arr, i, len));
+    }
+}
+</code></pre>
+
+<pre><code class="language-cpp">//方式2
+sort_element_t* find_min(sort_element_t * beg, sort_element_t * end)
+{
+    sort_element_t* head = beg;
+    for (sort_element_t* i = beg + 1; i &lt; end; ++i)
+    {
+        if (*i &lt; *head)
+            head = i;
+    }
+    return head;
+}
+
+void select_sort(sort_element_t * beg, sort_element_t * end)
+{
+    for (; beg &lt; end; ++beg)
+    {
+        sort_element_swap(beg, find_min(beg, end));
+    }
+}
+</code></pre>
+
+<p>仔细观察一下，是不是第二种写法函数参数统一，而且参数数量少，而且也少了很多不必要的加法运算（像方法一需要写<code>arr + i</code>这类）。如果你说方法一的find_min参数也可以只写两个，写成<code>find_min(sort_element_t arr[], size_t len)</code>，那么你在调用的地方将不得不写成<code>find_min(arr + i, len - i)</code>，这种又加又减在遇到更复杂的情况的时候，更容易把你弄晕出Bug。总之结论是最好把参数写成两个指针（或两个迭代器）的形式，不建议使用数组加长度的形式，STL的接口也全使用迭代器的形式。</p>
+
+<p>对于这个排序要注意的一点是，有人会写成类似下面的形式：</p>
+
+<pre><code class="language-cpp">void select_sort(sort_element_t arr[], size_t len)
+{
+	for (size_t j = 0; j &lt; len; ++j)
+	{
+		for (size_t i = j + 1; i &lt; len; ++i)
+		{
+			if (arr[j] &gt; arr[i])
+			{
+				sort_element_t t = arr[j];
+				arr[j] = arr[i];
+				arr[i] = t;
+			}
+		}
+	}
+}
+</code></pre>
+
+<p>以上这种叫做劣化版的选择排序，在大多数的情况下会比前一个方法慢，极端条件下甚至会慢1倍甚至更多</p>
+
+<p>那说完劣化再讲优化，选择排序的时间复杂度是O(n^2)，而且运行时间与原来的排列完全无关。以上的选择排序总是选择小的，那大小一起选呢？能不能起到优化的作用？如果你单纯的多写一个find_max变成双向选择来做，在VS2005下是没有优化效果的，我测试过了。那应该怎么样呢？确实还是双向选择，不过具体实现稍有点不同。</p>
+
+<h3 id="优化1-双向选择">优化1，双向选择</h3>
+
+<p>这里的实现是一个函数里同时把最大最小一起找，这样减少了一次遍历的过程，时间能减半之余，还有一个非常有用的优化，就是当你发现最大值等于最小值的时候能提前跳出</p>
+
+<pre><code class="language-cpp">sort_element_t* find_min_max(
+    sort_element_t * beg,
+    sort_element_t * end,
+    sort_element_t** head_max)
+{
+    sort_element_t* head = beg;
+    *head_max = beg;
+    for (sort_element_t* i = beg + 1; i &lt; end; ++i)
+    {
+        if (*i &lt; *head)
+            head = i;
+        else if (**head_max &lt; *i)
+            *head_max = i;
+    }
+    return head;
+}
+
+void double_select_sort(sort_element_t * beg, sort_element_t * end)
+{
+    while (end - beg &gt; 1)
+    {
+        sort_element_t * head_max, * head = find_min_max(beg, end, &amp;head_max);
+        if (head_max != head)
+        {
+            if (head_max == beg)
+                head_max = head;
+            sort_element_swap(beg++, head);
+            sort_element_swap(--end, head_max);
+        }
+        else
+        {
+            break;
+        }
+    }
+}
+</code></pre>
+
+<p>与选择排序的运行时间比较如下，排序45000个int，编译环境是VS2015，用10组不同分布的数据，表格中的数字单位是毫秒，即排序用时</p>
+
+<table>
+<thead>
+<tr>
+<th>int</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+<th align="right">9</th>
+<th align="right">10</th>
+<th align="right">Avg</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>select2</td>
+<td align="right">0</td>
+<td align="right">1114</td>
+<td align="right">834</td>
+<td align="right">1113</td>
+<td align="right">1124</td>
+<td align="right">1124</td>
+<td align="right">1119</td>
+<td align="right">1124</td>
+<td align="right">1124</td>
+<td align="right">1141</td>
+<td align="right">981</td>
+</tr>
+
+<tr>
+<td>select</td>
+<td align="right">2213</td>
+<td align="right">2238</td>
+<td align="right">2227</td>
+<td align="right">2229</td>
+<td align="right">2256</td>
+<td align="right">2242</td>
+<td align="right">2238</td>
+<td align="right">2241</td>
+<td align="right">2245</td>
+<td align="right">2260</td>
+<td align="right">2238</td>
+</tr>
+</tbody>
+</table>
+
+<p>合理运用双向，效果也往往不错，但是千万要注意，环境不同会导致测试结果不相同，例如你换到mingw上使用-O3编译那么将会是select比select2快，所以上面数据只供参考，具体结果请自己做测试。</p>
+
+<h3 id="优化2-数据结构">优化2，数据结构</h3>
+
+<p>选择排序的优化主要是在find_min上面，find_min的时间复杂度是O(n)，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成O(1)，而维护这个数据结构的代价是O(logn)的话，总体时间复杂度将变为O(nlogn)，这比起选择排序的O(n^2)就是一个巨大的变化，具体内容在之后的 <strong>堆排序</strong> 篇具体讲解。</p>
+
+<h2 id="冒泡排序">冒泡排序</h2>
+
+<h3 id="基本实现-1">基本实现</h3>
+
+<p>冒泡排序是我们课本必然介绍的一个排序，相对于选择排序，这种在编写的时候更容易出现逻辑错误，我们先来看典型的实现（双迭代器实现）</p>
+
+<pre><code class="language-cpp">void bubble_sort(sort_element_t * beg, sort_element_t * end)
+{
+    for (; beg &lt; end; --end)
+    {
+        for (sort_element_t * i = beg + 1; i &lt; end; ++i)
+        {
+            if (*i &lt; i[-1])
+                sort_element_swap(i - 1, i);
+        }
+    }
+}
+</code></pre>
+
+<p>冒泡排序这种写法，铁定的O(n^2)时间没跑，不过好在冒泡排序的优化方法也不少。</p>
+
+<h3 id="优化1-提前跳出">优化1，提前跳出</h3>
+
+<pre><code class="language-cpp">void bubble_sort(sort_element_t * beg, sort_element_t * end)
+{
+    for (; beg &lt; end; --end)
+    {
+        int sorted = 1;
+        for (sort_element_t * i = beg + 1; i &lt; end; ++i)
+        {
+            if (*i &lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (sorted)
+            break;
+    }
+}
+</code></pre>
+
+<p>通过sorted变量记录某一轮是不是存在交换，如果没有交换则表明数据已经是有序的，可以提前退出循环。有这个优化对于已经有序的数据，冒泡排序将运行得特别快，即最优情况时间复杂度只有O(n)</p>
+
+<h3 id="优化2-鸡尾酒排序">优化2，鸡尾酒排序</h3>
+
+<p>前面的冒泡写法是单向冒泡，把最大值向最右边移，这回我们做成双向，一边把最大值右移，一边把最小值左移，不过这种方法有另一个命名，叫做鸡尾酒排序</p>
+
+<pre><code class="language-cpp">void cocktail_sort(sort_element_t * beg, sort_element_t * end)
+{
+    while (beg &lt; end)
+    {
+        int sorted = 1;
+        for (sort_element_t * i = beg + 1; i &lt; end; ++i)
+        {
+            if (*i &lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (sorted)
+            break;
+        --end;
+
+        sorted = 1;
+        for (sort_element_t * i = end - 1; i &gt; beg; --i)
+        {
+            if (*i &lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (sorted)
+            break;
+        ++beg;
+    }
+}
+</code></pre>
+
+<p>那改成双向就真的有提升了吗？我们看实测，排序45000个int，用10组不同分布的数据，表格中的数字单位是毫秒，即排序用时</p>
+
+<table>
+<thead>
+<tr>
+<th>int</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+<th align="right">9</th>
+<th align="right">10</th>
+<th align="right">Avg</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>cocktail</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1313</td>
+<td align="right">1502</td>
+<td align="right">1614</td>
+<td align="right">1674</td>
+<td align="right">671</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">836</td>
+<td align="right">761</td>
+</tr>
+
+<tr>
+<td>bubble</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1245</td>
+<td align="right">2286</td>
+<td align="right">2329</td>
+<td align="right">2332</td>
+<td align="right">871</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">1459</td>
+<td align="right">1052</td>
+</tr>
+</tbody>
+</table>
+
+<p>其中第4组是乱序无重复数值的数据，最有代表性的一列。从中可以看到，cocktail比起bubble能节省30%的时间</p>
+
+<p>让我们再脑洞大开，除了可以双向，还有一种对CPU执行有利的优化方式</p>
+
+<h3 id="优化3-奇偶排序">优化3，奇偶排序</h3>
+
+<p>这种排序的排序方式见下表，假设有8个数，奇数轮比较(1,2), (3,4), (5,6), (7,8)，偶数轮比较(2,3), (4,5), (6,7)，如此循环，直到没有交换为止</p>
+
+<table>
+<thead>
+<tr>
+<th>轮次</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>0</td>
+<td align="right">8</td>
+<td align="right">7</td>
+<td align="right">6</td>
+<td align="right">5</td>
+<td align="right">4</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="right">1</td>
+</tr>
+
+<tr>
+<td>1</td>
+<td align="right">7</td>
+<td align="right">8</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">2</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td align="right">7</td>
+<td align="right">5</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">6</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td align="right">5</td>
+<td align="right">7</td>
+<td align="right">3</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">6</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td align="right">5</td>
+<td align="right">3</td>
+<td align="right">7</td>
+<td align="right">1</td>
+<td align="right">8</td>
+<td align="right">2</td>
+<td align="right">6</td>
+<td align="right">4</td>
+</tr>
+</tbody>
+</table>
+
+<p>具体实现代码如下</p>
+
+<pre><code class="language-cpp">void odd_even_sort(sort_element_t * beg, sort_element_t * end)
+{
+    int sorted = 0, last_sorted = 0;
+    while (sorted == 0)
+    {
+        last_sorted = sorted;
+        sorted = 1;
+        for (sort_element_t * i = beg + 1; i &lt; end; i += 2)
+        {
+            if (*i &lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (last_sorted &amp;&amp; sorted)
+            break;
+
+        last_sorted = sorted;
+        sorted = 1;
+        for (sort_element_t * i = beg + 2; i &lt; end; i += 2)
+        {
+            if (*i &lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (last_sorted &amp;&amp; sorted)
+            break;
+    }
+}
+</code></pre>
+
+<p>让我们再脑洞大开，除了比较方向，好像我们有一个条件没有考虑上，就是冒泡排序总是相邻元素的比较，那么如果不相邻地比较呢？</p>
+
+<h3 id="优化4-梳排序">优化4，梳排序</h3>
+
+<p>通过一开始设置较大的步长，让元素能较快移动，然后逐步减少步长，直到1变成普通的冒泡排序为止。这个方法的优点，就是快，相对前面的方法来说飞快</p>
+
+<pre><code class="language-cpp">void comb_sort(sort_element_t * beg, sort_element_t * end)
+{
+    const double shrink_factor = 0.8;
+    ptrdiff_t gap = end - beg;
+    int swapped = 0;
+    while (gap &gt; 1 || swapped)
+    {
+        if (gap &gt; 1)
+        {
+            gap = (ptrdiff_t)(gap * shrink_factor);
+            if (gap == 10 || gap == 9)
+            {
+                gap = 11;
+            }
+        }
+        swapped = 0;
+        for (sort_element_t * i = beg + gap; i &lt; end; ++i)
+        {
+            if (*i &lt; i[-gap])
+            {
+                sort_element_swap(i, i - gap);
+                swapped = 1;
+            }
+        }
+    }
+}
+</code></pre>
+
+<h2 id="完整测试">完整测试</h2>
+
+<p>在完整测试里你会发现一些和你想象中完全不一样的情况，可不要以为你的“优化”一定就是优化</p>
+
+<h3 id="vs2005下的运行时间比较-按avg平均值排序">VS2005下的运行时间比较（按Avg平均值排序）</h3>
+
+<table>
+<thead>
+<tr>
+<th>int</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+<th align="right">9</th>
+<th align="right">10</th>
+<th align="right">Avg</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>combsort</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">1</td>
+</tr>
+
+<tr>
+<td>odd_even</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">574</td>
+<td align="right">1315</td>
+<td align="right">1315</td>
+<td align="right">1222</td>
+<td align="right">557</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">878</td>
+<td align="right">586</td>
+</tr>
+
+<tr>
+<td>cocktail</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1313</td>
+<td align="right">1502</td>
+<td align="right">1614</td>
+<td align="right">1674</td>
+<td align="right">671</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">836</td>
+<td align="right">761</td>
+</tr>
+
+<tr>
+<td>select2</td>
+<td align="right">0</td>
+<td align="right">1114</td>
+<td align="right">834</td>
+<td align="right">1113</td>
+<td align="right">1124</td>
+<td align="right">1124</td>
+<td align="right">1119</td>
+<td align="right">1124</td>
+<td align="right">1124</td>
+<td align="right">1141</td>
+<td align="right">981</td>
+</tr>
+
+<tr>
+<td>bubble</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1245</td>
+<td align="right">2286</td>
+<td align="right">2329</td>
+<td align="right">2332</td>
+<td align="right">871</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">1459</td>
+<td align="right">1052</td>
+</tr>
+
+<tr>
+<td>select</td>
+<td align="right">2213</td>
+<td align="right">2238</td>
+<td align="right">2227</td>
+<td align="right">2229</td>
+<td align="right">2256</td>
+<td align="right">2242</td>
+<td align="right">2238</td>
+<td align="right">2241</td>
+<td align="right">2245</td>
+<td align="right">2260</td>
+<td align="right">2238</td>
+</tr>
+</tbody>
+</table>
+
+<p>如果你只测试随机数据，那么排序应该是</p>
+
+<p><code>combsort &lt;&lt; select2 &lt; odd_even &lt; cocktail &lt; select &lt; bubble</code></p>
+
+<h3 id="在mingw64-gcc8-下使用-o3-编译-最大优化-的运行时间比较">在mingw64(gcc8)下使用<code>-O3</code>编译（最大优化）的运行时间比较</h3>
+
+<table>
+<thead>
+<tr>
+<th>int</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+<th align="right">9</th>
+<th align="right">10</th>
+<th align="right">Avg</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>combsort</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">3</td>
+<td align="right">1</td>
+</tr>
+
+<tr>
+<td>select</td>
+<td align="right">497</td>
+<td align="right">497</td>
+<td align="right">434</td>
+<td align="right">501</td>
+<td align="right">501</td>
+<td align="right">500</td>
+<td align="right">501</td>
+<td align="right">503</td>
+<td align="right">500</td>
+<td align="right">502</td>
+<td align="right">493</td>
+</tr>
+
+<tr>
+<td>odd_even</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">564</td>
+<td align="right">1311</td>
+<td align="right">1264</td>
+<td align="right">1217</td>
+<td align="right">562</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">882</td>
+<td align="right">580</td>
+</tr>
+
+<tr>
+<td>cocktail</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1242</td>
+<td align="right">1515</td>
+<td align="right">1610</td>
+<td align="right">1677</td>
+<td align="right">669</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">837</td>
+<td align="right">755</td>
+</tr>
+
+<tr>
+<td>select2</td>
+<td align="right">1</td>
+<td align="right">1114</td>
+<td align="right">837</td>
+<td align="right">1114</td>
+<td align="right">1114</td>
+<td align="right">1112</td>
+<td align="right">1114</td>
+<td align="right">1113</td>
+<td align="right">1112</td>
+<td align="right">1114</td>
+<td align="right">974</td>
+</tr>
+
+<tr>
+<td>bubble</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1247</td>
+<td align="right">2312</td>
+<td align="right">2332</td>
+<td align="right">2338</td>
+<td align="right">951</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">1455</td>
+<td align="right">1063</td>
+</tr>
+</tbody>
+</table>
+
+<p>你可以发现，找最小值过程在mingw64下被特别照顾了一下，结果它比其它的明显要快，你可以从中得知，如果你想在mingw下写出运行得快的双向选择排序，如果你的想法是再写一个<code>find_max</code>函数，那对不起，这样是没有优化效果的。但这不是全部，还有让你更大跌眼镜的情况。</p>
+
+<h3 id="在mingw64-gcc8-下使用-o1-编译-基本优化-的运行时间比较">在mingw64(gcc8)下使用<code>-O1</code>编译（基本优化）的运行时间比较</h3>
+
+<table>
+<thead>
+<tr>
+<th>int</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+<th align="right">9</th>
+<th align="right">10</th>
+<th align="right">Avg</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>combsort</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">2</td>
+<td align="right">1</td>
+</tr>
+
+<tr>
+<td>select2</td>
+<td align="right">0</td>
+<td align="right">263</td>
+<td align="right">375</td>
+<td align="right">256</td>
+<td align="right">260</td>
+<td align="right">258</td>
+<td align="right">255</td>
+<td align="right">254</td>
+<td align="right">531</td>
+<td align="right">255</td>
+<td align="right">270</td>
+</tr>
+
+<tr>
+<td>odd_even</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">597</td>
+<td align="right">1287</td>
+<td align="right">1256</td>
+<td align="right">1204</td>
+<td align="right">1368</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">780</td>
+<td align="right">649</td>
+</tr>
+
+<tr>
+<td>cocktail</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1244</td>
+<td align="right">1504</td>
+<td align="right">1594</td>
+<td align="right">1656</td>
+<td align="right">1081</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="right">815</td>
+<td align="right">789</td>
+</tr>
+
+<tr>
+<td>bubble</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1241</td>
+<td align="right">2091</td>
+<td align="right">2117</td>
+<td align="right">2115</td>
+<td align="right">685</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">1247</td>
+<td align="right">949</td>
+</tr>
+
+<tr>
+<td>select</td>
+<td align="right">2233</td>
+<td align="right">2233</td>
+<td align="right">2232</td>
+<td align="right">2231</td>
+<td align="right">2232</td>
+<td align="right">2224</td>
+<td align="right">2229</td>
+<td align="right">2229</td>
+<td align="right">2225</td>
+<td align="right">2232</td>
+<td align="right">2230</td>
+</tr>
+</tbody>
+</table>
+
+<p>现在双向选择不但最快，而且还比<code>-O3</code>下的快得多。老实说，会造成这种奇怪的结果，<code>-O1</code>比<code>-O3</code>还快的原因还真不要问我，找开发gcc/mingw的开发者。</p>
+
+<p>最后还是忠告一句，千万不要在一个编译器某个编译参数上看到有优化效果，就以为是事实，优化的坑远比你想象的要来得深，并不是你以为优化了它就一定变快了，编译器和编译参数以及运行环境才是你的老大。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/tags/algorithm/">algorithm</a>
+  
+  <a class="badge badge-light" href="/tags/sorting/">sorting</a>
+  
+  <a class="badge badge-light" href="/tags/bubblesort/">bubblesort</a>
+  
+  <a class="badge badge-light" href="/tags/selectionsort/">selectionsort</a>
+  
+  <a class="badge badge-light" href="/tags/c/">c</a>
+  
+  <a class="badge badge-light" href="/tags/c&#43;&#43;/">c&#43;&#43;</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191007-qsort-talk-1/">Quick sort(快速排序)杂谈 1</a></li>
+          
+          <li><a href="/post/20191006-mingw-bug/">Mingw 的 Bug</a></li>
+          
+          <li><a href="/post/20191005-first-post/">博客第一文，附hugo表格的坑</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
