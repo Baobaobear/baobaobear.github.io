@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20191009-sorting-2/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20191009-sorting-2/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20191009-sorting-2/">
+  <meta property="og:title" content="插入排序与希尔排序优化思路 | Baobaobear">
+  <meta property="og:description" content="本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2019-10-10T20:52:52&#43;08:00">
+    
+    <meta property="article:modified_time" content="2019-10-10T20:52:52&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20191009-sorting-2/"
+  },
+  "headline": "插入排序与希尔排序优化思路",
+  
+  "datePublished": "2019-10-10T20:52:52+08:00",
+  "dateModified": "2019-10-10T20:52:52+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看\u003ca href=\"../20191008-sorting-1\"\u003e前一篇\u003c/a\u003e。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>插入排序与希尔排序优化思路 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>插入排序与希尔排序优化思路</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Oct 10, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191009-sorting-2/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%ae%97%e6%b3%95">算法</a></span>
+  
+
+  
+    
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看<a href="../20191008-sorting-1">前一篇</a>。</p>
+
+<h2 id="插入排序基本实现">插入排序基本实现</h2>
+
+<p>我们先来看插入排序的基本实现</p>
+
+<pre><code class="language-cpp">void insert_sort(sort_element_t * beg, sort_element_t * end)
+{
+    for (sort_element_t* i = beg + 1; i &lt; end; ++i)
+    {
+        sort_element_t val = *i;
+        sort_element_t* j = i;
+        for (; j &gt; beg &amp;&amp; val &lt; j[-1]; --j)
+        {
+            *j = j[-1];
+        }
+        *j = val;
+    }
+}
+</code></pre>
+
+<p>插入排序即使不做任何优化，效率也明显高于上篇所说的冒泡排序和选择排序。那么按照惯例，先上双向看看效果</p>
+
+<h3 id="插入排序优化-双向插入">插入排序优化，双向插入</h3>
+
+<p>不过双向版本的插入排序可能并不是你想象中那么好写，甚至于有点不太好懂</p>
+
+<p><details>
+<summary>
+  <h4> 点击展开 </h4>
+</summary></p>
+
+<pre><code class="language-cpp">void double_insert_sort(sort_element_t * beg, sort_element_t * end)
+{
+    if (end - beg &gt; 1)
+    {
+        for (sort_element_t* i = beg + 1, *j = end - 1; ; )
+        {
+            sort_element_t val = *i;
+            sort_element_t* t = i;
+            for (; t &gt; beg &amp;&amp; val &lt; t[-1]; --t)
+            {
+                *t = t[-1];
+            }
+            *t = val;
+
+            if (++i &gt; j)
+            {
+                if (*i &lt; *j)
+                    ++j;
+                else
+                    break;
+            }
+
+            val = j[-1];
+            t = j;
+            for (; t &lt; end &amp;&amp; *t &lt; val; ++t)
+            {
+                t[-1] = *t;
+            }
+            t[-1] = val;
+
+            if (i &gt; --j)
+            {
+                if (*j &lt; j[-1])
+                    --i;
+                else
+                    break;
+            }
+        }
+    }
+}
+</code></pre>
+
+<p></details></p>
+
+<p>我们来看看测试结果，在 VS2015 下对 45000 个int排序</p>
+
+<table>
+<thead>
+<tr>
+<th>int</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+<th align="right">9</th>
+<th align="right">10</th>
+<th align="right">Avg</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>insert2</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">376</td>
+<td align="right">165</td>
+<td align="right">174</td>
+<td align="right">176</td>
+<td align="right">177</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">80</td>
+<td align="right">114</td>
+</tr>
+
+<tr>
+<td>insert</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">359</td>
+<td align="right">165</td>
+<td align="right">174</td>
+<td align="right">177</td>
+<td align="right">192</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">86</td>
+<td align="right">115</td>
+</tr>
+
+<tr>
+<td>odd_even</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">575</td>
+<td align="right">1259</td>
+<td align="right">1242</td>
+<td align="right">1224</td>
+<td align="right">532</td>
+<td align="right">0</td>
+<td align="right">2</td>
+<td align="right">855</td>
+<td align="right">568</td>
+</tr>
+
+<tr>
+<td>cocktail</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1252</td>
+<td align="right">1474</td>
+<td align="right">1537</td>
+<td align="right">1611</td>
+<td align="right">642</td>
+<td align="right">1</td>
+<td align="right">2</td>
+<td align="right">813</td>
+<td align="right">733</td>
+</tr>
+
+<tr>
+<td>select2</td>
+<td align="right">0</td>
+<td align="right">1068</td>
+<td align="right">809</td>
+<td align="right">1076</td>
+<td align="right">1082</td>
+<td align="right">1073</td>
+<td align="right">1072</td>
+<td align="right">1074</td>
+<td align="right">1073</td>
+<td align="right">1065</td>
+<td align="right">939</td>
+</tr>
+
+<tr>
+<td>bubble</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1192</td>
+<td align="right">2190</td>
+<td align="right">2220</td>
+<td align="right">2193</td>
+<td align="right">832</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">1376</td>
+<td align="right">1000</td>
+</tr>
+
+<tr>
+<td>select</td>
+<td align="right">2159</td>
+<td align="right">2174</td>
+<td align="right">2157</td>
+<td align="right">2137</td>
+<td align="right">2166</td>
+<td align="right">2160</td>
+<td align="right">2155</td>
+<td align="right">2149</td>
+<td align="right">2146</td>
+<td align="right">2138</td>
+<td align="right">2154</td>
+</tr>
+</tbody>
+</table>
+
+<p>这个优化效果非常不明显，有种吃力不讨好的感觉。那么，我们换个方法，来试试加大步长吧，这个变动让算法有了另一个名字</p>
+
+<h2 id="希尔排序">希尔排序</h2>
+
+<p>希尔排序的坑特别深，你需要有心理准备。希尔排序和梳排序类似，都是通过使用较大的步长让元素更快速地到达正确位置附近，不过在步长的选择上，希尔排序与梳排序差别巨大。首先梳排序的步长选择较为简单，每次乘以0.8即可，这个数字就不要管怎么来的了，我也不知道。梳排序的研究资料较少，但希尔排序则不一样，步长选择的研究非常多，也就是说光是步长的选择就是一门学问，这就是一个大坑，而且这个步长选择对性能的影响十分明显。我们先来看最早的希尔排序版本，最早的版本使用步长每次乘以0.5。</p>
+
+<pre><code class="language-cpp">void shell_sort_0_5(sort_element_t * beg, sort_element_t * end)
+{
+    if (end - beg &gt; 1)
+    {
+        size_t incre = (size_t)(end - beg) / 2;
+        for (; incre &gt;= 1; incre /= 2)
+        {
+            sort_element_t * bound = beg + incre;
+            for (sort_element_t * i = bound; i &lt; end; ++i)
+            {
+                sort_element_t * p = i;
+                sort_element_t val = *i;
+                for (; p &gt;= bound &amp;&amp; val &lt; *(p - incre); p -= incre)
+                    *p = *(p - incre);
+                *p = val;
+            }
+        }
+    }
+}
+</code></pre>
+
+<p>后来，Pratt 与 Knuth 改进了新的<a href="https://oeis.org/A003462" target="_blank">步长序列</a><br />
+<code>1, 4, 13, 40, 121, ...</code><br />
+得到以下代码</p>
+
+<pre><code class="language-cpp">void shell_sort(sort_element_t * beg, sort_element_t * end)
+{
+    if (end - beg &gt; 1)
+    {
+        size_t incre = 1;
+        while (incre &lt; (size_t)(end - beg - 1) / 3)
+            incre = incre * 3 + 1; // A003462, Pratt, 1971, Knuth, 1973
+        for (; incre &gt;= 1; incre /= 3)
+        {
+            sort_element_t * bound = beg + incre;
+            for (sort_element_t * i = bound; i &lt; end; ++i)
+            {
+                sort_element_t * p = i;
+                sort_element_t val = *i;
+                for (; p &gt;= bound &amp;&amp; val &lt; *(p - incre); p -= incre)
+                    *p = *(p - incre);
+                *p = val;
+            }
+        }
+    }
+}
+</code></pre>
+
+<p>更多关于步长的研究可以参考<a href="https://en.wikipedia.org/wiki/Shellsort" target="_blank">维基百科</a>，本篇不对步长做讲解。后文的优化将使用这个版本的代码</p>
+
+<h3 id="希尔排序优化-运用带哨兵的插入排序">希尔排序优化，运用带哨兵的插入排序</h3>
+
+<p>带哨兵的插入排序是什么东西？其实就是指以下这样的插入排序</p>
+
+<pre><code class="language-cpp">void unguarded_insert_sort(sort_element_t * beg, sort_element_t * end)
+{
+    for (sort_element_t* i = beg + 1; i &lt; end; ++i)
+    {
+        sort_element_t val = *i;
+        sort_element_t* j = i;
+        for (; val &lt; j[-1]; --j)
+        {
+            *j = j[-1];
+        }
+        *j = val;
+    }
+}
+</code></pre>
+
+<p>和前面的插入排序的区别在哪？就是少了<code>j &gt; beg &amp;&amp;</code>，不做边界判断。不做边界判断确实能运行得更快，但不会越界吗？我们来考虑以下这种情况<br />
+<code>int arr[8] = {-1, 8, 9, 4, 5, 6, 1, 6};</code><br />
+然后我们排序的时候写<code>unguarded_insert_sort(arr + 1, arr + 8);</code>它就能正确排序而且不会发生越界，因为最前面存在比需要排序的元素都要小的数，而那个数就是哨兵，它充当着让内循环退出的作用，也就是说，在调用这个函数的时候，只要保证beg的左边存在比右边都要小的元素就行了。</p>
+
+<p>有了这个能怎么优化呢？我们把步长1的部分单独拆出来，写成下面这样</p>
+
+<pre><code class="language-cpp">void shell_sort_o1(sort_element_t * beg, sort_element_t * end)
+{
+    if (end - beg &gt; 1)
+    {
+        size_t incre = 1;
+        while (incre &lt; (size_t)(end - beg - 1) / 3)
+            incre = incre * 3 + 1; // A003462, Pratt, 1971, Knuth, 1973
+        for (; incre &gt; 1; incre /= 3)
+        {
+            sort_element_t * bound = beg + incre;
+            for (sort_element_t * i = bound; i &lt; end; ++i)
+            {
+                sort_element_t * p = i;
+                sort_element_t val = *i;
+                for (; p &gt;= bound &amp;&amp; val &lt; *(p - incre); p -= incre)
+                    *p = *(p - incre);
+                *p = val;
+            }
+        }
+        insert_sort(beg, end);
+    }
+}
+</code></pre>
+
+<p>这个能理解吧，步长1的时候完全就是插入排序，但真正厉害的在下面这步，要注意到这种写法在变为步长1之前，它的步长是4，我们可以证明整个数组的最小值一定在前4个数中，即前一个步长的范围内。这里不给出具体证明，有兴趣你可以自己试试证明。有了这个结论，前4个元素用插入排序排好了后，后面的就可以使用<code>unguarded_insert_sort</code>了</p>
+
+<pre><code class="language-cpp">void shell_sort_o2(sort_element_t * beg, sort_element_t * end)
+{
+    if (end - beg &gt; 10)
+    {
+        size_t incre = 1;
+        while (incre &lt; (size_t)(end - beg - 1) / 3)
+            incre = incre * 3 + 1; // A003462, Pratt, 1971, Knuth, 1973
+        for (; incre &gt; 1; incre /= 3)
+        {
+            sort_element_t * bound = beg + incre;
+            for (sort_element_t * i = bound; i &lt; end; ++i)
+            {
+                sort_element_t * p = i;
+                sort_element_t val = *i;
+                for (; p &gt;= bound &amp;&amp; val &lt; *(p - incre); p -= incre)
+                    *p = *(p - incre);
+                *p = val;
+            }
+        }
+        insert_sort(beg, beg + 4);
+        unguarded_insert_sort(beg + 4, end);
+    }
+    else
+    {
+        insert_sort(beg, end);
+    }
+}
+</code></pre>
+
+<p>这个哨兵技巧在其它的排序里面甚至别的问题里同样也会存在。除了这个还有没有别的优化空间呢？例如，shellsort的最优情况下的时间复杂度还是<code>O(nlogn)</code>，那有没有办法使得最优情况时间复杂度下降到<code>O(n)</code>呢？确实有办法，如果在某一轮发现没有数进行交换，那么就立即转成带次数限制的插入排序进行尝试，具体请参阅我的<a href="(https://github.com/Baobaobear/sort)" target="_blank">sort项目</a>。</p>
+
+<h2 id="测试结果">测试结果</h2>
+
+<p>以下是在 VS2015 上对 4,500,000 个int排序的测试</p>
+
+<table>
+<thead>
+<tr>
+<th>int</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">6</th>
+<th align="right">7</th>
+<th align="right">8</th>
+<th align="right">9</th>
+<th align="right">10</th>
+<th align="right">Avg</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>bao_shell</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="right">57</td>
+<td align="right">373</td>
+<td align="right">368</td>
+<td align="right">148</td>
+<td align="right">52</td>
+<td align="right">35</td>
+<td align="right">77</td>
+<td align="right">350</td>
+<td align="right">147</td>
+</tr>
+
+<tr>
+<td>shell_o2</td>
+<td align="right">47</td>
+<td align="right">49</td>
+<td align="right">68</td>
+<td align="right">553</td>
+<td align="right">540</td>
+<td align="right">187</td>
+<td align="right">59</td>
+<td align="right">53</td>
+<td align="right">106</td>
+<td align="right">500</td>
+<td align="right">216</td>
+</tr>
+
+<tr>
+<td>shell_sort</td>
+<td align="right">47</td>
+<td align="right">54</td>
+<td align="right">77</td>
+<td align="right">563</td>
+<td align="right">547</td>
+<td align="right">190</td>
+<td align="right">67</td>
+<td align="right">59</td>
+<td align="right">111</td>
+<td align="right">509</td>
+<td align="right">222</td>
+</tr>
+
+<tr>
+<td>shell_0_5</td>
+<td align="right">80</td>
+<td align="right">89</td>
+<td align="right">114</td>
+<td align="right">606</td>
+<td align="right">601</td>
+<td align="right">236</td>
+<td align="right">82</td>
+<td align="right">89</td>
+<td align="right">143</td>
+<td align="right">572</td>
+<td align="right">261</td>
+</tr>
+
+<tr>
+<td>comb_sort</td>
+<td align="right">166</td>
+<td align="right">161</td>
+<td align="right">180</td>
+<td align="right">492</td>
+<td align="right">477</td>
+<td align="right">214</td>
+<td align="right">171</td>
+<td align="right">169</td>
+<td align="right">223</td>
+<td align="right">478</td>
+<td align="right">273</td>
+</tr>
+</tbody>
+</table>
+
+<p>其中<code>bao_shell</code>是我在<a href="(https://github.com/Baobaobear/sort)" target="_blank">sort项目</a>中写的希尔排序，使用了更优的步长序列，里面包含更多的优化技巧，本篇就不一一介绍了。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/tags/algorithm/">algorithm</a>
+  
+  <a class="badge badge-light" href="/tags/sorting/">sorting</a>
+  
+  <a class="badge badge-light" href="/tags/insertsort/">insertsort</a>
+  
+  <a class="badge badge-light" href="/tags/shellsort/">shellsort</a>
+  
+  <a class="badge badge-light" href="/tags/c/">c</a>
+  
+  <a class="badge badge-light" href="/tags/c&#43;&#43;/">c&#43;&#43;</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191008-sorting-1/">选择和冒泡排序优化思路</a></li>
+          
+          <li><a href="/post/20191007-qsort-talk-1/">Quick sort(快速排序)杂谈 1</a></li>
+          
+          <li><a href="/post/20191006-mingw-bug/">Mingw 的 Bug</a></li>
+          
+          <li><a href="/post/20191005-first-post/">博客第一文，附hugo表格的坑</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

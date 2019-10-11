@@ -499,33 +499,27 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 
 &lt;h3 id=&#34;优化4-梳排序&#34;&gt;优化4，梳排序&lt;/h3&gt;
 
-&lt;p&gt;通过一开始设置较大的步长，让元素能较快移动，然后逐步减少步长，直到1变成普通的冒泡排序为止。这个方法的优点，就是快，相对前面的方法来说飞快&lt;/p&gt;
+&lt;p&gt;通过一开始设置较大的步长，让元素能较快移动，然后逐步减少步长，直到1变成普通的冒泡排序为止。这个方法的优点，就是快，相对前面的方法来说飞快。当然，最后一步你也可以选择不调用冒泡排序，而改调用&lt;code&gt;cocktail_sort&lt;/code&gt;或&lt;code&gt;odd_even_sort&lt;/code&gt;都可以，差别不明显。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void comb_sort(sort_element_t * beg, sort_element_t * end)
 {
     const double shrink_factor = 0.8;
     ptrdiff_t gap = end - beg;
-    int swapped = 0;
-    while (gap &amp;gt; 1 || swapped)
+    while (gap &amp;gt; 1)
     {
         if (gap &amp;gt; 1)
         {
             gap = (ptrdiff_t)(gap * shrink_factor);
             if (gap == 10 || gap == 9)
-            {
                 gap = 11;
-            }
         }
-        swapped = 0;
         for (sort_element_t * i = beg + gap; i &amp;lt; end; ++i)
         {
             if (*i &amp;lt; i[-gap])
-            {
                 sort_element_swap(i, i - gap);
-                swapped = 1;
-            }
         }
     }
+    bubble_sort(beg, end);
 }
 &lt;/code&gt;&lt;/pre&gt;
 
