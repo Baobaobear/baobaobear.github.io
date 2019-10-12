@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2019-10-10T20:52:52&#43;08:00">
+    <meta property="og:updated_time" content="2019-10-12T15:18:00&#43;08:00">
   
 
   
@@ -275,6 +275,28 @@
         
         
 
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
       
       </ul>
       <ul class="navbar-nav ml-auto">
@@ -339,10 +361,22 @@
   
   
   <div>
+    <h2><a href="/post/20191012-binary-skill/">二进制技巧</a></h2>
+    <div class="article-style">
+      
+      二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了
+单行表达式    作用 表达式     把右边连续的1变成0 n &amp; ( n + 1 )   把右边第一个1变成0 n &amp; ( n - 1 )   把右起第一个0变成1 n | ( n + 1 )   把右起连续的0变成1 n | ( n - 1 )   取右边连续的1 n ^ ( n + 1 )   去掉右起第一个1的左边 n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )   高低位交换，前x位 ( n &lt;&lt; x ) | ( x &gt;&gt; ( 32 - x ) )   有符号整数计算绝对值 ( n ^ (n &gt;&gt; 31) ) - (n &gt;&gt; 31)   
+      
+    </div>
+  </div>
+  
+  <div>
     <h2><a href="/post/20191009-sorting-2/">插入排序与希尔排序优化思路</a></h2>
     <div class="article-style">
       
       本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。
+插入排序基本实现 我们先来看插入排序的基本实现
+void insert_sort(sort_element_t * beg, sort_element_t * end) { for (sort_element_t* i = beg + 1; i &lt; end; ++i) { sort_element_t val = *i; sort_element_t* j = i; for (; j &gt; beg &amp;&amp; val &lt; j[-1]; --j) { *j = j[-1]; } *j = val; } }  插入排序即使不做任何优化，效率也明显高于上篇所说的冒泡排序和选择排序。那么按照惯例，先上双向看看效果
 
       
     </div>

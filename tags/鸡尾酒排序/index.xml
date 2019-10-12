@@ -1,0 +1,881 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>鸡尾酒排序 | Baobaobear</title>
+    <link>/tags/%E9%B8%A1%E5%B0%BE%E9%85%92%E6%8E%92%E5%BA%8F/</link>
+      <atom:link href="/tags/%E9%B8%A1%E5%B0%BE%E9%85%92%E6%8E%92%E5%BA%8F/index.xml" rel="self" type="application/rss+xml" />
+    <description>鸡尾酒排序</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Tue, 08 Oct 2019 13:15:36 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>鸡尾酒排序</title>
+      <link>/tags/%E9%B8%A1%E5%B0%BE%E9%85%92%E6%8E%92%E5%BA%8F/</link>
+    </image>
+    
+    <item>
+      <title>选择和冒泡排序优化思路</title>
+      <link>/post/20191008-sorting-1/</link>
+      <pubDate>Tue, 08 Oct 2019 13:15:36 +0800</pubDate>
+      <guid>/post/20191008-sorting-1/</guid>
+      <description>&lt;p&gt;本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有&lt;br /&gt;
+&lt;code&gt;void sort(type arr[], int len)&lt;/code&gt;&lt;br /&gt;
+也许你也见过&lt;br /&gt;
+&lt;code&gt;void sort(iter beg, iter end)&lt;/code&gt;&lt;br /&gt;
+这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 &lt;code&gt;sort(arr, arr + len)&lt;/code&gt; ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 &lt;code&gt;sort(arr, arr + len - 1)&lt;/code&gt; 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以&lt;br /&gt;
+&lt;code&gt;void sort(iter beg, iter end)&lt;/code&gt;&lt;br /&gt;
+这种方式写的，至于这样写有什么好处，接下来我们就看示例。&lt;/p&gt;
+
+&lt;h2 id=&#34;选择排序&#34;&gt;选择排序&lt;/h2&gt;
+
+&lt;h3 id=&#34;基本实现&#34;&gt;基本实现&lt;/h3&gt;
+
+&lt;p&gt;我们先来看选择排序，因为它编写简单，而且最不容易出错，我们来看以下两种不同的接口写法，我们定义要排序的数据类型名字是&lt;code&gt;sort_element_t&lt;/code&gt;，定义交换函数&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void sort_element_swap(sort_element_t *x, sort_element_t *y)
+{
+    sort_element_t t = *x;
+    *x = *y;
+    *y = t;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;具体实现&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void select_sort(sort_element_t arr[], size_t len) //方式1
+{
+    for (size_t i = 0; i &amp;lt; len; ++i)
+    {
+        size_t head = i;
+        for (size_t j = i + 1; j &amp;lt; len; ++j)
+        {
+            if (arr[j] &amp;lt; arr[head])
+                head = j;
+        }
+        sort_element_swap(arr + i, arr + head);
+    }
+}
+
+void select_sort(sort_element_t * beg, sort_element_t * end) //方式2
+{
+    for (; beg &amp;lt; end; ++beg)
+    {
+        sort_element_t* head = beg;
+        for (sort_element_t* i = beg + 1; i &amp;lt; end; ++i)
+        {
+            if (*i &amp;lt; *head)
+                head = i;
+        }
+        sort_element_swap(beg, head);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;就这么一眼看过去，看起来还真差不多，这样，我们再细分一下，选择排序的中间那步，其实就是找一个最小的元素，我们单独提取成一个独立函数再来看看&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;//方式1
+size_t find_min(sort_element_t arr[], size_t beg, size_t len)
+{
+    size_t head = beg;
+    for (size_t j = beg + 1; j &amp;lt; len; ++j)
+    {
+        if (arr[j] &amp;lt; arr[head])
+            head = j;
+    }
+    return head;
+}
+
+void select_sort(sort_element_t arr[], size_t len)
+{
+    for (size_t i = 0; i &amp;lt; len; ++i)
+    {
+        sort_element_swap(arr + i, arr + find_min(arr, i, len));
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;//方式2
+sort_element_t* find_min(sort_element_t * beg, sort_element_t * end)
+{
+    sort_element_t* head = beg;
+    for (sort_element_t* i = beg + 1; i &amp;lt; end; ++i)
+    {
+        if (*i &amp;lt; *head)
+            head = i;
+    }
+    return head;
+}
+
+void select_sort(sort_element_t * beg, sort_element_t * end)
+{
+    for (; beg &amp;lt; end; ++beg)
+    {
+        sort_element_swap(beg, find_min(beg, end));
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;仔细观察一下，是不是第二种写法函数参数统一，而且参数数量少，而且也少了很多不必要的加法运算（像方法一需要写&lt;code&gt;arr + i&lt;/code&gt;这类）。如果你说方法一的find_min参数也可以只写两个，写成&lt;code&gt;find_min(sort_element_t arr[], size_t len)&lt;/code&gt;，那么你在调用的地方将不得不写成&lt;code&gt;find_min(arr + i, len - i)&lt;/code&gt;，这种又加又减在遇到更复杂的情况的时候，更容易把你弄晕出Bug。总之结论是最好把参数写成两个指针（或两个迭代器）的形式，不建议使用数组加长度的形式，STL的接口也全使用迭代器的形式。&lt;/p&gt;
+
+&lt;p&gt;对于这个排序要注意的一点是，有人会写成类似下面的形式：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void select_sort(sort_element_t arr[], size_t len)
+{
+	for (size_t j = 0; j &amp;lt; len; ++j)
+	{
+		for (size_t i = j + 1; i &amp;lt; len; ++i)
+		{
+			if (arr[j] &amp;gt; arr[i])
+			{
+				sort_element_t t = arr[j];
+				arr[j] = arr[i];
+				arr[i] = t;
+			}
+		}
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以上这种叫做劣化版的选择排序，在大多数的情况下会比前一个方法慢，极端条件下甚至会慢1倍甚至更多&lt;/p&gt;
+
+&lt;p&gt;那说完劣化再讲优化，选择排序的时间复杂度是O(n^2)，而且运行时间与原来的排列完全无关。以上的选择排序总是选择小的，那大小一起选呢？能不能起到优化的作用？如果你单纯的多写一个find_max变成双向选择来做，在VS2005下是没有优化效果的，我测试过了。那应该怎么样呢？确实还是双向选择，不过具体实现稍有点不同。&lt;/p&gt;
+
+&lt;h3 id=&#34;优化1-双向选择&#34;&gt;优化1，双向选择&lt;/h3&gt;
+
+&lt;p&gt;这里的实现是一个函数里同时把最大最小一起找，这样减少了一次遍历的过程，时间能减半之余，还有一个非常有用的优化，就是当你发现最大值等于最小值的时候能提前跳出&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;sort_element_t* find_min_max(
+    sort_element_t * beg,
+    sort_element_t * end,
+    sort_element_t** head_max)
+{
+    sort_element_t* head = beg;
+    *head_max = beg;
+    for (sort_element_t* i = beg + 1; i &amp;lt; end; ++i)
+    {
+        if (*i &amp;lt; *head)
+            head = i;
+        else if (**head_max &amp;lt; *i)
+            *head_max = i;
+    }
+    return head;
+}
+
+void double_select_sort(sort_element_t * beg, sort_element_t * end)
+{
+    while (end - beg &amp;gt; 1)
+    {
+        sort_element_t * head_max, * head = find_min_max(beg, end, &amp;amp;head_max);
+        if (head_max != head)
+        {
+            if (head_max == beg)
+                head_max = head;
+            sort_element_swap(beg++, head);
+            sort_element_swap(--end, head_max);
+        }
+        else
+        {
+            break;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;与选择排序的运行时间比较如下，排序45000个int，编译环境是VS2015，用10组不同分布的数据，表格中的数字单位是毫秒，即排序用时&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;6&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;7&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;8&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;9&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;10&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;select2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1114&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;834&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1113&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1124&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1124&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1119&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1124&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1124&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1141&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;981&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;select&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2213&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2238&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2227&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2229&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2256&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2242&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2238&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2241&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2245&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2260&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2238&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;合理运用双向，效果也往往不错，但是千万要注意，环境不同会导致测试结果不相同，例如你换到mingw上使用-O3编译那么将会是select比select2快，所以上面数据只供参考，具体结果请自己做测试。&lt;/p&gt;
+
+&lt;h3 id=&#34;优化2-数据结构&#34;&gt;优化2，数据结构&lt;/h3&gt;
+
+&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是O(n)，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成O(1)，而维护这个数据结构的代价是O(logn)的话，总体时间复杂度将变为O(nlogn)，这比起选择排序的O(n^2)就是一个巨大的变化，具体内容在之后的 &lt;strong&gt;堆排序&lt;/strong&gt; 篇具体讲解。&lt;/p&gt;
+
+&lt;h2 id=&#34;冒泡排序&#34;&gt;冒泡排序&lt;/h2&gt;
+
+&lt;h3 id=&#34;基本实现-1&#34;&gt;基本实现&lt;/h3&gt;
+
+&lt;p&gt;冒泡排序是我们课本必然介绍的一个排序，相对于选择排序，这种在编写的时候更容易出现逻辑错误，我们先来看典型的实现（双迭代器实现）&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void bubble_sort(sort_element_t * beg, sort_element_t * end)
+{
+    for (; beg &amp;lt; end; --end)
+    {
+        for (sort_element_t * i = beg + 1; i &amp;lt; end; ++i)
+        {
+            if (*i &amp;lt; i[-1])
+                sort_element_swap(i - 1, i);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;冒泡排序这种写法，铁定的O(n^2)时间没跑，不过好在冒泡排序的优化方法也不少。&lt;/p&gt;
+
+&lt;h3 id=&#34;优化1-提前跳出&#34;&gt;优化1，提前跳出&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void bubble_sort(sort_element_t * beg, sort_element_t * end)
+{
+    for (; beg &amp;lt; end; --end)
+    {
+        int sorted = 1;
+        for (sort_element_t * i = beg + 1; i &amp;lt; end; ++i)
+        {
+            if (*i &amp;lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (sorted)
+            break;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;通过sorted变量记录某一轮是不是存在交换，如果没有交换则表明数据已经是有序的，可以提前退出循环。有这个优化对于已经有序的数据，冒泡排序将运行得特别快，即最优情况时间复杂度只有O(n)&lt;/p&gt;
+
+&lt;h3 id=&#34;优化2-鸡尾酒排序&#34;&gt;优化2，鸡尾酒排序&lt;/h3&gt;
+
+&lt;p&gt;前面的冒泡写法是单向冒泡，把最大值向最右边移，这回我们做成双向，一边把最大值右移，一边把最小值左移，不过这种方法有另一个命名，叫做鸡尾酒排序&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void cocktail_sort(sort_element_t * beg, sort_element_t * end)
+{
+    while (beg &amp;lt; end)
+    {
+        int sorted = 1;
+        for (sort_element_t * i = beg + 1; i &amp;lt; end; ++i)
+        {
+            if (*i &amp;lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (sorted)
+            break;
+        --end;
+
+        sorted = 1;
+        for (sort_element_t * i = end - 1; i &amp;gt; beg; --i)
+        {
+            if (*i &amp;lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (sorted)
+            break;
+        ++beg;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;那改成双向就真的有提升了吗？我们看实测，排序45000个int，用10组不同分布的数据，表格中的数字单位是毫秒，即排序用时&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;6&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;7&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;8&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;9&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;10&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;cocktail&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1313&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1502&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1614&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1674&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;671&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;836&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;761&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;bubble&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1245&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2286&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2329&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2332&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;871&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1459&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1052&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;其中第4组是乱序无重复数值的数据，最有代表性的一列。从中可以看到，cocktail比起bubble能节省30%的时间&lt;/p&gt;
+
+&lt;p&gt;让我们再脑洞大开，除了可以双向，还有一种对CPU执行有利的优化方式&lt;/p&gt;
+
+&lt;h3 id=&#34;优化3-奇偶排序&#34;&gt;优化3，奇偶排序&lt;/h3&gt;
+
+&lt;p&gt;这种排序的排序方式见下表，假设有8个数，奇数轮比较(1,2), (3,4), (5,6), (7,8)，偶数轮比较(2,3), (4,5), (6,7)，如此循环，直到没有交换为止&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;轮次&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;6&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;7&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;8&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;具体实现代码如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void odd_even_sort(sort_element_t * beg, sort_element_t * end)
+{
+    int sorted = 0, last_sorted = 0;
+    while (sorted == 0)
+    {
+        last_sorted = sorted;
+        sorted = 1;
+        for (sort_element_t * i = beg + 1; i &amp;lt; end; i += 2)
+        {
+            if (*i &amp;lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (last_sorted &amp;amp;&amp;amp; sorted)
+            break;
+
+        last_sorted = sorted;
+        sorted = 1;
+        for (sort_element_t * i = beg + 2; i &amp;lt; end; i += 2)
+        {
+            if (*i &amp;lt; i[-1])
+            {
+                sort_element_swap(i - 1, i);
+                sorted = 0;
+            }
+        }
+        if (last_sorted &amp;amp;&amp;amp; sorted)
+            break;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;让我们再脑洞大开，除了比较方向，好像我们有一个条件没有考虑上，就是冒泡排序总是相邻元素的比较，那么如果不相邻地比较呢？&lt;/p&gt;
+
+&lt;h3 id=&#34;优化4-梳排序&#34;&gt;优化4，梳排序&lt;/h3&gt;
+
+&lt;p&gt;通过一开始设置较大的步长，让元素能较快移动，然后逐步减少步长，直到1变成普通的冒泡排序为止。这个方法的优点，就是快，相对前面的方法来说飞快。当然，最后一步你也可以选择不调用冒泡排序，而改调用&lt;code&gt;cocktail_sort&lt;/code&gt;或&lt;code&gt;odd_even_sort&lt;/code&gt;都可以，差别不明显。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void comb_sort(sort_element_t * beg, sort_element_t * end)
+{
+    const double shrink_factor = 0.8;
+    ptrdiff_t gap = end - beg;
+    while (gap &amp;gt; 1)
+    {
+        if (gap &amp;gt; 1)
+        {
+            gap = (ptrdiff_t)(gap * shrink_factor);
+            if (gap == 10 || gap == 9)
+                gap = 11;
+        }
+        for (sort_element_t * i = beg + gap; i &amp;lt; end; ++i)
+        {
+            if (*i &amp;lt; i[-gap])
+                sort_element_swap(i, i - gap);
+        }
+    }
+    bubble_sort(beg, end);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;完整测试&#34;&gt;完整测试&lt;/h2&gt;
+
+&lt;p&gt;在完整测试里你会发现一些和你想象中完全不一样的情况，可不要以为你的“优化”一定就是优化&lt;/p&gt;
+
+&lt;h3 id=&#34;vs2005下的运行时间比较-按avg平均值排序&#34;&gt;VS2005下的运行时间比较（按Avg平均值排序）&lt;/h3&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;6&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;7&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;8&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;9&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;10&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;combsort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;odd_even&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;574&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1315&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1315&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1222&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;557&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;878&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;586&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;cocktail&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1313&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1502&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1614&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1674&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;671&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;836&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;761&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;select2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1114&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;834&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1113&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1124&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1124&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1119&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1124&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1124&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1141&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;981&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;bubble&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1245&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2286&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2329&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2332&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;871&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1459&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1052&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;select&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2213&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2238&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2227&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2229&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2256&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2242&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2238&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2241&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2245&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2260&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2238&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;如果你只测试随机数据，那么排序应该是&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;combsort &amp;lt;&amp;lt; select2 &amp;lt; odd_even &amp;lt; cocktail &amp;lt; select &amp;lt; bubble&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;在mingw64-gcc8-下使用-o3-编译-最大优化-的运行时间比较&#34;&gt;在mingw64(gcc8)下使用&lt;code&gt;-O3&lt;/code&gt;编译（最大优化）的运行时间比较&lt;/h3&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;6&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;7&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;8&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;9&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;10&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;combsort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;select&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;497&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;497&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;434&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;501&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;501&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;500&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;501&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;503&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;500&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;502&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;493&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;odd_even&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;564&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1311&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1264&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1217&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;562&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;882&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;580&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;cocktail&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1242&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1515&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1610&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1677&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;669&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;837&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;755&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;select2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1114&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;837&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1114&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1114&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1112&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1114&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1113&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1112&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1114&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;974&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;bubble&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1247&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2312&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2332&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2338&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;951&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1455&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1063&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;你可以发现，找最小值过程在mingw64下被特别照顾了一下，结果它比其它的明显要快，你可以从中得知，如果你想在mingw下写出运行得快的双向选择排序，如果你的想法是再写一个&lt;code&gt;find_max&lt;/code&gt;函数，那对不起，这样是没有优化效果的。但这不是全部，还有让你更大跌眼镜的情况。&lt;/p&gt;
+
+&lt;h3 id=&#34;在mingw64-gcc8-下使用-o1-编译-基本优化-的运行时间比较&#34;&gt;在mingw64(gcc8)下使用&lt;code&gt;-O1&lt;/code&gt;编译（基本优化）的运行时间比较&lt;/h3&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;6&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;7&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;8&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;9&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;10&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;combsort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;select2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;263&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;375&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;256&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;260&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;258&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;255&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;254&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;531&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;255&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;270&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;odd_even&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;597&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1287&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1256&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1204&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1368&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;780&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;649&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;cocktail&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1244&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1504&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1594&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1656&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1081&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;815&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;789&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;bubble&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1241&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2091&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2117&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2115&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;685&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1247&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;949&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;select&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2233&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2233&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2232&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2231&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2232&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2224&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2229&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2229&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2225&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2232&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2230&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;现在双向选择不但最快，而且还比&lt;code&gt;-O3&lt;/code&gt;下的快得多。老实说，会造成这种奇怪的结果，&lt;code&gt;-O1&lt;/code&gt;比&lt;code&gt;-O3&lt;/code&gt;还快的原因还真不要问我，找开发gcc/mingw的开发者。&lt;/p&gt;
+
+&lt;p&gt;最后还是忠告一句，千万不要在一个编译器某个编译参数上看到有优化效果，就以为是事实，优化的坑远比你想象的要来得深，并不是你以为优化了它就一定变快了，编译器和编译参数以及运行环境才是你的老大。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

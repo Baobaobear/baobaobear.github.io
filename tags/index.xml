@@ -5,7 +5,7 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 10 Oct 2019 20:52:52 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 12 Oct 2019 15:18:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Tags</title>
@@ -13,17 +13,9 @@
     </image>
     
     <item>
-      <title>algorithm</title>
-      <link>/tags/algorithm/</link>
-      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
-      <guid>/tags/algorithm/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>c</title>
       <link>/tags/c/</link>
-      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
+      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
       <guid>/tags/c/</guid>
       <description></description>
     </item>
@@ -31,48 +23,96 @@
     <item>
       <title>c&#43;&#43;</title>
       <link>/tags/c&#43;&#43;/</link>
-      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
+      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
       <guid>/tags/c&#43;&#43;/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>insertsort</title>
-      <link>/tags/insertsort/</link>
-      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
-      <guid>/tags/insertsort/</guid>
+      <title>cheat sheet</title>
+      <link>/tags/cheat-sheet/</link>
+      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
+      <guid>/tags/cheat-sheet/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>shellsort</title>
-      <link>/tags/shellsort/</link>
-      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
-      <guid>/tags/shellsort/</guid>
+      <title>二进制</title>
+      <link>/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6/</link>
+      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
+      <guid>/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>sorting</title>
-      <link>/tags/sorting/</link>
-      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
-      <guid>/tags/sorting/</guid>
+      <title>算法</title>
+      <link>/tags/%E7%AE%97%E6%B3%95/</link>
+      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
+      <guid>/tags/%E7%AE%97%E6%B3%95/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>bubblesort</title>
-      <link>/tags/bubblesort/</link>
+      <title>希尔排序</title>
+      <link>/tags/%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
+      <guid>/tags/%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>排序</title>
+      <link>/tags/%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
+      <guid>/tags/%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>插入排序</title>
+      <link>/tags/%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
+      <guid>/tags/%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>冒泡排序</title>
+      <link>/tags/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F/</link>
       <pubDate>Tue, 08 Oct 2019 13:15:36 +0800</pubDate>
-      <guid>/tags/bubblesort/</guid>
+      <guid>/tags/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>selectionsort</title>
-      <link>/tags/selectionsort/</link>
+      <title>奇偶排序</title>
+      <link>/tags/%E5%A5%87%E5%81%B6%E6%8E%92%E5%BA%8F/</link>
       <pubDate>Tue, 08 Oct 2019 13:15:36 +0800</pubDate>
-      <guid>/tags/selectionsort/</guid>
+      <guid>/tags/%E5%A5%87%E5%81%B6%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>梳排序</title>
+      <link>/tags/%E6%A2%B3%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Tue, 08 Oct 2019 13:15:36 +0800</pubDate>
+      <guid>/tags/%E6%A2%B3%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>选择排序</title>
+      <link>/tags/%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Tue, 08 Oct 2019 13:15:36 +0800</pubDate>
+      <guid>/tags/%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>鸡尾酒排序</title>
+      <link>/tags/%E9%B8%A1%E5%B0%BE%E9%85%92%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Tue, 08 Oct 2019 13:15:36 +0800</pubDate>
+      <guid>/tags/%E9%B8%A1%E5%B0%BE%E9%85%92%E6%8E%92%E5%BA%8F/</guid>
       <description></description>
     </item>
     
@@ -85,10 +125,10 @@
     </item>
     
     <item>
-      <title>quicksort</title>
-      <link>/tags/quicksort/</link>
+      <title>快速排序</title>
+      <link>/tags/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</link>
       <pubDate>Mon, 07 Oct 2019 14:18:22 +0800</pubDate>
-      <guid>/tags/quicksort/</guid>
+      <guid>/tags/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</guid>
       <description></description>
     </item>
     
@@ -125,10 +165,10 @@
     </item>
     
     <item>
-      <title>table</title>
-      <link>/tags/table/</link>
+      <title>表格</title>
+      <link>/tags/%E8%A1%A8%E6%A0%BC/</link>
       <pubDate>Sat, 05 Oct 2019 23:12:10 +0800</pubDate>
-      <guid>/tags/table/</guid>
+      <guid>/tags/%E8%A1%A8%E6%A0%BC/</guid>
       <description></description>
     </item>
     

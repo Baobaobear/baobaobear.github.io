@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>笔记 | Baobaobear</title>
+    <link>/categories/%E7%AC%94%E8%AE%B0/</link>
+      <atom:link href="/categories/%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" />
+    <description>笔记</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 12 Oct 2019 15:18:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>笔记</title>
+      <link>/categories/%E7%AC%94%E8%AE%B0/</link>
+    </image>
+    
+    <item>
+      <title>二进制技巧</title>
+      <link>/post/20191012-binary-skill/</link>
+      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
+      <guid>/post/20191012-binary-skill/</guid>
+      <description>&lt;p&gt;二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了&lt;/p&gt;
+
+&lt;h2 id=&#34;单行表达式&#34;&gt;单行表达式&lt;/h2&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;作用&lt;/th&gt;
+&lt;th&gt;表达式&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;把右边连续的1变成0&lt;/td&gt;
+&lt;td&gt;n &amp;amp; ( n + 1 )&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;把右边第一个1变成0&lt;/td&gt;
+&lt;td&gt;n &amp;amp; ( n - 1 )&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;把右起第一个0变成1&lt;/td&gt;
+&lt;td&gt;n | ( n + 1 )&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;把右起连续的0变成1&lt;/td&gt;
+&lt;td&gt;n | ( n - 1 )&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;取右边连续的1&lt;/td&gt;
+&lt;td&gt;n ^ ( n + 1 )&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;去掉右起第一个1的左边&lt;/td&gt;
+&lt;td&gt;n &amp;amp; -n 或 n &amp;amp; ( n ^ ( n - 1 ) )&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;高低位交换，前x位&lt;/td&gt;
+&lt;td&gt;( n &amp;lt;&amp;lt; x ) | ( x &amp;gt;&amp;gt; ( 32 - x ) )&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;有符号整数计算绝对值&lt;/td&gt;
+&lt;td&gt;( n ^ (n &amp;gt;&amp;gt; 31) ) - (n &amp;gt;&amp;gt; 31)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&#34;多行的技巧&#34;&gt;多行的技巧&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-两数交换不使用第三个变量&#34;&gt;1. 两数交换不使用第三个变量&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void swap(int* a, int* b)
+{
+    *a ^= *b;
+    *b ^= *a;
+    *a ^= *b;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-奇偶校验码&#34;&gt;2. 奇偶校验码&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int check_bit(int n)
+{
+    n ^= n &amp;gt;&amp;gt; 1;
+    n ^= n &amp;gt;&amp;gt; 2;
+    n ^= n &amp;gt;&amp;gt; 4;
+    n ^= n &amp;gt;&amp;gt; 8;
+    n ^= n &amp;gt;&amp;gt; 16;
+    return n &amp;amp; 1;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;3-计算二进制中的1的个数&#34;&gt;3. 计算二进制中的1的个数&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;uint32_t method_1_uint32_count1(uint32_t n)
+{
+	n = (n &amp;amp; 0x55555555) + ((n &amp;gt;&amp;gt; 1) &amp;amp; 0x55555555);
+	n = (n &amp;amp; 0x33333333) + ((n &amp;gt;&amp;gt; 2) &amp;amp; 0x33333333);
+	n = (n &amp;amp; 0x0f0f0f0f) + ((n &amp;gt;&amp;gt; 4) &amp;amp; 0x0f0f0f0f);
+	n = (n &amp;amp; 0x00ff00ff) + ((n &amp;gt;&amp;gt; 8) &amp;amp; 0x00ff00ff);
+	n = (n &amp;amp; 0x0000ffff) + ((n &amp;gt;&amp;gt; 16) &amp;amp; 0x0000ffff);
+	return n;
+}
+
+uint32_t method_2_uint32_count1(uint32_t n)
+{
+	n = n - ((n &amp;gt;&amp;gt; 1) &amp;amp; 0x55555555);
+	n = (n &amp;amp; 0x33333333) + ((n &amp;gt;&amp;gt; 2) &amp;amp; 0x33333333);
+	n = (n + (n &amp;gt;&amp;gt; 4)) &amp;amp; 0x0f0f0f0f;
+	n = n + (n &amp;gt;&amp;gt; 8);
+	n = n + (n &amp;gt;&amp;gt; 16);
+	return n &amp;amp; 0x3f;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-计算下一组合&#34;&gt;4. 计算下一组合&lt;/h3&gt;
+
+&lt;p&gt;前提：我们使用一个整数的二进制位来代表对应集合上的元素有没有选中，从而来表达一个组合。当我们要遍历所有组合的时候，就可以用这个办法了&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int next_combination(int k)
+{
+    int b = k &amp;amp; -k, t = (k + b);
+    return (((t ^ k) &amp;gt;&amp;gt; 2) / b) | t;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;5-n皇后问题位运算实现&#34;&gt;5. n皇后问题位运算实现&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;uint64_t queen(uint32_t row, uint32_t lb, uint32_t rb)
+{
+    if (row == 0)
+        return 1;
+    uint64_t sum = 0;
+    for (uint32_t r = row; r; r &amp;amp;= r - 1)
+    {
+        uint32_t p = r ^ (r &amp;amp; (r - 1));
+        if ((p &amp;amp; lb) == 0 &amp;amp;&amp;amp; (p &amp;amp; rb) == 0)
+            sum += queen(row ^ p, (lb | p) &amp;lt;&amp;lt; 1, (rb | p) &amp;gt;&amp;gt; 1);
+    }
+    return sum;
+}
+
+uint64_t nqueen(int n) // 返回值为棋盘大小n时解的个数
+{
+    return queen(((uint32_t)1 &amp;lt;&amp;lt; n) - 1, 0, 0);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;6-古老的快速平方根倒数&#34;&gt;6. 古老的快速平方根倒数&lt;/h3&gt;
+
+&lt;p&gt;求 &lt;code&gt;1/sqrt(n)&lt;/code&gt;，这段代码出自Quake-III Arena (雷神之锤3)源代码 &lt;code&gt;/game/code/q_math.c&lt;/code&gt;，针对 IEEE 754 标准的单精度浮点格式&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;float Q_rsqrt( float number )
+{
+    long i;
+    float x2, y;
+    const float threehalfs = 1.5F;
+
+    x2 = number * 0.5F;
+    y  = number;
+    i  = * ( long * ) &amp;amp;y;                       // evil floating point bit level hacking
+    i  = 0x5f3759df - ( i &amp;gt;&amp;gt; 1 );               // what the fuck?
+    y  = * ( float * ) &amp;amp;i;
+    y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+//  y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+
+#ifndef Q3_VM
+#ifdef __linux__
+    assert( !isnan(y) ); // bk010122 - FPE?
+#endif
+#endif
+	return y;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注：使用常数 0x5f375a86 可以使得结果误差更小，详见&lt;a href=&#34;https://en.wikipedia.org/wiki/Fast_inverse_square_root&#34; target=&#34;_blank&#34;&gt;维基百科&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;7-绘画sierpinski三角&#34;&gt;7. 绘画Sierpinski三角&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;stdio.h&amp;gt;
+int main(void)
+{
+    const int n = (1 &amp;lt;&amp;lt; 5);
+    for (int i = 0; i &amp;lt; n; ++i)
+    {
+        for (int j = 0; j &amp;lt;= i; ++j)
+           putchar( ( i &amp;amp; j ) == j ? &#39;#&#39; : &#39; &#39;);
+        printf(&amp;quot;\n&amp;quot;);
+    }
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;输出结果&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-text&#34;&gt;#
+##
+# #
+####
+#   #
+##  ##
+# # # #
+########
+#       #
+##      ##
+# #     # #
+####    ####
+#   #   #   #
+##  ##  ##  ##
+# # # # # # # #
+################
+#               #
+##              ##
+# #             # #
+####            ####
+#   #           #   #
+##  ##          ##  ##
+# # # #         # # # #
+########        ########
+#       #       #       #
+##      ##      ##      ##
+# #     # #     # #     # #
+####    ####    ####    ####
+#   #   #   #   #   #   #   #
+##  ##  ##  ##  ##  ##  ##  ##
+# # # # # # # # # # # # # # # #
+################################
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
