@@ -5,7 +5,7 @@
     <link>/tags/%E7%AE%97%E6%B3%95/</link>
       <atom:link href="/tags/%E7%AE%97%E6%B3%95/index.xml" rel="self" type="application/rss+xml" />
     <description>算法</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 12 Oct 2019 15:18:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 16 Dec 2019 18:23:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>算法</title>
@@ -13,11 +13,3406 @@
     </image>
     
     <item>
+      <title>扩展KMP与Manacher</title>
+      <link>/post/20191216-kmp-manacher/</link>
+      <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
+      <guid>/post/20191216-kmp-manacher/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;../20191028-kmp/&#34;&gt;KMP&lt;/a&gt;已经介绍过了，这次主要介绍的是Manacher&lt;/p&gt;
+
+&lt;h2 id=&#34;最长回文子串&#34;&gt;最长回文子串&lt;/h2&gt;
+
+&lt;p&gt;Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。&lt;/p&gt;
+
+&lt;p&gt;先定义数组v，&lt;code&gt;v[i]&lt;/code&gt;表示以第i个字符为中心，到回文串一端的距离，我们以字符串&lt;code&gt;&amp;quot;acabacab&amp;quot;&lt;/code&gt;为例，如下表（index是下标）&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针&lt;/p&gt;
+
+&lt;p&gt;然后++i，注意这时候，由于以字符b两边是对称的，所以在求&lt;code&gt;v[4]&lt;/code&gt;的值的时候，可以先查&lt;code&gt;v[2]&lt;/code&gt;的值，是1，所以&lt;code&gt;v[4]&lt;/code&gt;也是1&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;再继续++i，同样的，在求&lt;code&gt;v[5]&lt;/code&gt;的值的时候，可以先查&lt;code&gt;v[1]&lt;/code&gt;的值，是2，但是，这个长度达到了e指针的位置，即&lt;code&gt;i+2&amp;gt;=e&lt;/code&gt;，这时候就更新指针m，并扩展e的位置，即比较&lt;code&gt;str[7]&lt;/code&gt;与&lt;code&gt;str[3]&lt;/code&gt;，找到以下标5为中心的回文串边界。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;然后，&lt;code&gt;v[5]&lt;/code&gt;的值就是&lt;code&gt;e-i&lt;/code&gt;，再接着，求&lt;code&gt;v[6]&lt;/code&gt;的值就查&lt;code&gt;v[4]&lt;/code&gt;的&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;再接着，求&lt;code&gt;v[7]&lt;/code&gt;的值就查&lt;code&gt;v[3]&lt;/code&gt;的，不过&lt;code&gt;v[3]&lt;/code&gt;的值是4，而&lt;code&gt;i+4&amp;gt;=e&lt;/code&gt;又满足了，就再次更新指针m，并扩展e&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;最后得到的v数组最大值乘以2减1就是答案，以上指针在算法里只增不减，所以时间复杂度是 $O(n)$ 。但问题是，这只能求出奇数长度的回文串，所以，这里用到一个技巧，把原来的字符串&lt;code&gt;&amp;quot;acabacab&amp;quot;&lt;/code&gt;转成&lt;code&gt;&amp;quot;a#c#a#b#a#c#a#b&amp;quot;&lt;/code&gt;，其中#号是任意一个在原字符串中不会出现的字符，这样一来，任意原串的回文串都存在中心字符了。&lt;/p&gt;
+
+&lt;p&gt;还有一个细节，如果要计算的串是&lt;code&gt;&amp;quot;a&amp;quot;&lt;/code&gt;，那么回文串的长度应该是1，但是，在这个算法里，会产生越界访问，因为要判断字符a后面的&lt;code&gt;&#39;\0&#39;&lt;/code&gt;是不是与a前面的字符相同，如果正好都是&lt;code&gt;&#39;\0&#39;&lt;/code&gt;，就会导致计算错误。所以，计算的时候还要对原来的字符串在最前面添加第二个在原字符串中不会出现的字符，例如转成&lt;code&gt;&amp;quot;$a#c#a#b#a#c#a#b&amp;quot;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;扩展kmp模板和manacher模板对比&#34;&gt;扩展KMP模板和Manacher模板对比&lt;/h2&gt;
+
+&lt;p&gt;代码高度相似，你看看就知道了&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void extkmp_z(const char* str, int z[])
+{
+    int s_len = strlen(str);
+    z[0] = s_len;
+    for (int i = 1, p = 1, e = 1; i &amp;lt; s_len; ++i)
+    {
+        if (i + z[i - p] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &amp;lt; s_len &amp;amp;&amp;amp; str[e] == str[e - i])
+                ++e;
+
+            z[i] = e - i;
+        }
+        else
+            z[i] = z[i - p];
+    }
+}
+
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, p = 0, e = 0; i &amp;lt; s_len; ++i)
+    {
+        if (i + z[i - p] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &amp;lt; s_len &amp;amp;&amp;amp; str[e] == pattern[e - i])
+                ++e;
+
+            ext[i] = e - i;
+        }
+        else
+            ext[i] = z[i - p];
+    }
+}
+
+void init_str(const char* str, char* t)
+{
+    int len = strlen(str);
+    t[0] = &#39;$&#39;;
+    t[1] = &#39;#&#39;;
+    for (int i = 0; str[i]; ++i)
+    {
+        t[(i + 1) &amp;lt;&amp;lt; 1] = str[i];
+        t[((i + 1) &amp;lt;&amp;lt; 1) + 1] = &#39;#&#39;;
+    }
+    t[(len + 1) &amp;lt;&amp;lt; 1] = 0;
+}
+
+int manacher(const char* s, int v[])
+{
+    int len = strlen(s);
+    int max_len = 0;
+    v[0] = 1;
+    v[1] = 1;
+    for (int i = 1, m = 1, e = 1; i &amp;lt; len; ++i)
+    {
+        if (i + v[m - (i - m)] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            m = i;
+
+            while (e &amp;lt; len &amp;amp;&amp;amp; s[e] == s[i - (e - i)])
+                ++e;
+
+            v[i] = e - i;
+        }
+        else
+            v[i] = v[m - (i - m)];
+        max_len = std::max(max_len, v[i]);
+    }
+    return max_len - 1;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以上是第一种写法的模板，再对比写法二&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, l = 0, r = 0; i &amp;lt; s_len; ++i)
+    {
+        if (i &amp;lt; r)
+        {
+            ext[i] = std::min(r - i, z[i - l]);
+        }
+        else
+        {
+            ext[i] = 0;
+        }
+        while (i + ext[i] &amp;lt; s_len &amp;amp;&amp;amp; str[i + ext[i]] == pattern[ext[i]])
+        {
+            ++ext[i];
+        }
+        if (i + ext[i] &amp;gt; r)
+        {
+            r = i + ext[i];
+            l = i;
+        }
+    }
+}
+
+int manacher(const char* s, int v[])
+{
+    int len = strlen(s);
+    int max_len = 0;
+    for (int i = 1, m = 1, r = 1; i &amp;lt; len; ++i)
+    {
+        if (i &amp;lt; r)
+        {
+            v[i] = std::min(v[m - (i - m)], r - i);
+        }
+        else
+        {
+            v[i] = 1;
+        }
+        while (s[i + v[i]] == s[i - v[i]])
+        {
+            ++v[i];
+        }
+        if (i + v[i] &amp;gt; r)
+        {
+            r = i + v[i];
+            m = i;
+        }
+        max_len = std::max(max_len, v[i]);
+    }
+    return max_len - 1;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;其它解法&#34;&gt;其它解法&lt;/h2&gt;
+
+&lt;p&gt;用后缀数组来解回文串也是可以的，原串是s的话，把s反向，得到s1，然后构造&lt;code&gt;S = s + &#39;#&#39; + s1&lt;/code&gt;，对S求后缀数组后，要注意的是并不是只找height的最大值即可，网上很多文章在这里的算法是错误的，反例是&lt;code&gt;abcdefba&lt;/code&gt;，&lt;strong&gt;单纯枚举相邻的sa是不正确的&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;正确做法是枚举i从1到len(s)/2，分别针对奇数长度和偶数长度要分别计算LCP（最长公共前缀），奇数长度时它的对称位置就是&lt;code&gt;j=len-i+1&lt;/code&gt;，偶数长度时对称位置是&lt;code&gt;j=len-i&lt;/code&gt;或&lt;code&gt;j=len-i+2&lt;/code&gt;，然后对height数组求从&lt;code&gt;rank[i]+1&lt;/code&gt;到&lt;code&gt;rank[j]&lt;/code&gt;的最小值。最小值维护用ST表，由于ST表的构造是 $O(nlogn)$ ，而查询是 $O(1)$ ，所以生成后缀数组后的计算的总时间复杂度是 $O(nlogn)$&lt;/p&gt;
+
+&lt;p&gt;示例代码&lt;a href=&#34;https://vjudge.net/problem/URAL-1297&#34; target=&#34;_blank&#34;&gt;URAL 1297&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int st[12][2048];
+
+void init_st(int a[], int n)
+{
+    for (int i = 0; i &amp;lt; n; i++)
+        st[0][i] = a[i];
+    for (int k = 1; (1 &amp;lt;&amp;lt; k) &amp;lt; n; k++)
+        for (int i = 0, m = 1 &amp;lt;&amp;lt; (k - 1); i &amp;lt; n; i++)
+            if (i + m &amp;lt; n) st[k][i] = min(st[k - 1][i], st[k - 1][i + m]);
+}
+
+int st_query(int l, int r) // [l, r)
+{
+    if (l &amp;gt; r)swap(l, r);
+    int k = (int)(log(r - l - 0.1) / log(2));
+    return min(st[k][l], st[k][r - (1 &amp;lt;&amp;lt; k)]);
+}
+
+int main()
+{
+    int n, t;
+    char s[2100], s1[1010];
+    scanf(&amp;quot;%s&amp;quot;, s1);
+    strcpy(s, s1);
+    strcat(s, &amp;quot;#&amp;quot;);
+    strcat(s, strrev(s1));
+    SA_2_sort sa;
+    sa.init(s);
+    int len = sa.size();
+    int maxh = 0, spos = 0;
+    init_st(&amp;amp;*sa.ht.begin(), len + 1);
+    for(int i = 1; i &amp;lt;= len / 2; ++i)
+    {
+        int j = len - i + 1;
+        int lcp = st_query(sa.rk[i] + 1, sa.rk[j] + 1);
+        if (lcp * 2 - 1 &amp;gt; maxh)
+        {
+            spos = i - lcp;
+            maxh = lcp * 2 - 1;
+        }
+        if (i &amp;gt; 1)
+        {
+            j = len - i + 2;
+            lcp = st_query(sa.rk[i] + 1, sa.rk[j] + 1);
+            if (lcp * 2 &amp;gt; maxh)
+            {
+                spos = i - lcp - 1;
+                maxh = lcp * 2;
+            }
+        }
+    }
+    strncpy(s1, s + spos, maxh);
+    s1[maxh] = 0;
+    puts(s1);
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注：后缀数组模板请从&lt;a href=&#34;../20191113-suffixarray/&#34;&gt;之前的文章&lt;/a&gt;里复制；函数st_query是左闭右开区间，即求的是&lt;code&gt;[l, r-1]&lt;/code&gt;的最小值，采用半开半闭区间目的是为了能直接swap&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>KMP及扩展KMP</title>
+      <link>/post/20191028-kmp/</link>
+      <pubDate>Mon, 28 Oct 2019 13:32:00 +0800</pubDate>
+      <guid>/post/20191028-kmp/</guid>
+      <description>&lt;p&gt;KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀&lt;/p&gt;
+
+&lt;h2 id=&#34;最长公共前缀&#34;&gt;最长公共前缀&lt;/h2&gt;
+
+&lt;p&gt;我们拿字符串&lt;code&gt;ababcab&lt;/code&gt;作为例子&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这里所表达的是，例如取第3、4个字符&amp;rdquo;ab&amp;rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&amp;rdquo;abc&amp;rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;pointer&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;然后两个a匹配，&lt;code&gt;arr[6] = pointer1 - arr&lt;/code&gt; 得到3，然后两指针一起移动&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;pointer&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;*&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这时候，不匹配，那么前一个指针上一次指向的是&lt;code&gt;arr[2]&lt;/code&gt;的位置，即图上&lt;code&gt;*&lt;/code&gt;的地方，值是1，这个值如果是p，那就移动到&lt;code&gt;arr[p]&lt;/code&gt;的地方，所以就移动到&lt;code&gt;arr[1]&lt;/code&gt;的地方，本质上就是找到前一个匹配此后缀的位置，即&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;pointer&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2&lt;/p&gt;
+
+&lt;h2 id=&#34;next数组&#34;&gt;next数组&lt;/h2&gt;
+
+&lt;p&gt;以上过程你需要细细理解，在理解以上过程后，再去理解next数组就非常简单了，next数组只是把以上数组加了一偏移，如下&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;next&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这么做是为了简化代码的书写，当然你直接用公共前缀的那个数组来做也是可以的&lt;/p&gt;
+
+&lt;p&gt;不过本文不介绍怎么做字符串匹配，这种文章到处都是，我们要讲的是竞赛中的典型应用&lt;/p&gt;
+
+&lt;p&gt;生成next数组的算法的时间复杂度为 $O(n)$ ，n是数组长度&lt;/p&gt;
+
+&lt;h3 id=&#34;应用1-poj2406&#34;&gt;应用1 &lt;a href=&#34;http://poj.org/problem?id=2406&#34; target=&#34;_blank&#34;&gt;poj2406&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;题目大意是给你一个字符串s，找出一个串a，使得a自己重复n次，便得到字符串s，要找到最大的n值。例如&lt;code&gt;ababab&lt;/code&gt;，可以找到&lt;code&gt;ab&lt;/code&gt;重复3次得到，所以输出3。像这种就是next数组表演的时候，它在计算自匹配方面非常合适，我们先再来理解一下next数组，它的值表示与前缀的重复长度，那么看下表，使用长度为102的&lt;code&gt;abab....abab&lt;/code&gt;&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;&amp;hellip;&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;next&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&amp;hellip;&lt;/td&gt;
+&lt;td&gt;97&lt;/td&gt;
+&lt;td&gt;98&lt;/td&gt;
+&lt;td&gt;99&lt;/td&gt;
+&lt;td&gt;100&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;我们发现，使用串长102减去next数组最后一个值，自然就得到了重复前缀的最短长度，既然它是最短的，那么我们用总长102除以2，就得到了重复的次数，就是我们想要的答案。当然前提是能整除，如果不能整除那么这样的前缀便不存在，输出1就行了。&lt;/p&gt;
+
+&lt;h3 id=&#34;应用2-poj2752&#34;&gt;应用2 &lt;a href=&#34;http://poj.org/problem?id=2752&#34; target=&#34;_blank&#34;&gt;poj2752&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;题目大意是给你一个字符串s，找出所有前缀等于后缀的串长。我们先来试试算一个短点的&lt;code&gt;ababcababcabab&lt;/code&gt;&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;next&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;可以轻松看出next的最后一个值9肯定就是其中一个长度，那接着呢？我们需要回想一下，构造这个数组的时候，如果匹配失败，是怎么找到前一个匹配当前后缀的前缀的，这个值如果是p，那就移动到&lt;code&gt;arr[p]&lt;/code&gt;的地方，如果你还记得这个，那就好办了，我们取&lt;code&gt;arr[9]&lt;/code&gt;，结果是4，再取&lt;code&gt;arr[4]&lt;/code&gt;结果是2，再取&lt;code&gt;arr[2]&lt;/code&gt;，结果是0，循环结束，所以加上整个串长14就是我们所要的答案了，完整结果是&lt;code&gt;2 4 9 14&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h3 id=&#34;应用3-子串出现次数&#34;&gt;应用3 子串出现次数&lt;/h3&gt;
+
+&lt;p&gt;给你主串s和子串t，求t在s中出现了多少次，例如&lt;code&gt;s=&amp;quot;abababa&amp;quot;&lt;/code&gt;，&lt;code&gt;t=&amp;quot;aba&amp;quot;&lt;/code&gt;，那么t在s中出现了3次。&lt;/p&gt;
+
+&lt;p&gt;这里运用到一个技巧，我们把s和t连接成这个串&lt;code&gt;u=&amp;quot;aba#abababa&amp;quot;&lt;/code&gt;，即把t放在s的前面并中间使用&lt;code&gt;#&lt;/code&gt;分隔，这个符号在两个串中都没有出现。然后我们对u计算next数组，那么next数组中值等于t的长度的元素个数就是答案。&lt;/p&gt;
+
+&lt;h3 id=&#34;应用4-可重叠最长重复子串&#34;&gt;应用4 可重叠最长重复子串&lt;/h3&gt;
+
+&lt;p&gt;大意是给你一个字符串s，任意选取两个不同的起始位置i和j，这两个位置的后缀串有相同的前缀，这个前缀可以重叠，问这个相同的前缀的最大长度&lt;/p&gt;
+
+&lt;p&gt;例如&lt;code&gt;eabcaefabcabc&lt;/code&gt;，最长重复子串是&lt;code&gt;abca&lt;/code&gt;，长度是4。&lt;/p&gt;
+
+&lt;p&gt;KMP在生成的时候，总是以串的前缀作为匹配对象，我们要做的，就是遍历那个字符串的每一个后缀，都生成一次next数组，而在生成过程中出现的最大值就是答案，所以时间复杂度 $O(n^2)$ 。当然我们还有更好的算法，这个之后再讲。&lt;/p&gt;
+
+&lt;h2 id=&#34;z-algorithm&#34;&gt;Z Algorithm&lt;/h2&gt;
+
+&lt;p&gt;Z函数的定义是对于字符串s，生成数组z，定义&lt;code&gt;z[i]&lt;/code&gt;是&lt;code&gt;s.substr(i)&lt;/code&gt;与&lt;code&gt;s&lt;/code&gt;的最长相同前缀长度&lt;/p&gt;
+
+&lt;p&gt;样例如下&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;扩展KMP需要依赖这个z数组，但是在介绍这个之前，我们先介绍下面的扩展KMP&lt;/p&gt;
+
+&lt;h2 id=&#34;扩展kmp&#34;&gt;扩展KMP&lt;/h2&gt;
+
+&lt;p&gt;所谓扩展KMP，即给定两个字符串s和p，需要求出数组&lt;code&gt;ext&lt;/code&gt;，其中&lt;code&gt;ext[i]&lt;/code&gt;的值表示&lt;code&gt;s.substr(i)&lt;/code&gt;与&lt;code&gt;p&lt;/code&gt;的最长相同前缀长度&lt;/p&gt;
+
+&lt;p&gt;这个算法依赖 Z Algorithm 中生成的z数组。&lt;/p&gt;
+
+&lt;p&gt;为了比较容易理解，我省略一堆说明，我们直接来模拟匹配过程，一边模拟一边解说，一开始数据如下，i是匹配位置指针&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;上表，一开始，不匹配，不操作，移动p&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这时，p与&lt;code&gt;s[i]&lt;/code&gt;是匹配的，我们用e指针记录&lt;strong&gt;未能匹配&lt;/strong&gt;的位置，并写入&lt;code&gt;ext[i]=e-i&lt;/code&gt;得1&lt;/p&gt;
+
+&lt;p&gt;继续移动p，并更新e，得到下表&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;得到上表这个后，令&lt;code&gt;ext[i]=e-i&lt;/code&gt;得5，这个时候，移动到下一个元素，但同时p暂时不动。这个情况出现于&lt;code&gt;p&amp;lt;e&lt;/code&gt;的时候，严格来说，应该是&lt;code&gt;z[i-p]+i &amp;lt; e&lt;/code&gt;的时候，具体原因后面解释。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;上表这个时候，不看字符匹配的情况，只看i指针位置上那一列对应的Z数组的值，即&lt;code&gt;z[i-p]&lt;/code&gt;为0，如果这个数加上i小于e的话，直接令&lt;code&gt;ext[i]=z[i-p]&lt;/code&gt;得到0&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;继续以上操作，&lt;code&gt;ext[i]=z[i-p]&lt;/code&gt;得到1。之所以能这么操作，是因为p是自匹配的，在这个位置上的z值，就同时表达了i开始，字符串s与p连续多少个字符能匹配p的前缀，前提是这个串的范围必须在e的前面。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;继续以上操作，&lt;code&gt;ext[i]=z[i-p]&lt;/code&gt;得到0，注意到，下一步i将指向a，导致&lt;code&gt;z[i-p]+i &amp;gt;= e&lt;/code&gt;，这个会导致z数组的内容不能直接复制到ext数组内，所以我们要恢复之前的字符串匹配过程，令p等于i，得如下状态&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这个时候，写入&lt;code&gt;ext[i]=e-i&lt;/code&gt;得1&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;最后一步，第一个也不匹配，写入&lt;code&gt;ext[i]=e-i&lt;/code&gt;得0，下一步i到达字符串末尾，结束。&lt;/p&gt;
+
+&lt;p&gt;扩展kmp与经典kmp的算法的时间复杂度均为 $O(len(s)+len(p))$&lt;/p&gt;
+
+&lt;p&gt;那么讲完了扩展KMP我们回来讲Z Algorithm，其实它们的区别，仅仅是计算对象的差异，即扩展KMP是通过字符串p求出s的ext数组，而Z Algorithm是通过自身来求，我们只需要把原来扩展KMP的代码复制一份改改名字，且起点改为1行了，详见下面模板实现代码。&lt;/p&gt;
+
+&lt;p&gt;应用实例有：&lt;a href=&#34;http://acm.hdu.edu.cn/showproblem.php?pid=4333&#34; target=&#34;_blank&#34;&gt;hdu4333&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;kmp模板&#34;&gt;KMP模板&lt;/h2&gt;
+
+&lt;p&gt;以下是我写的模板代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void kmp_next(const char* pattern, int next[])
+{
+    int len = strlen(pattern);
+    next[0] = -1;
+    for (int i = 0, j = -1; i &amp;lt; len;)
+    {
+        if (j == -1 || pattern[i] == pattern[j])
+            next[++i] = ++j;
+        else
+            j = next[j];
+    }
+}
+
+const char* kmp_match(const char* str, const char* pattern, int next[])
+{
+    int len = strlen(pattern);
+    int i = 0;
+    kmp_next(pattern, next);
+    while (*str &amp;amp;&amp;amp; i &amp;lt; len)
+    {
+        if (pattern[i] == *str)
+        {
+            ++i, ++str;
+        }
+        else
+        {
+            i = next[i];
+            if (i == -1)
+            {
+                ++i, ++str;
+            }
+        }
+    }
+    return i == len ? str - i : str;
+}
+
+void extkmp_z(const char* str, int z[])
+{
+    int s_len = strlen(str);
+    z[0] = s_len;
+    for (int i = 1, p = 1, e = 1; i &amp;lt; s_len; ++i)
+    {
+        if (i + z[i - p] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &amp;lt; s_len &amp;amp;&amp;amp; str[e] == str[e - i])
+                ++e;
+
+            z[i] = e - i;
+        }
+        else
+            z[i] = z[i - p];
+    }
+}
+
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, p = 0, e = 0; i &amp;lt; s_len; ++i)
+    {
+        if (i + z[i - p] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &amp;lt; s_len &amp;amp;&amp;amp; str[e] == pattern[e - i])
+                ++e;
+
+            ext[i] = e - i;
+        }
+        else
+            ext[i] = z[i - p];
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;最后总结&#34;&gt;最后总结&lt;/h2&gt;
+
+&lt;p&gt;字符串就是一个深坑，不过KMP也许是打开你理解后缀树或后缀数组的好工具，为后者的学习做铺垫。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Quick sort(快速排序)杂谈 3</title>
+      <link>/post/20191019-qsort-talk-3/</link>
+      <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
+      <guid>/post/20191019-qsort-talk-3/</guid>
+      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
+
+&lt;h2 id=&#34;gcc的实现&#34;&gt;GCC的实现&lt;/h2&gt;
+
+&lt;p&gt;这个我直接给个&lt;a href=&#34;https://github.com/gcc-mirror/gcc/blob/gcc-8-branch/libstdc++-v3/include/bits/stl_algo.h#L1896&#34; target=&#34;_blank&#34;&gt;github来源&lt;/a&gt;，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是&lt;code&gt;__unguarded_partition&lt;/code&gt;函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;  /// Swaps the median value of *__a, *__b and *__c under __comp to *__result
+  template&amp;lt;typename _Iterator, typename _Compare&amp;gt;
+    void
+    __move_median_to_first(_Iterator __result,_Iterator __a, _Iterator __b,
+                           _Iterator __c, _Compare __comp)
+    {
+      if (__comp(__a, __b))
+        {
+          if (__comp(__b, __c))
+            std::iter_swap(__result, __b);
+          else if (__comp(__a, __c))
+            std::iter_swap(__result, __c);
+          else
+            std::iter_swap(__result, __a);
+        }
+      else if (__comp(__a, __c))
+        std::iter_swap(__result, __a);
+      else if (__comp(__b, __c))
+        std::iter_swap(__result, __c);
+      else
+        std::iter_swap(__result, __b);
+    }
+
+  /// This is a helper function...
+  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    _RandomAccessIterator
+    __unguarded_partition(_RandomAccessIterator __first,
+                          _RandomAccessIterator __last,
+                          _RandomAccessIterator __pivot, _Compare __comp)
+    {
+      while (true)
+        {
+          while (__comp(__first, __pivot))
+            ++__first;
+          --__last;
+          while (__comp(__pivot, __last))
+            --__last;
+          if (!(__first &amp;lt; __last))
+            return __first;
+          std::iter_swap(__first, __last);
+          ++__first;
+        }
+    }
+
+  /// This is a helper function...
+  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    inline _RandomAccessIterator
+    __unguarded_partition_pivot(_RandomAccessIterator __first,
+                                _RandomAccessIterator __last, _Compare __comp)
+    {
+      _RandomAccessIterator __mid = __first + (__last - __first) / 2;
+      std::__move_median_to_first(__first, __first + 1, __mid, __last - 1,
+                                  __comp);
+      return std::__unguarded_partition(__first + 1, __last, __first, __comp);
+    }
+
+  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    inline void
+    __partial_sort(_RandomAccessIterator __first,
+                   _RandomAccessIterator __middle,
+                   _RandomAccessIterator __last,
+                   _Compare __comp)
+    {
+      std::__heap_select(__first, __middle, __last, __comp);
+      std::__sort_heap(__first, __middle, __comp);
+    }
+
+  /// This is a helper function for the sort routine.
+  template&amp;lt;typename _RandomAccessIterator, typename _Size, typename _Compare&amp;gt;
+    void
+    __introsort_loop(_RandomAccessIterator __first,
+                     _RandomAccessIterator __last,
+                     _Size __depth_limit, _Compare __comp)
+    {
+      while (__last - __first &amp;gt; int(_S_threshold))
+        {
+          if (__depth_limit == 0)
+            {
+              std::__partial_sort(__first, __last, __last, __comp);
+              return;
+            }
+          --__depth_limit;
+          _RandomAccessIterator __cut =
+            std::__unguarded_partition_pivot(__first, __last, __comp);
+          std::__introsort_loop(__cut, __last, __depth_limit, __comp);
+          __last = __cut;
+        }
+    }
+
+  // sort
+
+  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    inline void
+    __sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+           _Compare __comp)
+    {
+      if (__first != __last)
+        {
+          std::__introsort_loop(__first, __last,
+                                std::__lg(__last - __first) * 2,
+                                __comp);
+          std::__final_insertion_sort(__first, __last, __comp);
+        }
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;del&gt;吐槽一句，连gcc源代码也把tab和空格混合使用我也是醉了，源代码的tab在这里已替换为空格以保证版面一致&lt;/del&gt;&lt;/p&gt;
+
+&lt;p&gt;这里我们并不需要关注太多东西，在上一篇我们讲到过，快排最大的弱点正在于它的划分元素选择上，所以我们只需要看这个函数&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    inline _RandomAccessIterator
+    __unguarded_partition_pivot(_RandomAccessIterator __first,
+                                _RandomAccessIterator __last, _Compare __comp)
+    {
+      _RandomAccessIterator __mid = __first + (__last - __first) / 2;
+      std::__move_median_to_first(__first, __first + 1, __mid, __last - 1,
+                                  __comp);
+      return std::__unguarded_partition(__first + 1, __last, __first, __comp);
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个函数从&lt;code&gt;__first + 1&lt;/code&gt;, &lt;code&gt;__mid&lt;/code&gt;, &lt;code&gt;__last - 1&lt;/code&gt;三个数里面，取一个中位数交换到&lt;code&gt;__first&lt;/code&gt;的位置，知道这个就能想办法生成对抗数据了。为了让它运行缓慢，那么只要让它这个函数每次都选到&lt;strong&gt;第二小&lt;/strong&gt;的元素放最左边，这样每次调用&lt;code&gt;__unguarded_partition&lt;/code&gt;的结果，就是把划分点划分到了&lt;code&gt;__first + 2&lt;/code&gt;的位置上，即每次只划分两个元素，这就是它的最坏情况。&lt;/p&gt;
+
+&lt;p&gt;构造这个东西需要一些技巧，我们要模拟std::sort的过程，但为了复杂性降低，我们令最右边元素值最大，那么中位数必定在&lt;code&gt;__first + 1&lt;/code&gt;与&lt;code&gt;__mid&lt;/code&gt;中选出，这样在partition过程中就能保证不会动到最后的元素，只会在这两个之间换来换去。然后我们只模拟出交换的结果，而不必去遍历，否则你生成的复杂度就$O(n^2)$了。&lt;/p&gt;
+
+&lt;p&gt;另外，还要注意的一点是，它使用的是&lt;code&gt;intro sort&lt;/code&gt;来实现，也就是说深度到一定程度后，会转化为堆排序，而堆排序的最坏情况是乱序数组，我们不必一直这么做，否则堆排序时间并不是最长的，我们只要弄深度150的就够用了。我们来看看生成的数据在8000000长度下，使用mingw64-gcc8编译参数-O3的实测结果&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;evil&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;intro_sort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;76&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;82&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;509&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;510&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;510&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;282&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::sort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;86&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;92&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;94&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;473&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;487&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1650&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;480&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::heap&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;584&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;369&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;421&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1436&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1467&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1499&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;962&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;第4、5列是随机打乱的数据，作为对比组，而evil列就是生成的对抗数据，我把&lt;code&gt;heap sort&lt;/code&gt;及前一篇的&lt;code&gt;intro_sort&lt;/code&gt;实现放上来做比较，可以看出在这组数据下，&lt;code&gt;std::sort&lt;/code&gt;必然地比堆排序还要慢，是乱序数据的3.5倍左右，当然这个时间完全取决于堆排序的时间。&lt;/p&gt;
+
+&lt;p&gt;附上生成代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct save_index
+{
+    int val;
+    int index;
+
+    save_index(int i = 0, int v = -1)
+        : val(v)
+        , index(i)
+    {}
+    void swap(save_pos&amp;amp; p)
+    {
+        int t = p.val;
+        p.val = val;
+        val = t;
+    }
+    bool operator &amp;lt; (const save_index&amp;amp; p) const
+    {
+        return index &amp;lt; p.index;
+    }
+};
+
+void qsort_sim_gcc(save_index * beg, save_index * end, int max_round)
+{
+    int cur_num = 0;
+    if ((end-1)-&amp;gt;val == -1)
+    {
+        (end - 1)-&amp;gt;val = (end - beg) * 2;
+    }
+    while (beg + 1 &amp;lt; end &amp;amp;&amp;amp; --max_round &amp;gt; 0)
+    {
+        save_index *l = beg + 1, *r = end - 1, *m = beg + (end - beg) / 2;
+
+        if (l-&amp;gt;val == -1)
+            l-&amp;gt;val = ++cur_num;
+        if (r-&amp;gt;val == -1)
+            r-&amp;gt;val = ++cur_num;
+        if (m-&amp;gt;val == -1)
+            m-&amp;gt;val = ++cur_num;
+
+        if (l-&amp;gt;val &amp;gt; m-&amp;gt;val)
+        {
+            if (m-&amp;gt;val &amp;gt; r-&amp;gt;val)
+                std::swap(*beg, *m);
+            else if (l-&amp;gt;val &amp;gt; r-&amp;gt;val)
+                std::swap(*beg, *r);
+            else
+                std::swap(*beg, *l);
+        }
+        else
+        {
+            if (m-&amp;gt;val &amp;lt; r-&amp;gt;val)
+                std::swap(*beg, *m);
+            else if (l-&amp;gt;val &amp;gt; r-&amp;gt;val)
+                std::swap(*beg, *l);
+            else
+                std::swap(*beg, *r);
+        }
+        if (l-&amp;gt;val &amp;lt; beg-&amp;gt;val &amp;amp;&amp;amp; l-&amp;gt;val != -1)
+            ;
+        else if (m-&amp;gt;val &amp;lt; beg-&amp;gt;val &amp;amp;&amp;amp; m-&amp;gt;val != -1)
+            std::swap(*l, *m);
+        beg += 2;
+    }
+}
+
+void anti_qsort_gen_gcc(std::vector&amp;lt;save_index&amp;gt;&amp;amp; vec, size_t len, int max_round)
+{
+    for (size_t i = 0; i &amp;lt; len; ++i)
+    {
+        vec.push_back(save_index((int)i));
+    }
+    qsort_sim_gcc(&amp;amp;*vec.begin(), &amp;amp;*vec.begin() + len, max_round);
+    int cnt = 0;
+    for (size_t i = 0; i &amp;lt; len; ++i)
+    {
+        if (vec[i].val == -1)
+            ++cnt;
+    }
+    std::vector&amp;lt;int&amp;gt; val_list(cnt);
+    for (int i = 0; i &amp;lt; cnt; ++i)
+    {
+        val_list[i] = i + len - cnt;
+    }
+    // 以下 random_shuffle 实现需要自己实现，如果你用的是mingw
+    // 不能使用std::random_shuffle，注意
+    random_shuffle(val_list.begin(), val_list.end());
+    for (int i = 0, j = 0; i &amp;lt; len; ++i)
+    {
+        if (vec[i].val == -1)
+        {
+            vec[i].val = val_list[j++];
+        }
+    }
+    std::sort(vec.begin(), vec.end());
+}
+
+void anti_qsort_gen_gcc(sort_element_t arr[], size_t len)
+{
+    std::vector&amp;lt;save_index&amp;gt; vec;
+    anti_qsort_gen_gcc(vec, len, 150);
+    for (size_t i = 0; i &amp;lt; len; ++i)
+    {
+        arr[i] = vec[i].val;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;代码中注释的random_shuffle问题参见&lt;a href=&#34;../20191006-mingw-bug/&#34;&gt;这篇文章&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;最后总结，老实加个rand比啥都强，至少大大增加构造evil数据的难度，也大大降低遇到最坏情况的可能。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Quick sort(快速排序)杂谈 2</title>
+      <link>/post/20191019-qsort-talk-2/</link>
+      <pubDate>Sat, 19 Oct 2019 00:57:00 +0800</pubDate>
+      <guid>/post/20191019-qsort-talk-2/</guid>
+      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-1/&#34;&gt;上一篇&lt;/a&gt;我们介绍了四种不同的划分算法，现在我们来针对&lt;a href=&#34;../20191007-qsort-talk-1/#3-hoare-partition-scheme&#34;&gt;Hoare partition scheme&lt;/a&gt;来讲解一些优化和注意的问题。&lt;/p&gt;
+
+&lt;h2 id=&#34;最坏时间复杂度的优化&#34;&gt;最坏时间复杂度的优化&lt;/h2&gt;
+
+&lt;p&gt;在前一篇的示例代码里面，只是最简单地选择的最开头或最后面的元素作为划分，这对于乱序的数据还好，对于有序的数据这么做，时间复杂度就直接变成$O(n^2)$了，那么怎么解决？第一个要解决的反而不是划分元素的选择上，而是改成&lt;code&gt;intro sort&lt;/code&gt;，记录递归深度或类似的办法，到达限制条件的时候改而使用堆排序，这属于混合排序，先让排序的最坏时间复杂度降下来是第一要务。所以可以改写出以下代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;sort_element_t* intro_sort_partition(sort_element_t * beg, sort_element_t * end)
+{
+    sort_element_t *l = beg, *r = end - 1;
+    sort_element_t pivot = *r;
+    while (1)
+    {
+        while (l &amp;lt; r &amp;amp;&amp;amp; *l &amp;lt; pivot)
+            ++l;
+        while (l &amp;lt; r &amp;amp;&amp;amp; !(*r &amp;lt; pivot))
+            --r;
+        if (l &amp;gt;= r)
+            break;
+        sort_element_swap(l++, r);
+    }
+    sort_element_swap(l, end - 1);
+    return l;
+}
+
+void intro_sort_recursive(sort_element_t * beg, sort_element_t * end, int depth)
+{
+    if (end - beg &amp;lt;= 1)
+        return;
+
+    if (depth &amp;lt;= 0)
+    {
+        heap_sort(beg, end);
+        return;
+    }
+
+    sort_element_t *p = intro_sort_partition(beg, end);
+
+    intro_sort_recursive(beg, p, depth - 1);
+    intro_sort_recursive(p + 1, end, depth - 1);
+}
+
+void intro_sort(sort_element_t * beg, sort_element_t * end)
+{
+    int depth = (int)(log(end - beg) * 2.5);
+    intro_sort_recursive(beg, end, depth);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;同时，这份代码使用的分割结果是&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;左&lt;/th&gt;
+&lt;th&gt;中&lt;/th&gt;
+&lt;th&gt;右&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&amp;lt;&lt;/td&gt;
+&lt;td&gt;=&lt;/td&gt;
+&lt;td&gt;&amp;gt;=&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;至于为什么选择这种划分结果，与后面的优化有关系。&lt;/p&gt;
+
+&lt;h2 id=&#34;划分元素的选择&#34;&gt;划分元素的选择&lt;/h2&gt;
+
+&lt;p&gt;好，我们从这个代码开始重新谈一下分割元素的选取，网上常见有以下方案：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;固定选择最开头或最后一个&lt;/li&gt;
+&lt;li&gt;固定选择中间的元素&lt;/li&gt;
+&lt;li&gt;随机选择元素&lt;/li&gt;
+&lt;li&gt;在开头、中间、末尾固定三个数里选择一个中位数&lt;/li&gt;
+&lt;li&gt;在更多的数里面找中位数，同样是固定选择&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;首先，我们能显然地排除第一个，它对已排序或接近排序完成的数据效率特别低，所以，接下来我们的思路就是分别针对这些选择方案看看有哪些情况让它们特别低效。&lt;/p&gt;
+
+&lt;p&gt;那么按这个思路，我样再来考虑一下，如果要排序的数据重复元素特别的多，甚至于所有元素都相等呢？这时候你会发现不管哪种选取方案都没有用，都会陷入最坏情况，所以我们接下来在继续研究分割元素的选取之前，先考虑重复元素的问题。&lt;/p&gt;
+
+&lt;h2 id=&#34;重复元素的过滤&#34;&gt;重复元素的过滤&lt;/h2&gt;
+
+&lt;p&gt;之所以分割方式使用上文那种，为的就是能更方便地过滤重复元素，大于等于分割元素的，都一定在分割位置的右边，所以&lt;code&gt;intro_sort_recursive&lt;/code&gt;函数可以这样改&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void intro_sort_recursive(sort_element_t * beg, sort_element_t * end, int depth)
+{
+    if (end - beg &amp;lt;= 1)
+        return;
+
+    if (depth &amp;lt;= 0)
+    {
+        heap_sort(beg, end);
+        return;
+    }
+
+    sort_element_t *p = intro_sort_partition(beg, end);
+
+    intro_sort_recursive(beg, p, depth - 1);
+    for (++p; p &amp;lt; end &amp;amp;&amp;amp; !(p[-1] &amp;lt; *p || *p &amp;lt; p[-1]); )
+        ++p;
+    intro_sort_recursive(p, end, depth - 1);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中&lt;code&gt;!(p[-1] &amp;lt; *p || *p &amp;lt; p[-1])&lt;/code&gt;就是判断&lt;code&gt;p[-1] == *p&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;这样修改后，在所有元素相等的情况下，时间复杂度能达到$O(n)$&lt;/p&gt;
+
+&lt;h2 id=&#34;再次考虑划分元素的选择&#34;&gt;再次考虑划分元素的选择&lt;/h2&gt;
+
+&lt;p&gt;这次我们把方案一个个来列举优缺点&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;固定选择中间的元素，速度快，对有序或逆序的数据分割效率最高，但在中间附近元素都是数据里最大的数据的时候，即遇到最坏情况，会快速退化成堆排序&lt;/li&gt;
+&lt;li&gt;在开头、中间、末尾固定三个数里选择一个中位数，这个是也gcc的STL实现，但能构造出让它遇到最坏情况的数据，比乱序数据慢4倍甚至更多&lt;/li&gt;
+&lt;li&gt;在更多的数里面找中位数，同样是固定选择，VS的STL实现就是在9个数里面取，但同样能构造出让它遇到最坏情况的数据，比乱序数据慢4倍甚至更多&lt;/li&gt;
+&lt;li&gt;随机选择元素，遇到最坏情况机率极低，但对于有序或逆序的数据时间比前三种都会慢一些&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;事实上，任何的固定选取方案理论上都能构造出固定的使其遇到最坏的情况，而我们的目标当然是让它减少遇到的机率，所以我推荐增加随机选择在里面，但单纯的随机选择虽然并不太优秀，但已足够实用，而且我们并不需要真的搞什么复杂的随机数，所以我们先来实现这个：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;sort_element_t* intro_sort_partition(sort_element_t * beg, sort_element_t * end)
+{
+    static int s_rnd = 0x123456;
+    sort_element_t *l = beg, *r = end - 1;
+    sort_element_swap(r, l + (++s_rnd % (end - beg)));
+    sort_element_t pivot = *r;
+    while (1)
+    {
+        while (l &amp;lt; r &amp;amp;&amp;amp; *l &amp;lt; pivot)
+            ++l;
+        while (l &amp;lt; r &amp;amp;&amp;amp; !(*r &amp;lt; pivot))
+            --r;
+        if (l &amp;gt;= r)
+            break;
+        sort_element_swap(l++, r);
+    }
+    sort_element_swap(l, end - 1);
+    return l;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;只要一个静态的计数器作为随机数其实就足够了，把选中的元素交换到最右边即可。&lt;/p&gt;
+
+&lt;p&gt;那我们还是要考虑优化的话怎么弄呢？那我们结合着来，在三个数里取中位数，不过还要带上随机，代码如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;inline void make_mid_pivot(sort_element_t* l, sort_element_t* mid, sort_element_t* r)
+{
+    if (*r &amp;lt; *mid)
+    {
+        if (*mid &amp;lt; *l)
+            return;
+        sort_element_swap(mid, r);
+    }
+    if (*mid &amp;lt; *l)
+    {
+        sort_element_swap(mid, l);
+        if (*r &amp;lt; *mid)
+            sort_element_swap(mid, r);
+    }
+}
+
+sort_element_t* intro_sort_partition(sort_element_t * beg, sort_element_t * end)
+{
+    static int s_rnd = 0x123456;
+    sort_element_t *l = beg, *r = end - 1;
+    int half = (end - beg) / 2;
+    make_mid_pivot(l + s_rnd % half, l + half, r - s_rnd % half);
+    ++s_rnd;
+    sort_element_swap(r, l + half);
+    sort_element_t pivot = *r;
+    while (1)
+    {
+        while (l &amp;lt; r &amp;amp;&amp;amp; *l &amp;lt; pivot)
+            ++l;
+        while (l &amp;lt; r &amp;amp;&amp;amp; !(*r &amp;lt; pivot))
+            --r;
+        if (l &amp;gt;= r)
+            break;
+        sort_element_swap(l++, r);
+    }
+    sort_element_swap(l, end - 1);
+    return l;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;到这个阶段，这个实现已经能和VS版本的std::sort平起平坐了，接下我们就要超越它&lt;/p&gt;
+
+&lt;h2 id=&#34;小数据优化&#34;&gt;小数据优化&lt;/h2&gt;
+
+&lt;p&gt;当需要排序的数据长度较小的时候，快速排序其实并不快，我们改用插入排序，在16个元素或以下的时候使用。修改的那部分代码如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void intro_sort_recursive(sort_element_t * beg, sort_element_t * end, int depth)
+{
+    if (end - beg &amp;lt;= 16)
+    {
+        insert_sort(beg, end);
+        return;
+    }
+
+    if (depth &amp;lt;= 0)
+    {
+        heap_sort(beg, end);
+        return;
+    }
+
+    sort_element_t *p = intro_sort_partition(beg, end);
+
+    intro_sort_recursive(beg, p, depth - 1);
+    for (++p; p &amp;lt; end &amp;amp;&amp;amp; !(p[-1] &amp;lt; *p || *p &amp;lt; p[-1]); )
+        ++p;
+    intro_sort_recursive(p, end, depth - 1);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;至此，已经能比VS的std::sort快了&lt;/p&gt;
+
+&lt;h2 id=&#34;运行测试&#34;&gt;运行测试&lt;/h2&gt;
+
+&lt;p&gt;我们来看在VS2005下对4500000个int排序的测试结果&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;6&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;7&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;8&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;9&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;10&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;intro_sort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;38&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;43&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;282&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;281&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;71&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;18&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;60&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;103&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;269&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;116&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::sort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;53&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;57&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;327&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;331&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;72&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;40&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;85&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;114&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;317&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;139&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;再看mingw64-gcc9下使用&lt;code&gt;-O3&lt;/code&gt;参数编译，对4500000个int排序的测试结果&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;6&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;7&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;8&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;9&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;10&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;intro_sort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;41&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;46&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;274&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;281&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;67&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;18&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;80&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;105&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;266&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;118&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::sort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;45&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;52&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;55&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;254&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;255&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;98&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;82&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;106&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;248&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;125&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;可以看到几乎在所有的测试数据里都比VS的实现快。不过尽管这个比VS的实现快，但比起gcc的实现还是稍差一点点，但已经足够好。&lt;/p&gt;
+
+&lt;p&gt;本篇就介绍到这里了，最后把优化后的完整代码给出，更多优化请看下一篇文章&lt;/p&gt;
+
+&lt;p&gt;&lt;details&gt;
+&lt;summary&gt;
+  &lt;h4&gt; 点击展开 &lt;/h4&gt;
+&lt;/summary&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;inline void make_mid_pivot(sort_element_t* l, sort_element_t* mid, sort_element_t* r)
+{
+    if (*r &amp;lt; *mid)
+    {
+        if (*mid &amp;lt; *l)
+        {
+            return;
+        }
+        sort_element_swap(mid, r);
+    }
+    if (*mid &amp;lt; *l)
+    {
+        sort_element_swap(mid, l);
+        if (*r &amp;lt; *mid)
+            sort_element_swap(mid, r);
+    }
+}
+
+sort_element_t* intro_sort_partition(sort_element_t * beg, sort_element_t * end)
+{
+    static int s_rnd = 0x123456;
+    sort_element_t *l = beg, *r = end - 1;
+    int half = (end - beg) / 2;
+    make_mid_pivot(l + s_rnd % half, l + half, r - s_rnd % half);
+    ++s_rnd;
+    sort_element_swap(r, l + half);
+    sort_element_t pivot = *r;
+    while (1)
+    {
+        while (l &amp;lt; r &amp;amp;&amp;amp; *l &amp;lt; pivot)
+            ++l;
+        while (l &amp;lt; r &amp;amp;&amp;amp; !(*r &amp;lt; pivot))
+            --r;
+        if (l &amp;gt;= r)
+            break;
+        sort_element_swap(l++, r);
+    }
+    sort_element_swap(l, end - 1);
+    return l;
+}
+
+void intro_sort_recursive(sort_element_t * beg, sort_element_t * end, int depth)
+{
+    if (end - beg &amp;lt;= 16)
+    {
+        insert_sort(beg, end);
+        return;
+    }
+
+    if (depth &amp;lt;= 0)
+    {
+        heap_sort(beg, end);
+        return;
+    }
+
+    sort_element_t *p = intro_sort_partition(beg, end);
+
+    intro_sort_recursive(beg, p, depth - 1);
+    for (++p; p &amp;lt; end &amp;amp;&amp;amp; !(p[-1] &amp;lt; *p || *p &amp;lt; p[-1]); )
+        ++p;
+    intro_sort_recursive(p, end, depth - 1);
+}
+
+void intro_sort(sort_element_t * beg, sort_element_t * end)
+{
+    int depth = (int)(log(end - beg) * 2.5);
+    intro_sort_recursive(beg, end, depth);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;/details&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>smooth sort与weakheap sort实现</title>
+      <link>/post/20191017-weakheapsort/</link>
+      <pubDate>Thu, 17 Oct 2019 17:14:00 +0800</pubDate>
+      <guid>/post/20191017-weakheapsort/</guid>
+      <description>&lt;p&gt;本篇补充&lt;code&gt;smooth sort&lt;/code&gt;和&lt;code&gt;weakheap sort&lt;/code&gt;，不打算做太多介绍，&lt;del&gt;因为自己太菜不会讲，&lt;/del&gt;只作为笔记来记录一下实现代码。&lt;code&gt;smooth sort&lt;/code&gt;在接近排序完成的情况下的动态图&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Smoothsort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/a/a5/Smoothsort.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;smooth-sort&#34;&gt;smooth sort&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;// http://www.keithschwarz.com/smoothsort/
+static const unsigned int leonardo[] =
+{
+   1, 1, 3, 5, 9, 15, 25, 41, 67, 109, 177, 287, 465, 753, 1219, 1973,
+   3193, 5167, 8361, 13529, 21891, 35421, 57313, 92735, 150049, 242785,
+   392835, 635621, 1028457, 1664079, 2692537, 4356617, 7049155, 11405773,
+   18454929, 29860703, 48315633, 78176337, 126491971, 204668309, 331160281,
+   535828591, 866988873, 1402817465, 2269806339u, 3672623805u,
+};
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort_fix(RandomAccessIterator arr, size_t current_heap, int level_index, int levels[], Comp compare)
+{
+    while (level_index &amp;gt; 0)
+    {
+        size_t prev_heap = current_heap - leonardo[levels[level_index]];
+        if (compare(arr[current_heap], arr[prev_heap]))
+        {
+            if (levels[level_index] &amp;gt; 1)
+            {
+                size_t child_heap2 = current_heap - 1;
+                size_t child_heap1 = child_heap2 - leonardo[levels[level_index] - 2];
+                if (compare(arr[prev_heap], arr[child_heap1])
+                    || compare(arr[prev_heap], arr[child_heap2]))
+                    break;
+            }
+            std::swap(arr[current_heap], arr[prev_heap]);
+            current_heap = prev_heap;
+            level_index -= 1;
+        }
+        else
+            break;
+    }
+
+    int current_level = levels[level_index];
+    while (current_level &amp;gt; 1)
+    {
+        size_t max_child = current_heap;
+        size_t child_heap2 = current_heap - 1;
+        size_t child_heap1 = child_heap2 - leonardo[current_level - 2];
+
+        if (compare(arr[max_child], arr[child_heap1])) max_child = child_heap1;
+        if (compare(arr[max_child], arr[child_heap2])) max_child = child_heap2;
+        if (max_child == child_heap1)
+        {
+            std::swap(arr[current_heap], arr[child_heap1]);
+            current_heap = child_heap1;
+            current_level -= 1;
+        }
+        else if (max_child == child_heap2)
+        {
+            std::swap(arr[current_heap], arr[child_heap2]);
+            current_heap = child_heap2;
+            current_level -= 2;
+        }
+        else break;
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort(RandomAccessIterator arr, size_t size, Comp compare)
+{
+    int levels[64] = { 1 };
+    int toplevel = 0;
+
+    for (size_t i = 1; i &amp;lt; size; ++i)
+    {
+        if (toplevel &amp;gt; 0 &amp;amp;&amp;amp; levels[toplevel - 1] - levels[toplevel] == 1)
+        {
+            toplevel -= 1;
+            levels[toplevel] += 1;
+        }
+        else if (levels[toplevel] != 1)
+        {
+            toplevel += 1;
+            levels[toplevel] = 1;
+        }
+        else
+        {
+            toplevel += 1;
+            levels[toplevel] = 0;
+        }
+        smooth_sort_fix(arr, i, toplevel, levels, compare);
+    }
+
+    for (size_t i = size - 2; i &amp;gt; 0; --i)
+    {
+        if (levels[toplevel] &amp;lt;= 1)
+        {
+            toplevel -= 1;
+        }
+        else
+        {
+            levels[toplevel] -= 1;
+            levels[toplevel + 1] = levels[toplevel] - 1;
+            toplevel += 1;
+
+            smooth_sort_fix(arr, i - leonardo[levels[toplevel]], toplevel - 1, levels, compare);
+            smooth_sort_fix(arr, i, toplevel, levels, compare);
+        }
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    if (end - beg &amp;gt; 1)
+    {
+        smooth_sort(&amp;amp;*beg, (size_t)(end - beg), compare);
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator&amp;gt;
+void smooth_sort(RandomAccessIterator beg, RandomAccessIterator end)
+{
+    smooth_sort(beg, end, std::less&amp;lt;typename std::iterator_traits&amp;lt;RandomAccessIterator&amp;gt;::value_type&amp;gt;());
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;weakheap-sort&#34;&gt;weakheap sort&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;unsigned char weakheap_getflag(unsigned char *r, size_t index)
+{
+    return (r[index &amp;gt;&amp;gt; 3] &amp;gt;&amp;gt; (index &amp;amp; 7)) &amp;amp; 1;
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void weakheap_merge(unsigned char flags[], RandomAccessIterator beg, RandomAccessIterator i, RandomAccessIterator j, Comp compare)
+{
+    if (compare(*i, *j))
+    {
+        flags[(j - beg) &amp;gt;&amp;gt; 3] ^= 1 &amp;lt;&amp;lt; ((j - beg) &amp;amp; 7);
+        std::swap(*i, *j);
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void weakheap_sort(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    if (end - beg &amp;gt; 1)
+    {
+        size_t n = (size_t)(end - beg);
+        unsigned char * flags = new unsigned char[(n + 7) / 8];
+        for (size_t i = 0; i &amp;lt; n / 8; ++i)
+            flags[i] = 0;
+        for (size_t i = n - 1; i &amp;gt; 0; --i)
+        {
+            size_t j = i;
+            while ((j &amp;amp; 1) == weakheap_getflag(flags, j &amp;gt;&amp;gt; 1))
+                j &amp;gt;&amp;gt;= 1;
+            weakheap_merge(flags, beg, beg + (j &amp;gt;&amp;gt; 1), beg + i, compare);
+        }
+        for (size_t i = n - 1; i &amp;gt; 1; --i)
+        {
+            std::swap(*beg, *(beg + i));
+            size_t j = 1, k;
+            while ((k = 2 * j + weakheap_getflag(flags, j)) &amp;lt; i)
+                j = k;
+            while (j &amp;gt; 0)
+            {
+                weakheap_merge(flags, beg, beg, beg + j, compare);
+                j &amp;gt;&amp;gt;= 1;
+            }
+        }
+        std::swap(*beg, *(beg + 1));
+        delete[] flags;
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator&amp;gt;
+void weakheap_sort(RandomAccessIterator beg, RandomAccessIterator end)
+{
+    weakheap_sort(beg, end, std::less&amp;lt;typename std::iterator_traits&amp;lt;RandomAccessIterator&amp;gt;::value_type&amp;gt;());
+}
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+    <item>
+      <title>堆排序优化思路</title>
+      <link>/post/20191015-sorting-3/</link>
+      <pubDate>Tue, 15 Oct 2019 20:52:52 +0800</pubDate>
+      <guid>/post/20191015-sorting-3/</guid>
+      <description>&lt;p&gt;堆排序其实是最不好优化的一个，在数据结构都确定的情况下，优化空间太小，除非优化数据结构本身，但那样就不叫做堆排序了。类似堆排序的还有&lt;code&gt;smooth sort&lt;/code&gt;和&lt;code&gt;weakheap sort&lt;/code&gt;，有兴趣可以自己查找相关资料。&lt;/p&gt;
+
+&lt;h2 id=&#34;堆排序原理&#34;&gt;堆排序原理&lt;/h2&gt;
+
+&lt;p&gt;堆排序其实是选择排序的优化变种，选择排序是把最大或最小的元素放到最边上，然后不断重复以上过程，堆排序也是如此，只不过堆排序通过构建数据结构，让查找最大或最小元素并放到最边上的速度比选择排序快得多。&lt;/p&gt;
+
+&lt;p&gt;首先我们先来介绍什么是堆。堆只是个缩写，全名是二叉堆，是一种完全二叉树，它的特点是二叉堆的父节点元素不小于子节点的元素，以下为二叉堆例图&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+30--&amp;gt;29
+30--&amp;gt;28
+29--&amp;gt;24
+29--&amp;gt;25
+28--&amp;gt;26
+28--&amp;gt;22
+24--&amp;gt;21
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;根节点是最大值的时候，就叫做最大堆，反之叫做最小堆。之所以使用完全二叉堆，是为了它能直接放到数组里，例如上图放数组里的结果是：&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;0&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;值&lt;/td&gt;
+&lt;td&gt;30&lt;/td&gt;
+&lt;td&gt;29&lt;/td&gt;
+&lt;td&gt;28&lt;/td&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;25&lt;/td&gt;
+&lt;td&gt;26&lt;/td&gt;
+&lt;td&gt;22&lt;/td&gt;
+&lt;td&gt;21&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;可以看出，就是按层序遍历的结果。这样表示的好处是，可以通过下标的简单运算得到子节点的下标，我们通过简单找规律就能发现，下标k的子节点是2k+1和2k+2，所以我们能直接在数组里组织一个二叉堆。而且堆的根节点就是最值，找最值的时间复杂度是O(1)&lt;/p&gt;
+
+&lt;p&gt;那么假如堆结构已经组织好了，我们接下来看怎么排序，还是以刚刚的数组作为例子，下标0就是最大值，那么我们就把它拿出来，与最右边元素交换，得到&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;0&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;值&lt;/td&gt;
+&lt;td&gt;21&lt;/td&gt;
+&lt;td&gt;29&lt;/td&gt;
+&lt;td&gt;28&lt;/td&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;25&lt;/td&gt;
+&lt;td&gt;26&lt;/td&gt;
+&lt;td&gt;22&lt;/td&gt;
+&lt;td&gt;&lt;strong&gt;30&lt;/strong&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;指针&lt;/td&gt;
+&lt;td&gt;r&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;下标7的是已经排好的，后面不管它。这时候堆的性质破坏了，我们要去修正，指针r的子结点分别是a和b，在r,a,b中找出最大的元素a与r交换，得到&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;0&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;值&lt;/td&gt;
+&lt;td&gt;29&lt;/td&gt;
+&lt;td&gt;21&lt;/td&gt;
+&lt;td&gt;28&lt;/td&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;25&lt;/td&gt;
+&lt;td&gt;26&lt;/td&gt;
+&lt;td&gt;22&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;指针&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;r&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;再继续操作&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;0&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;值&lt;/td&gt;
+&lt;td&gt;29&lt;/td&gt;
+&lt;td&gt;25&lt;/td&gt;
+&lt;td&gt;28&lt;/td&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;21&lt;/td&gt;
+&lt;td&gt;26&lt;/td&gt;
+&lt;td&gt;22&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;指针&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;r&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这时候，指针r已经没有子结点，这时候堆就修正好了。这个过程由于是从根向叶子的操作，叫做shiftdown，还有一种相反的过程叫做shiftup，就是从叶子向根的方向操作。以上就是一轮完整的操作，包括交换最值，修正堆两步。不断循环以上操作直到所有元素有序即可。&lt;/p&gt;
+
+&lt;p&gt;排序方法说完了，我们回头来说怎么构建堆。用shiftup法描述起来比较简单，一开始，只看下标0，那一个元素就肯定是堆。然后添加一个元素在最末，然后shiftup，修改新添加的元素，如此循环。伪代码如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;makeheap(arr, len)
+    for i in (1, len)
+        shiftup(arr, i)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;而使用shiftdown的话，原理一样，只是换一个方向&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;makeheap(arr, len)
+    for i in (len / 2, 1)
+        shiftdown(arr, i)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以下为完整动态图演示&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Heapsort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/1/1b/Sorting_heapsort_anim.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;堆排序基本实现&#34;&gt;堆排序基本实现&lt;/h2&gt;
+
+&lt;p&gt;以下shiftdown实现的函数名是max_heapify&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void max_heapify(sort_element_t arr[], size_t index, size_t length)
+{
+    size_t child;
+    sort_element_t temp = arr[index];
+    for (; (child = 2 * index + 1) &amp;lt; length; index = child)
+    {
+        if (child + 1 &amp;lt; length &amp;amp;&amp;amp; arr[child] &amp;lt; arr[child + 1])
+            ++child;
+        if (temp &amp;lt; arr[child])
+            arr[index] = arr[child];
+        else
+            break;
+    }
+    arr[index] = temp;
+}
+
+void heap_sort(sort_element_t arr[], size_t length)
+{
+    if (length &amp;gt; 1)
+    {
+        for (size_t i = length / 2; i-- &amp;gt; 0; )
+            max_heapify(arr, i, length);
+        for (size_t i = length - 1; i &amp;gt; 0; --i)
+        {
+            sort_element_swap(&amp;amp;arr[0], &amp;amp;arr[i]);
+            max_heapify(arr, 0, i);
+        }
+    }
+}
+
+void heap_sort(sort_element_t* beg, sort_element_t* end)
+{
+    heap_sort(beg, end - beg);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;堆排序-优化&#34;&gt;堆排序&amp;rdquo;优化&amp;rdquo;&lt;/h3&gt;
+
+&lt;p&gt;我们来重新看原来的表&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;0&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;值&lt;/td&gt;
+&lt;td&gt;30&lt;/td&gt;
+&lt;td&gt;29&lt;/td&gt;
+&lt;td&gt;28&lt;/td&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;25&lt;/td&gt;
+&lt;td&gt;26&lt;/td&gt;
+&lt;td&gt;22&lt;/td&gt;
+&lt;td&gt;21&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这里下标k的子节点是2k+1和2k+2，运算起来麻烦，那我们如果把所有的下标加1，得到&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;th&gt;8&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;值&lt;/td&gt;
+&lt;td&gt;30&lt;/td&gt;
+&lt;td&gt;29&lt;/td&gt;
+&lt;td&gt;28&lt;/td&gt;
+&lt;td&gt;24&lt;/td&gt;
+&lt;td&gt;25&lt;/td&gt;
+&lt;td&gt;26&lt;/td&gt;
+&lt;td&gt;22&lt;/td&gt;
+&lt;td&gt;21&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这时候，下标k的子节点是2k和2k+1，能减少一步加法运算&lt;/p&gt;
+
+&lt;p&gt;所以可以得到以下模板代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template &amp;lt;class RandomAccessIterator, class Comp&amp;gt;
+void max_heapify(RandomAccessIterator arr, size_t index, size_t last, Comp compare)
+{
+    typename std::iterator_traits&amp;lt;RandomAccessIterator&amp;gt;::value_type temp = arr[index];
+    size_t child;
+    for (; (child = index &amp;lt;&amp;lt; 1) &amp;lt;= last; index = child)
+    {
+        if (child &amp;lt; last &amp;amp;&amp;amp; compare(*(arr + child), *(arr + child + 1)))
+            ++child;
+        if (compare(temp, *(arr + child)))
+            *(arr + index) = *(arr + child);
+        else
+            break;
+    }
+    *(arr + index) = temp;
+}
+
+template &amp;lt;class RandomAccessIterator, class Comp&amp;gt;
+void heap_sort(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    if (end - beg &amp;gt; 1)
+    {
+        size_t length = (size_t)(end - beg);
+        RandomAccessIterator parr = beg - 1;
+        for (size_t i = length / 2; i &amp;gt; 0; --i)
+            max_heapify_1(parr, i, length, compare);
+        for (size_t i = length - 1; i &amp;gt; 0; --i)
+        {
+            std::swap(*beg, *(beg + i));
+            max_heapify_1(parr, 1, i, compare);
+        }
+    }
+}
+
+template &amp;lt;class RandomAccessIterator, class Comp&amp;gt;
+void heap_sort(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    heap_sort(beg, end, compare);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;但是，还是那句但是，这些所谓的优化到了不同编译器的手上结果可能会和你想象的不一样。这个在VS上是有效果的，但不幸的是这份代码在GCC下跑得并没有比原来的快，不过在GCC上办法还是有的，就是把下标操作全部换成指针，见代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template &amp;lt;class RandomAccessIterator, class Comp&amp;gt;
+void max_heapify_p(RandomAccessIterator first, RandomAccessIterator target, RandomAccessIterator last, Comp compare)
+{
+    typename std::iterator_traits&amp;lt;RandomAccessIterator&amp;gt;::value_type temp = *target;
+    --first;
+    RandomAccessIterator son;
+    for (; (son = target + (target - first)) &amp;lt;= last; target = son)
+    {
+        if (son &amp;lt; last &amp;amp;&amp;amp; compare(*son, *(son + 1)))
+            ++son;
+        if (compare(temp, *son))
+            *target = *son;
+        else
+            break;
+    }
+    *target = temp;
+}
+
+template &amp;lt;class RandomAccessIterator, class Comp&amp;gt;
+void heap_sort_p(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    if (end - beg &amp;gt; 1)
+    {
+        for (RandomAccessIterator i = beg + (end - beg) / 2; i &amp;gt;= beg; --i)
+            max_heapify_p(beg, i, end - 1, compare);
+        for (; --end &amp;gt; beg; )
+        {
+            std::swap(*beg, *end);
+            max_heapify_p(beg, beg, end - 1, compare);
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这份代码比GCC STL中的make_heap/sort_heap实现来得快一些。完整实现可以参见我的&lt;a href=&#34;https://github.com/Baobaobear/sort&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;堆排序其它注意问题&#34;&gt;堆排序其它注意问题&lt;/h2&gt;
+
+&lt;p&gt;堆排序在特殊情况下是能以O(n)复杂度完成的，就是当几乎所有元素或所有元素都相等的时候，是可以很快完成的。但是VS和GCC的STL中的堆排序实现面对这种情形时却花费较多的时间，原因是对相等元素的处理上，我们拿最前面的代码作为例子，我们如果改成这样子：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void max_heapify(sort_element_t arr[], size_t index, size_t length)
+{
+    size_t child;
+    sort_element_t temp = arr[index];
+    for (; (child = 2 * index + 1) &amp;lt; length; index = child)
+    {
+        if (child + 1 &amp;lt; length &amp;amp;&amp;amp; arr[child] &amp;lt; arr[child + 1])
+            ++child;
+        if (temp &amp;lt;= arr[child]) // 小于改小于等于
+            arr[index] = arr[child];
+        else
+            break;
+    }
+    arr[index] = temp;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;或者是&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void max_heapify(sort_element_t arr[], size_t index, size_t length)
+{
+    size_t child;
+    sort_element_t temp = arr[index];
+    for (; (child = 2 * index + 1) &amp;lt; length; index = child)
+    {
+        if (child + 1 &amp;lt; length &amp;amp;&amp;amp; arr[child] &amp;lt; arr[child + 1])
+            ++child;
+        if (arr[child] &amp;lt; temp) // 小于才跳出，与前一个等价
+            break;
+        arr[index] = arr[child];
+    }
+    arr[index] = temp;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样导致的后果是不存在最优情况下O(n)的时间复杂度。最后再来回应开头的问题，什么很少听说&lt;code&gt;smooth sort&lt;/code&gt;和&lt;code&gt;weakheap sort&lt;/code&gt;呢？单从时间复杂度其实看不出来不用它们的理由，但真正的问题是时间常数的问题，对普通的乱序数组，&lt;code&gt;smooth sort&lt;/code&gt;和&lt;code&gt;weakheap sort&lt;/code&gt;比&lt;code&gt;heap sort&lt;/code&gt;慢，而且实现更复杂。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>素数判断和因子分解</title>
+      <link>/post/20191013-prime-number/</link>
+      <pubDate>Sun, 13 Oct 2019 15:37:00 +0800</pubDate>
+      <guid>/post/20191013-prime-number/</guid>
+      <description>&lt;p&gt;这里记录的是素数判断 &lt;code&gt;Miller Rabbin&lt;/code&gt; 的快速判定算法，而分解使用的算法是 &lt;code&gt;Pollard Rho&lt;/code&gt; 的玄学分解算法，这个算法的理论依据是&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%94%9F%E6%97%A5%E5%95%8F%E9%A1%8C&#34; target=&#34;_blank&#34;&gt;生日悖论&lt;/a&gt;，这里不具体讨论这个数学问题，具体讨论看前面链接就可以了。&lt;/p&gt;
+
+&lt;p&gt;以下我们分别简要介绍这两个算法的原理&lt;/p&gt;
+
+&lt;p&gt;首先这是&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%B1%B3%E5%8B%92-%E6%8B%89%E5%AE%BE%E6%A3%80%E9%AA%8C&#34; target=&#34;_blank&#34;&gt;Miller Rabbin&lt;/a&gt;的维基百科介绍页，由于页面是中文，这里不做重复介绍。&lt;/p&gt;
+
+&lt;p&gt;下面简要解释一下Pollard&amp;rsquo;s Rho算法的原理，这是它的&lt;a href=&#34;https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm&#34; target=&#34;_blank&#34;&gt;维基百科页面&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;首先我们来定义这样一个函数&lt;/p&gt;
+
+&lt;p&gt;$$f(x)=(x*x+c)%n$$&lt;/p&gt;
+
+&lt;p&gt;其中n是需要被分解的数，c是一个任意小于n的正整数常数。那么我们给一个初始值x1，通过计算 $f(x1)$ 得到x2，然后去求 $|x1-x2|$ 与 n 的最大公约数，只要结果大于1就找到了分解结果。那如果最大公约数仍然是1，那么就通过刚才的x2求出 $x3=f(x2)$ 并计算 $|x1-x3|$ 与 n 的最大公约数。也就是说，我们可以通过这个公式得到一个数列&lt;/p&gt;
+
+&lt;p&gt;$$ x1,x2,x3,&amp;hellip;,xn,&amp;hellip; $$&lt;/p&gt;
+
+&lt;p&gt;但这个数列总是不会无限的，总是会循环的，那怎么去判断它有没有陷入循环呢，这用到的办法是Floyd判环算法，两个数在数列里以不同速度前进，如果环存在，那它们总会有相遇的时刻。在代码里，我们令变量x是正常速度，变量y是在x每迭代两次后y再迭代一次，所以如果环的长度是k，那么迭代k次就能发现环的存在。&lt;/p&gt;
+
+&lt;p&gt;而在具体实现中，如果发现环的存在，我们需要变换常数c，再次进行尝试。那么我们下面不废话直接上代码，作为笔记。为了避免部分环境的输入输出问题，main函数使用了C++的输入输出，其它部分可以作为C函数使用。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include&amp;lt;iostream&amp;gt;
+#include&amp;lt;cstdint&amp;gt;
+
+int64_t gcd(int64_t a, int64_t b)
+{
+    return b == 0 ? a : gcd(b, a%b);
+}
+
+int64_t mul(int64_t a, int64_t b, int64_t mod)
+{
+    a %= mod;
+    int64_t res = 0;
+    while (b) {
+        if (b &amp;amp; 1) res = (res + a) % mod;
+        b &amp;gt;&amp;gt;= 1;
+        a = (a &amp;lt;&amp;lt; 1) % mod;
+    }
+    return res;
+}
+
+int64_t quick_pow(int64_t a, int64_t n, int64_t mod)
+{
+    int64_t res = 1;
+    while (n)
+    {
+        if (n &amp;amp; 1) res = mul(res, a, mod);
+        a = mul(a, a, mod);
+        n &amp;gt;&amp;gt;= 1;
+    }
+    return res;
+}
+
+int miller_rabbin(int64_t n, int a)
+{
+    int r = 0;
+    int64_t s = n - 1;
+    if (!(n % a))
+        return 0;
+    while (!(s &amp;amp; 1))
+    {
+        s &amp;gt;&amp;gt;= 1;
+        r++;
+    }
+    int64_t k = quick_pow(a, s, n);
+    if (k == 1)
+        return 1;
+    for (int j = 0; j &amp;lt; r; j++, k = mul(k, k, n))
+        if (k == n - 1)
+            return 1;
+    return 0;
+}
+
+int is_prime(int64_t n)
+{
+    int test_large[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23 };
+    int test_small[] = { 2, 7, 61 };
+    int test_size = 9, *test = test_large;
+    if (n &amp;lt; 2)
+        return 0;
+    if (n &amp;lt; 4759123141)
+    {
+        test = test_small;
+        test_size = 3;
+    }
+    for (int i = 0; i &amp;lt; test_size; ++i)
+    {
+        if (n == test[i])
+            return 1;
+        if (miller_rabbin(n, test[i]) == 0)
+            return 0;
+    }
+    return 1;
+}
+
+int64_t pollard_rho(int64_t n, int c)
+{
+    int64_t x = rand() % (n - 1) + 1, y;
+    y = x = (mul(x, x, n) + c) % n;
+    for (int n_try = 3, i = 0; n_try; )
+    {
+        x = (mul(x, x, n) + c) % n;
+        if (y == x)
+        {
+            --n_try;
+            c = rand() % (n - 1) + 1;
+            continue;
+        }
+        int64_t d = gcd((y - x + n) % n, n);
+        if (d != 1 &amp;amp;&amp;amp; d != n)
+            return d;
+        if (++i == 2)
+        {
+            y = (mul(y, y, n) + c) % n;
+            i = 0;
+        }
+    }
+    return n;
+}
+
+int main(void)
+{
+    int64_t n;
+    std::cout &amp;lt;&amp;lt; &amp;quot;质数计算器，请输入任意小于1e18的正整数&amp;quot; &amp;lt;&amp;lt; std::endl;
+    while (std::cin &amp;gt;&amp;gt; n)
+    {
+        if (is_prime(n))
+        {
+            std::cout &amp;lt;&amp;lt; n &amp;lt;&amp;lt; &amp;quot;是质数&amp;quot; &amp;lt;&amp;lt; std::endl;
+        }
+        else if (n &amp;gt; 2)
+        {
+            int64_t p = pollard_rho(n, rand() % (n - 1) + 1);
+            std::cout &amp;lt;&amp;lt; n &amp;lt;&amp;lt; &amp;quot;不是质数，能被&amp;quot; &amp;lt;&amp;lt; p &amp;lt;&amp;lt; &amp;quot;整除&amp;quot; &amp;lt;&amp;lt; std::endl;
+        }
+        else
+        {
+            std::cout &amp;lt;&amp;lt; &amp;quot;请输入大于1小于1e18的整数&amp;quot; &amp;lt;&amp;lt; std::endl;
+        }
+    }
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以下为python版本实现&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import random
+
+def _try_composite(a, d, n, s):
+    if pow(a, d, n) == 1:
+        return False
+    for i in range(s):
+        if pow(a, 2**i * d, n) == n-1:
+            return False
+    return True
+
+def _is_prime(n):
+    if n in _known_primes:
+        return True
+    if n &amp;lt; 2 or any((n % p) == 0 for p in _known_primes):
+        return False
+    return True
+
+def is_prime(n, _precision_for_huge_n = 32):
+    if n in _known_primes:
+        return True
+    d, s = n - 1, 0
+    while not d % 2:
+        d, s = d &amp;gt;&amp;gt; 1, s + 1
+    if n &amp;lt; 4759123141: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 7, 61))
+    if n &amp;lt; 1122004669633: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 13, 23, 1662803))
+    if n &amp;lt; 3317044064679887385961981: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41))
+    return not any(_try_composite(a, d, n, s) 
+                   for a in _test_primes[:_precision_for_huge_n])
+ 
+_known_primes = [2, 3]
+_known_primes += [x for x in range(5, 1000, 2) if _is_prime(x)]
+_test_primes = [2,3,307] + _known_primes[2:]
+
+def gcd(a, b):
+    if b == 0:
+        return a
+    return gcd(b, a%b)
+
+def pollard_rho(n):
+    x, c, 0 = random.randint(1, n - 1), random.randint(1, n - 1), 0
+    y = x = (pow(x, 2, n) + c) % n
+    for n_try in range(3):
+        while True:
+            x = (pow(x, 2, n) + c) % n
+            if x == y:
+                c = random.randint(1, n - 1)
+                break
+            d = gcd(y - x + n, n)
+            if d &amp;gt; 1 and d &amp;lt; n:
+                return d
+            a += 1
+            if a == 2:
+                y = (pow(y, 2, n) + c) % n
+                a = 0
+    return n
+
+number = 3451973391686190983
+for i in range(number, number + 100, 2):
+    if is_prime(i):
+        print(i)
+        break
+
+if is_prime(number):
+    print(number, &amp;quot;prime number&amp;quot;)
+else:
+    a = pollard_rho(number)
+    print(number, &amp;quot;=&amp;quot;, a, &amp;quot;*&amp;quot;, number // a)
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+    <item>
       <title>二进制技巧</title>
       <link>/post/20191012-binary-skill/</link>
       <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
       <guid>/post/20191012-binary-skill/</guid>
-      <description>&lt;p&gt;二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了&lt;/p&gt;
+      <description>&lt;p&gt;二进制位运算的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了&lt;/p&gt;
 
 &lt;h2 id=&#34;单行表达式&#34;&gt;单行表达式&lt;/h2&gt;
 
@@ -240,7 +3635,11 @@ int main(void)
       <link>/post/20191009-sorting-2/</link>
       <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
       <guid>/post/20191009-sorting-2/</guid>
-      <description>&lt;p&gt;本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看&lt;a href=&#34;../20191008-sorting-1&#34;&gt;前一篇&lt;/a&gt;。&lt;/p&gt;
+      <description>&lt;p&gt;本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看&lt;a href=&#34;../20191008-sorting-1&#34;&gt;前一篇&lt;/a&gt;。我们来看插入排序的动图演示&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Insertion_sort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://github.com/heray1990/AlgorithmVisualization/blob/master/images/insertion_sort_50samples_fps30_dpi50.gif?raw=true&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。&lt;/p&gt;
 
 &lt;h2 id=&#34;插入排序基本实现&#34;&gt;插入排序基本实现&lt;/h2&gt;
 
@@ -448,7 +3847,11 @@ int main(void)
 
 &lt;h2 id=&#34;希尔排序&#34;&gt;希尔排序&lt;/h2&gt;
 
-&lt;p&gt;希尔排序的坑特别深，你需要有心理准备。希尔排序和梳排序类似，都是通过使用较大的步长让元素更快速地到达正确位置附近，不过在步长的选择上，希尔排序与梳排序差别巨大。首先梳排序的步长选择较为简单，每次乘以0.8即可，这个数字就不要管怎么来的了，我也不知道。梳排序的研究资料较少，但希尔排序则不一样，步长选择的研究非常多，也就是说光是步长的选择就是一门学问，这就是一个大坑，而且这个步长选择对性能的影响十分明显。我们先来看最早的希尔排序版本，最早的版本使用步长每次乘以0.5。&lt;/p&gt;
+&lt;p&gt;希尔排序的坑特别深，你需要有心理准备。希尔排序和梳排序类似，都是通过使用较大的步长让元素更快速地到达正确位置附近&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Shellsort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/d/d8/Sorting_shellsort_anim.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;不过在步长的选择上，希尔排序与梳排序差别巨大。首先梳排序的步长选择较为简单，每次乘以0.8即可，这个数字就不要管怎么来的了，我也不知道。梳排序的研究资料较少，但希尔排序则不一样，步长选择的研究非常多，也就是说光是步长的选择就是一门学问，这就是一个大坑，而且这个步长选择对性能的影响十分明显。我们先来看最早的希尔排序版本，最早的版本使用步长每次乘以0.5。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void shell_sort_0_5(sort_element_t * beg, sort_element_t * end)
 {
@@ -580,7 +3983,7 @@ int main(void)
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;这个哨兵技巧在其它的排序里面甚至别的问题里同样也会存在。除了这个还有没有别的优化空间呢？例如，shellsort的最优情况下的时间复杂度还是&lt;code&gt;O(nlogn)&lt;/code&gt;，那有没有办法使得最优情况时间复杂度下降到&lt;code&gt;O(n)&lt;/code&gt;呢？确实有办法，如果在某一轮发现没有数进行交换，那么就立即转成带次数限制的插入排序进行尝试，具体请参阅我的&lt;a href=&#34;(https://github.com/Baobaobear/sort)&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;这个哨兵技巧在其它的排序里面甚至别的问题里同样也会存在。除了这个还有没有别的优化空间呢？例如，shellsort的最优情况下的时间复杂度还是&lt;code&gt;O(nlogn)&lt;/code&gt;，那有没有办法使得最优情况时间复杂度下降到&lt;code&gt;O(n)&lt;/code&gt;呢？确实有办法，如果在某一轮发现没有数进行交换，那么就立即转成带次数限制的插入排序进行尝试，具体请参阅我的&lt;a href=&#34;https://github.com/Baobaobear/sort&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;。&lt;/p&gt;
 
 &lt;h2 id=&#34;测试结果&#34;&gt;测试结果&lt;/h2&gt;
 
@@ -682,7 +4085,7 @@ int main(void)
 &lt;/tbody&gt;
 &lt;/table&gt;
 
-&lt;p&gt;其中&lt;code&gt;bao_shell&lt;/code&gt;是我在&lt;a href=&#34;(https://github.com/Baobaobear/sort)&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;中写的希尔排序，使用了更优的步长序列，里面包含更多的优化技巧，本篇就不一一介绍了。&lt;/p&gt;</description>
+&lt;p&gt;其中&lt;code&gt;bao_shell&lt;/code&gt;是我在&lt;a href=&#34;https://github.com/Baobaobear/sort&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;中写的希尔排序，使用了更优的步长序列，里面包含更多的优化技巧，本篇就不一一介绍了。&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -699,6 +4102,8 @@ int main(void)
 这种方式写的，至于这样写有什么好处，接下来我们就看示例。&lt;/p&gt;
 
 &lt;h2 id=&#34;选择排序&#34;&gt;选择排序&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/heray1990/AlgorithmVisualization/master/images/selection_sort_50samples_fps30_dpi50.gif&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&#34;基本实现&#34;&gt;基本实现&lt;/h3&gt;
 
@@ -810,7 +4215,7 @@ void select_sort(sort_element_t * beg, sort_element_t * end)
 
 &lt;p&gt;以上这种叫做劣化版的选择排序，在大多数的情况下会比前一个方法慢，极端条件下甚至会慢1倍甚至更多&lt;/p&gt;
 
-&lt;p&gt;那说完劣化再讲优化，选择排序的时间复杂度是O(n^2)，而且运行时间与原来的排列完全无关。以上的选择排序总是选择小的，那大小一起选呢？能不能起到优化的作用？如果你单纯的多写一个find_max变成双向选择来做，在VS2005下是没有优化效果的，我测试过了。那应该怎么样呢？确实还是双向选择，不过具体实现稍有点不同。&lt;/p&gt;
+&lt;p&gt;那说完劣化再讲优化，选择排序的时间复杂度是$O(n^2)$，而且运行时间与原来的排列完全无关。以上的选择排序总是选择小的，那大小一起选呢？能不能起到优化的作用？如果你单纯的多写一个find_max变成双向选择来做，在VS2005下是没有优化效果的，我测试过了。那应该怎么样呢？确实还是双向选择，不过具体实现稍有点不同。&lt;/p&gt;
 
 &lt;h3 id=&#34;优化1-双向选择&#34;&gt;优化1，双向选择&lt;/h3&gt;
 
@@ -910,9 +4315,11 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 
 &lt;h3 id=&#34;优化2-数据结构&#34;&gt;优化2，数据结构&lt;/h3&gt;
 
-&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是O(n)，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成O(1)，而维护这个数据结构的代价是O(logn)的话，总体时间复杂度将变为O(nlogn)，这比起选择排序的O(n^2)就是一个巨大的变化，具体内容在之后的 &lt;strong&gt;堆排序&lt;/strong&gt; 篇具体讲解。&lt;/p&gt;
+&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是$O(n)$，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成$O(1)$，而维护这个数据结构的代价是$O(logn)$的话，总体时间复杂度将变为$O(nlogn)$，这比起选择排序的$O(n^2)$就是一个巨大的变化，具体内容在之后的 &lt;a href=&#34;../20191015-sorting-3/&#34;&gt;堆排序&lt;/a&gt; 篇具体讲解。&lt;/p&gt;
 
 &lt;h2 id=&#34;冒泡排序&#34;&gt;冒泡排序&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/5/54/Sorting_bubblesort_anim.gif&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&#34;基本实现-1&#34;&gt;基本实现&lt;/h3&gt;
 
@@ -931,7 +4338,7 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;冒泡排序这种写法，铁定的O(n^2)时间没跑，不过好在冒泡排序的优化方法也不少。&lt;/p&gt;
+&lt;p&gt;冒泡排序这种写法，铁定的$O(n^2)$时间没跑，不过好在冒泡排序的优化方法也不少。&lt;/p&gt;
 
 &lt;h3 id=&#34;优化1-提前跳出&#34;&gt;优化1，提前跳出&lt;/h3&gt;
 
@@ -954,11 +4361,13 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;通过sorted变量记录某一轮是不是存在交换，如果没有交换则表明数据已经是有序的，可以提前退出循环。有这个优化对于已经有序的数据，冒泡排序将运行得特别快，即最优情况时间复杂度只有O(n)&lt;/p&gt;
+&lt;p&gt;通过sorted变量记录某一轮是不是存在交换，如果没有交换则表明数据已经是有序的，可以提前退出循环。有这个优化对于已经有序的数据，冒泡排序将运行得特别快，即最优情况时间复杂度只有$O(n)$&lt;/p&gt;
 
 &lt;h3 id=&#34;优化2-鸡尾酒排序&#34;&gt;优化2，鸡尾酒排序&lt;/h3&gt;
 
 &lt;p&gt;前面的冒泡写法是单向冒泡，把最大值向最右边移，这回我们做成双向，一边把最大值右移，一边把最小值左移，不过这种方法有另一个命名，叫做鸡尾酒排序&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Cocktail_shaker_sort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/e/ef/Sorting_shaker_sort_anim.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void cocktail_sort(sort_element_t * beg, sort_element_t * end)
 {
@@ -1173,6 +4582,8 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 &lt;h3 id=&#34;优化4-梳排序&#34;&gt;优化4，梳排序&lt;/h3&gt;
 
 &lt;p&gt;通过一开始设置较大的步长，让元素能较快移动，然后逐步减少步长，直到1变成普通的冒泡排序为止。这个方法的优点，就是快，相对前面的方法来说飞快。当然，最后一步你也可以选择不调用冒泡排序，而改调用&lt;code&gt;cocktail_sort&lt;/code&gt;或&lt;code&gt;odd_even_sort&lt;/code&gt;都可以，差别不明显。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Comb_sort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/4/46/Comb_sort_demo.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void comb_sort(sort_element_t * beg, sort_element_t * end)
 {

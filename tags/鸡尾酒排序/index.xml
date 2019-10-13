@@ -27,6 +27,8 @@
 
 &lt;h2 id=&#34;选择排序&#34;&gt;选择排序&lt;/h2&gt;
 
+&lt;p&gt;&lt;img src=&#34;https://raw.githubusercontent.com/heray1990/AlgorithmVisualization/master/images/selection_sort_50samples_fps30_dpi50.gif&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
 &lt;h3 id=&#34;基本实现&#34;&gt;基本实现&lt;/h3&gt;
 
 &lt;p&gt;我们先来看选择排序，因为它编写简单，而且最不容易出错，我们来看以下两种不同的接口写法，我们定义要排序的数据类型名字是&lt;code&gt;sort_element_t&lt;/code&gt;，定义交换函数&lt;/p&gt;
@@ -137,7 +139,7 @@ void select_sort(sort_element_t * beg, sort_element_t * end)
 
 &lt;p&gt;以上这种叫做劣化版的选择排序，在大多数的情况下会比前一个方法慢，极端条件下甚至会慢1倍甚至更多&lt;/p&gt;
 
-&lt;p&gt;那说完劣化再讲优化，选择排序的时间复杂度是O(n^2)，而且运行时间与原来的排列完全无关。以上的选择排序总是选择小的，那大小一起选呢？能不能起到优化的作用？如果你单纯的多写一个find_max变成双向选择来做，在VS2005下是没有优化效果的，我测试过了。那应该怎么样呢？确实还是双向选择，不过具体实现稍有点不同。&lt;/p&gt;
+&lt;p&gt;那说完劣化再讲优化，选择排序的时间复杂度是$O(n^2)$，而且运行时间与原来的排列完全无关。以上的选择排序总是选择小的，那大小一起选呢？能不能起到优化的作用？如果你单纯的多写一个find_max变成双向选择来做，在VS2005下是没有优化效果的，我测试过了。那应该怎么样呢？确实还是双向选择，不过具体实现稍有点不同。&lt;/p&gt;
 
 &lt;h3 id=&#34;优化1-双向选择&#34;&gt;优化1，双向选择&lt;/h3&gt;
 
@@ -237,9 +239,11 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 
 &lt;h3 id=&#34;优化2-数据结构&#34;&gt;优化2，数据结构&lt;/h3&gt;
 
-&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是O(n)，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成O(1)，而维护这个数据结构的代价是O(logn)的话，总体时间复杂度将变为O(nlogn)，这比起选择排序的O(n^2)就是一个巨大的变化，具体内容在之后的 &lt;strong&gt;堆排序&lt;/strong&gt; 篇具体讲解。&lt;/p&gt;
+&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是$O(n)$，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成$O(1)$，而维护这个数据结构的代价是$O(logn)$的话，总体时间复杂度将变为$O(nlogn)$，这比起选择排序的$O(n^2)$就是一个巨大的变化，具体内容在之后的 &lt;a href=&#34;../20191015-sorting-3/&#34;&gt;堆排序&lt;/a&gt; 篇具体讲解。&lt;/p&gt;
 
 &lt;h2 id=&#34;冒泡排序&#34;&gt;冒泡排序&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/5/54/Sorting_bubblesort_anim.gif&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&#34;基本实现-1&#34;&gt;基本实现&lt;/h3&gt;
 
@@ -258,7 +262,7 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;冒泡排序这种写法，铁定的O(n^2)时间没跑，不过好在冒泡排序的优化方法也不少。&lt;/p&gt;
+&lt;p&gt;冒泡排序这种写法，铁定的$O(n^2)$时间没跑，不过好在冒泡排序的优化方法也不少。&lt;/p&gt;
 
 &lt;h3 id=&#34;优化1-提前跳出&#34;&gt;优化1，提前跳出&lt;/h3&gt;
 
@@ -281,11 +285,13 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;通过sorted变量记录某一轮是不是存在交换，如果没有交换则表明数据已经是有序的，可以提前退出循环。有这个优化对于已经有序的数据，冒泡排序将运行得特别快，即最优情况时间复杂度只有O(n)&lt;/p&gt;
+&lt;p&gt;通过sorted变量记录某一轮是不是存在交换，如果没有交换则表明数据已经是有序的，可以提前退出循环。有这个优化对于已经有序的数据，冒泡排序将运行得特别快，即最优情况时间复杂度只有$O(n)$&lt;/p&gt;
 
 &lt;h3 id=&#34;优化2-鸡尾酒排序&#34;&gt;优化2，鸡尾酒排序&lt;/h3&gt;
 
 &lt;p&gt;前面的冒泡写法是单向冒泡，把最大值向最右边移，这回我们做成双向，一边把最大值右移，一边把最小值左移，不过这种方法有另一个命名，叫做鸡尾酒排序&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Cocktail_shaker_sort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/e/ef/Sorting_shaker_sort_anim.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void cocktail_sort(sort_element_t * beg, sort_element_t * end)
 {
@@ -500,6 +506,8 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 &lt;h3 id=&#34;优化4-梳排序&#34;&gt;优化4，梳排序&lt;/h3&gt;
 
 &lt;p&gt;通过一开始设置较大的步长，让元素能较快移动，然后逐步减少步长，直到1变成普通的冒泡排序为止。这个方法的优点，就是快，相对前面的方法来说飞快。当然，最后一步你也可以选择不调用冒泡排序，而改调用&lt;code&gt;cocktail_sort&lt;/code&gt;或&lt;code&gt;odd_even_sort&lt;/code&gt;都可以，差别不明显。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Comb_sort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/4/46/Comb_sort_demo.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void comb_sort(sort_element_t * beg, sort_element_t * end)
 {

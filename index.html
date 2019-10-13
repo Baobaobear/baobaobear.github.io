@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2019-10-12T15:18:00&#43;08:00">
+    <meta property="og:updated_time" content="2019-12-31T08:26:00&#43;08:00">
   
 
   
@@ -482,6 +482,8 @@
           
           <li><a href="https://github.com/Baobaobear/sort" target="_blank">https://github.com/Baobaobear/sort</a></li>
           
+          <li>Join <a href="//shang.qq.com/wpa/qunwpa?idkey=065c51605479e520f1c99d7c6cf57706a9f7b4fa7be25544e11fdc6be6df30d9" target="_blank">QQgroup</a></li>
+          
         </ul>
       </div>
       
@@ -588,51 +590,433 @@
 
 
 
-
-
-
   
 
 
-<div class="media stream-item">
-  <div class="media-body">
+<div class="card-simple">
 
-    <h3 class="article-title mb-0 mt-0">
-      <a href="/post/20191012-binary-skill/" >二进制技巧</a>
-    </h3>
-
+  
     
-    <div class="article-style">
-      <p>二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了</p>
 
-<h2 id="单行表达式">单行表达式</h2>
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Dec 31, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191231-persistent_segtree/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191231-persistent_segtree/">可持久化线段树</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解<a href="../20191208-segtree/">线段树</a></p>
+
+<h2 id="概念">概念</h2>
+
+<p>所谓的可持久化，意思是你能得到所有的历史版本，为了达到这个效果，当然可以每次修改的时候，先整体复制再修改，结果自然就是会爆内存。而事实上，由于每次修改最多改一条链，而其它分支可以重用。我们先拿链表做例子，如果有个链表内容是 1-&gt;2-&gt;3-&gt;4-&gt;5 ，现在我们把3修改成6，得到 1-&gt;2-&gt;6-&gt;4-&gt;5 ，但是后面的元素没有改动，所以我们可以把后面的元素直接重叠在一起使用，如下图：</p>
+
+<pre><code class="language-mermaid">graph LR;
+1--&gt;2
+2--&gt;3
+3--&gt;4
+4--&gt;5
+1'--&gt;2'
+2'--&gt;6
+6--&gt;4
+</code></pre>
+
+<p>这样，完全可以当成两条不同的链表使用，同时节省空间。而可持久化线段树做法与这一样，就是没变的部分还使用原来节点，所以这个实现不能使用之前介绍的堆式储存，要和平衡树一样动态开节点。</p>
+
+<h2 id="数据结构">数据结构</h2>
+
+<p>假设我们的数据是以下这样</p>
 
 <table>
 <thead>
 <tr>
-<th>作用</th>
-<th>表达式</th>
+<th>下标</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
-<td>把右边连续的1变成0</td>
-<td>n &amp; ( n + 1 )</td>
+<td>数据</td>
+<td>1</td>
+<td>0</td>
+<td>5</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>构建线段树后结果如下</p>
+
+<pre><code class="language-mermaid">graph TD;
+1,4:8--&gt;1,2:1
+1,4:8--&gt;3,4:7
+1,2:1--&gt;1,1:1
+1,2:1--&gt;2,2:0
+3,4:7--&gt;3,3:5
+3,4:7--&gt;4,4:2
+</code></pre>
+
+<p>冒号前面的两个数表示一条线段，冒号后表示的是数据，这个数据表示的是这个区间的和。</p>
+
+<p>然后我们要把第3个元素从5改为1，构造第二棵线段树，首先复制一个root，包括儿子的指向也复制，得到</p>
+
+<pre><code class="language-mermaid">graph TD;
+1,4:8--&gt;1,2:1
+1,4:8--&gt;3,4:7
+1,2:1--&gt;1,1:1
+1,2:1--&gt;2,2:0
+3,4:7--&gt;3,3:5
+3,4:7--&gt;4,4:2
+1,4':8--&gt;1,2:1
+1,4':8--&gt;3,4:7
+</code></pre></p>
+    <a href="/post/20191231-persistent_segtree/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+      
+    
+      
+        
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Dec 16, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    5 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191216-kmp-manacher/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191216-kmp-manacher/">扩展KMP与Manacher</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p><a href="../20191028-kmp/">KMP</a>已经介绍过了，这次主要介绍的是Manacher</p>
+
+<h2 id="最长回文子串">最长回文子串</h2>
+
+<p>Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。</p>
+
+<p>先定义数组v，<code>v[i]</code>表示以第i个字符为中心，到回文串一端的距离，我们以字符串<code>&quot;acabacab&quot;</code>为例，如下表（index是下标）</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>index</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
 </tr>
 
 <tr>
-<td>把右边第一个1变成0</td>
-<td>n &amp; ( n - 1 ) …</td></tr></tbody></table>
-    </div>
-    
+<td>m</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
 
-    <div class="stream-meta article-metadata">
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>v</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针</p>
+
+<p>然后++i，注意这时候，由于以字符b两边是对称的，所以在求<code>v[4]</code>的值的时候，可以先查<code>v[2]</code>的值，是1，所以<code>v[4]</code>也是1</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>index</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+</tr>
+
+<tr>
+<td>m</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>v</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>再继续++i，同样的，在求<code>v[5]</code>的值的时候，可以先查<code>v[1]</code>的值，是2，但是，这个长度达到了e指针的位置，即<code>i+2&gt;=e</code>，这时候就更新指针m，并扩展e的位置，即比较<code>str[7]</code>与<code>str[3]</code>，找到以下标5为中心的回文串边界。</p></p>
+    <a href="/post/20191216-kmp-manacher/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
 
       
-
+    
       
         
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
 
 
 
@@ -647,7 +1031,7 @@
     
       
     
-    Oct 12, 2019
+    Dec 15, 2019
   </span>
   
 
@@ -664,108 +1048,7 @@
   
   
   <span class="middot-divider"></span>
-  <a href="/post/20191012-binary-skill/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%ac%94%e8%ae%b0">笔记</a></span>
-  
-
-  
-
-</div>
-
-      
-    </div>
-
-    
-
-  </div>
-  <div class="ml-3">
-    
-    
-  </div>
-</div>
-
-      
-    
-      
-        
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="media stream-item">
-  <div class="media-body">
-
-    <h3 class="article-title mb-0 mt-0">
-      <a href="/post/20191009-sorting-2/" >插入排序与希尔排序优化思路</a>
-    </h3>
-
-    
-    <div class="article-style">
-      <p>本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看<a href="../20191008-sorting-1">前一篇</a>。</p>
-
-<h2 id="插入排序基本实现">插入排序基本实现</h2>
-
-<p>我们先来看插入排序的基本实现</p>
-
-<pre><code class="language-cpp">void insert_sort(sort_element_t * beg, …</code></pre>
-    </div>
-    
-
-    <div class="stream-meta article-metadata">
-
-      
-
-      
-        
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 10, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    4 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191009-sorting-2/#disqus_thread"></a>
+  <a href="/post/20191215-fhq-treap/#disqus_thread"></a>
   
 
   
@@ -779,16 +1062,53 @@
 
 </div>
 
-      
-    </div>
+  
 
-    
+  
+  
+  
 
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191215-fhq-treap/">FHQ Treap</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>讲完了<a href="../20191211-treap-sbt/">treap</a>和<a href="../20191213-tree-sequence/">splaytree</a>，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。</p>
+
+<p>splay其实还有两个操作split和merge没有介绍，我打算把这两放在这里一并介绍</p>
+
+<h2 id="split和merge">Split和Merge</h2>
+
+<p>Split就是把树按某个条件划分成两棵子树，如果是查找树，就按某个值划分为小于它的以及大于等于它的（等于号取哪边怎么好写怎么来就是），如果是序列维护，那就按照rank来划分。而merge操作则正好相反，把两棵子树合并成为一棵。所以，如果我们需要对某个区间做操作，那么我们就把那个区间Split出来，操作好了后（打懒惰标记，或取出结果）再Merge回去就行了，与splay操作的思路是差不多的。不过为了在split再merge后能间接对树的平衡性优化，我们不能简单地merge，要套用Treap的随机数法，我们先来看怎么split。</p>
+
+<p>先定义好接口<code>void split(int tp, int k, int &amp;x, int &amp;y)</code>，x是返回的左子树，y是返回的右子树，接着我们需要递归split，如果划分点在左子树，那么y一定是根，反之划分点在右子树，那么x一定是根。确定了其中一个，在递归调用的时候，假如y确定了，于是还没确定的，就是x以及根节点的左子树的指向，所以把这两传参就行了，时间复杂度 $O(logn)$ ，具体代码如下：</p>
+
+<pre><code class="language-cpp">// 维护序列的实现
+void split(int tp, int k, int &amp;x, int &amp;y)
+{
+    if (!tp) { x = y = 0; return; }
+    pushdown(tp);
+    if (k &lt;= nodes[ch(tp, 0)].sz)
+    {
+        y = tp;
+        split(ch(tp, 0), k, x, ch(tp, 0));
+        update(y);
+    }
+    else
+    {
+        x = tp;
+        split(ch(tp, 1), k - nodes[ch(tp, 0)].sz - 1, ch(tp, 1), y);
+        update(x);
+    }
+}
+</code></pre></p>
+    <a href="/post/20191215-fhq-treap/">Read more...</a>
   </div>
-  <div class="ml-3">
-    
-    
-  </div>
+  
+
+  
+
 </div>
 
       
@@ -804,32 +1124,13 @@
 
 
 
-
-
-
   
 
 
-<div class="media stream-item">
-  <div class="media-body">
+<div class="card-simple">
 
-    <h3 class="article-title mb-0 mt-0">
-      <a href="/post/20191008-sorting-1/" >选择和冒泡排序优化思路</a>
-    </h3>
-
+  
     
-    <div class="article-style">
-      <p>本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有<br />
-<code>void sort(type arr[], int len) …</code></p>
-    </div>
-    
-
-    <div class="stream-meta article-metadata">
-
-      
-
-      
-        
 
 
 
@@ -844,7 +1145,7 @@
     
       
     
-    Oct 8, 2019
+    Dec 13, 2019
   </span>
   
 
@@ -853,7 +1154,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    6 min read
+    9 min read
   </span>
   
 
@@ -861,7 +1162,7 @@
   
   
   <span class="middot-divider"></span>
-  <a href="/post/20191008-sorting-1/#disqus_thread"></a>
+  <a href="/post/20191213-tree-sequence/#disqus_thread"></a>
   
 
   
@@ -875,16 +1176,29 @@
 
 </div>
 
-      
-    </div>
+  
 
-    
+  
+  
+  
 
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191213-tree-sequence/">平衡树与序列维护</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于<a href="../20191211-treap-sbt/">treap</a>的文章。</p>
+
+<h2 id="序列维护">序列维护</h2>
+
+<p>在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。</p></p>
+    <a href="/post/20191213-tree-sequence/">Read more...</a>
   </div>
-  <div class="ml-3">
-    
-    
-  </div>
+  
+
+  
+
 </div>
 
       
@@ -900,35 +1214,13 @@
 
 
 
-
-
-
   
 
 
-<div class="media stream-item">
-  <div class="media-body">
+<div class="card-simple">
 
-    <h3 class="article-title mb-0 mt-0">
-      <a href="/post/20191007-qsort-talk-1/" >Quick sort(快速排序)杂谈 1</a>
-    </h3>
-
+  
     
-    <div class="article-style">
-      <p>我们现在使用的排序，很大比例在使用quick sort，因为它是平均速度最快的排序，但与此同时它可能也是坑最深的排序，现在我们就来讨论讨论它，因为内容较多，我计划写多篇，本篇是第一篇。</p>
-
-<h2 id="快排的思路">快排的思路</h2>
-
-<p>我们先来介绍一下快排的思路。快排的思路其实很简单，在数组中选一个元 …</p>
-    </div>
-    
-
-    <div class="stream-meta article-metadata">
-
-      
-
-      
-        
 
 
 
@@ -943,7 +1235,7 @@
     
       
     
-    Oct 7, 2019
+    Dec 11, 2019
   </span>
   
 
@@ -952,7 +1244,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    2 min read
+    8 min read
   </span>
   
 
@@ -960,7 +1252,7 @@
   
   
   <span class="middot-divider"></span>
-  <a href="/post/20191007-qsort-talk-1/#disqus_thread"></a>
+  <a href="/post/20191211-treap-sbt/#disqus_thread"></a>
   
 
   
@@ -974,113 +1266,39 @@
 
 </div>
 
-      
-    </div>
+  
 
-    
+  
+  
+  
 
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191211-treap-sbt/">Treap与SBT</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>这里之所以把这两个放在一起讲，是因为它们实在是相似度很高（至少在竞赛领域），都需要求kth和指定元素的rank（Treap的话可有可无，但通常会需要）。不过如果你没有写过树，强烈建议你自己通过理解来写一遍。</p>
+
+<h2 id="bst">BST</h2>
+
+<p>首先，Treap和SBT都属于BST的一种，BST就是<a href="https://zh.wikipedia.org/wiki/%E4%BA%8C%E5%85%83%E6%90%9C%E5%B0%8B%E6%A8%B9" target="_blank">二叉搜索树</a>，它满足的特点是：</p>
+
+<ul>
+<li>二叉树</li>
+<li>没有两个节点的值相等</li>
+<li>任意子树的根节点的值都比左子树所有节点的值要大</li>
+<li>任意子树的根节点的值都比右子树所有节点的值要小</li>
+<li>任意子树均为二叉搜索树</li>
+</ul>
+
+<p>如果我们实在需要支持多个相同值放在树里面，那么有两种情况，如果那些相同值是确实完全没有区别（例如int），那么只需要在每个节点多加一个字段记录这个值出现的次数就可以了，但如果这些值只有偏序关系，可能不是严格相等，存在其它非比较字段，那么我们就再在每个节点增加一个next域做成一个链表即可。</p></p>
+    <a href="/post/20191211-treap-sbt/">Read more...</a>
   </div>
-  <div class="ml-3">
-    
-    
-  </div>
-</div>
-
-      
-    
-      
-        
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="media stream-item">
-  <div class="media-body">
-
-    <h3 class="article-title mb-0 mt-0">
-      <a href="/post/20191006-mingw-bug/" >Mingw 的 Bug</a>
-    </h3>
-
-    
-    <div class="article-style">
-      <p>这个问题最早的时候是今年8月，我在测试排序算法的速度，发现mingw上总有点不一样，而linux下的gcc是正常的，也在群里问过人，没人明白到底怎么回事，先描述一下当时遇到的情况。</p>
-
-<p>一开始我使用<code>std::random_shuffle</code>打乱数组并用<code>std::sort</code>排序， …</p>
-    </div>
-    
-
-    <div class="stream-meta article-metadata">
-
-      
-
-      
-        
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 6, 2019
-  </span>
   
 
   
 
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    1 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191006-mingw-bug/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e6%9d%82%e8%b0%88">杂谈</a></span>
-  
-
-  
-
-</div>
-
-      
-    </div>
-
-    
-
-  </div>
-  <div class="ml-3">
-    
-    
-  </div>
 </div>
 
       
@@ -1172,12 +1390,17 @@
           
           
           
-          <a href="/tags/c/" style="font-size:3.3rem">c</a>
+          <a href="/tags/bst/" style="font-size:0.7rem">BST</a>
         
           
           
           
-          <a href="/tags/c&#43;&#43;/" style="font-size:3.718506523353571rem">c&#43;&#43;</a>
+          <a href="/tags/c/" style="font-size:4.6000000000000005rem">c</a>
+        
+          
+          
+          
+          <a href="/tags/c&#43;&#43;/" style="font-size:6.013701693625443rem">c&#43;&#43;</a>
         
           
           
@@ -1187,7 +1410,32 @@
           
           
           
+          <a href="/tags/fenwick-tree/" style="font-size:0.7rem">Fenwick Tree</a>
+        
+          
+          
+          
+          <a href="/tags/fhq-treap/" style="font-size:0.7rem">FHQ Treap</a>
+        
+          
+          
+          
           <a href="/tags/hugo/" style="font-size:0.7rem">hugo</a>
+        
+          
+          
+          
+          <a href="/tags/kmp/" style="font-size:2rem">KMP</a>
+        
+          
+          
+          
+          <a href="/tags/manacher/" style="font-size:0.7rem">Manacher</a>
+        
+          
+          
+          
+          <a href="/tags/miller-rabbin/" style="font-size:0.7rem">Miller Rabbin</a>
         
           
           
@@ -1197,77 +1445,47 @@
           
           
           
-          <a href="/tags/partition/" style="font-size:0.7rem">partition</a>
+          <a href="/tags/stl/" style="font-size:2.7604512509375025rem">stl</a>
         
           
           
           
-          <a href="/tags/random_shuffle/" style="font-size:0.7rem">random_shuffle</a>
+          <a href="/tags/treap/" style="font-size:2.7604512509375025rem">Treap</a>
         
           
           
           
-          <a href="/tags/stl/" style="font-size:0.7rem">stl</a>
+          <a href="/tags/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/" style="font-size:2.7604512509375025rem">快速排序</a>
         
           
           
           
-          <a href="/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6/" style="font-size:0.7rem">二进制</a>
+          <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size:4.349561398674886rem">排序</a>
         
           
           
           
-          <a href="/tags/%E5%86%92%E6%B3%A1%E6%8E%92%E5%BA%8F/" style="font-size:0.7rem">冒泡排序</a>
+          <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" style="font-size:4.349561398674886rem">数据结构</a>
         
           
           
           
-          <a href="/tags/%E5%A5%87%E5%81%B6%E6%8E%92%E5%BA%8F/" style="font-size:0.7rem">奇偶排序</a>
+          <a href="/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/" style="font-size:2rem">模式匹配</a>
         
           
           
           
-          <a href="/tags/%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F/" style="font-size:0.7rem">希尔排序</a>
+          <a href="/tags/%E6%A8%A1%E6%9D%BF/" style="font-size:4.820902501875007rem">模板</a>
         
           
           
           
-          <a href="/tags/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/" style="font-size:0.7rem">快速排序</a>
+          <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size:5.360451250937504rem">算法</a>
         
           
           
           
-          <a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size:2.7604512509375025rem">排序</a>
-        
-          
-          
-          
-          <a href="/tags/%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F/" style="font-size:0.7rem">插入排序</a>
-        
-          
-          
-          
-          <a href="/tags/%E6%A2%B3%E6%8E%92%E5%BA%8F/" style="font-size:0.7rem">梳排序</a>
-        
-          
-          
-          
-          <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size:3.718506523353571rem">算法</a>
-        
-          
-          
-          
-          <a href="/tags/%E8%A1%A8%E6%A0%BC/" style="font-size:0.7rem">表格</a>
-        
-          
-          
-          
-          <a href="/tags/%E9%80%89%E6%8B%A9%E6%8E%92%E5%BA%8F/" style="font-size:0.7rem">选择排序</a>
-        
-          
-          
-          
-          <a href="/tags/%E9%B8%A1%E5%B0%BE%E9%85%92%E6%8E%92%E5%BA%8F/" style="font-size:0.7rem">鸡尾酒排序</a>
+          <a href="/tags/%E7%BA%BF%E6%AE%B5%E6%A0%91/" style="font-size:2rem">线段树</a>
         
       </div>
     
@@ -1388,7 +1606,7 @@
     
     
     
-    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
 
     
 

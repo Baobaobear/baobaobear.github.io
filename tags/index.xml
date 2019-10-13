@@ -5,7 +5,7 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 12 Oct 2019 15:18:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Tue, 31 Dec 2019 08:26:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Tags</title>
@@ -13,18 +13,274 @@
     </image>
     
     <item>
+      <title>c&#43;&#43;</title>
+      <link>/tags/c&#43;&#43;/</link>
+      <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
+      <guid>/tags/c&#43;&#43;/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>可持久化</title>
+      <link>/tags/%E5%8F%AF%E6%8C%81%E4%B9%85%E5%8C%96/</link>
+      <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
+      <guid>/tags/%E5%8F%AF%E6%8C%81%E4%B9%85%E5%8C%96/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>数据结构</title>
+      <link>/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</link>
+      <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
+      <guid>/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>模板</title>
+      <link>/tags/%E6%A8%A1%E6%9D%BF/</link>
+      <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
+      <guid>/tags/%E6%A8%A1%E6%9D%BF/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>线段树</title>
+      <link>/tags/%E7%BA%BF%E6%AE%B5%E6%A0%91/</link>
+      <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
+      <guid>/tags/%E7%BA%BF%E6%AE%B5%E6%A0%91/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>c</title>
       <link>/tags/c/</link>
-      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
+      <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
       <guid>/tags/c/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>c&#43;&#43;</title>
-      <link>/tags/c&#43;&#43;/</link>
-      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
-      <guid>/tags/c&#43;&#43;/</guid>
+      <title>KMP</title>
+      <link>/tags/kmp/</link>
+      <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
+      <guid>/tags/kmp/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Manacher</title>
+      <link>/tags/manacher/</link>
+      <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
+      <guid>/tags/manacher/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>模式匹配</title>
+      <link>/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/</link>
+      <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
+      <guid>/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>算法</title>
+      <link>/tags/%E7%AE%97%E6%B3%95/</link>
+      <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
+      <guid>/tags/%E7%AE%97%E6%B3%95/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>FHQ Treap</title>
+      <link>/tags/fhq-treap/</link>
+      <pubDate>Sun, 15 Dec 2019 13:10:00 +0800</pubDate>
+      <guid>/tags/fhq-treap/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Treap</title>
+      <link>/tags/treap/</link>
+      <pubDate>Sun, 15 Dec 2019 13:10:00 +0800</pubDate>
+      <guid>/tags/treap/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SplayTree</title>
+      <link>/tags/splaytree/</link>
+      <pubDate>Fri, 13 Dec 2019 13:10:00 +0800</pubDate>
+      <guid>/tags/splaytree/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>BST</title>
+      <link>/tags/bst/</link>
+      <pubDate>Wed, 11 Dec 2019 13:10:00 +0800</pubDate>
+      <guid>/tags/bst/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SBT</title>
+      <link>/tags/sbt/</link>
+      <pubDate>Wed, 11 Dec 2019 13:10:00 +0800</pubDate>
+      <guid>/tags/sbt/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>suffix array</title>
+      <link>/tags/suffix-array/</link>
+      <pubDate>Wed, 13 Nov 2019 18:26:00 +0800</pubDate>
+      <guid>/tags/suffix-array/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>后缀数组</title>
+      <link>/tags/%E5%90%8E%E7%BC%80%E6%95%B0%E7%BB%84/</link>
+      <pubDate>Wed, 13 Nov 2019 18:26:00 +0800</pubDate>
+      <guid>/tags/%E5%90%8E%E7%BC%80%E6%95%B0%E7%BB%84/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Fenwick Tree</title>
+      <link>/tags/fenwick-tree/</link>
+      <pubDate>Mon, 11 Nov 2019 13:32:00 +0800</pubDate>
+      <guid>/tags/fenwick-tree/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>树状数组</title>
+      <link>/tags/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/</link>
+      <pubDate>Mon, 11 Nov 2019 13:32:00 +0800</pubDate>
+      <guid>/tags/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>状态机</title>
+      <link>/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/</link>
+      <pubDate>Mon, 28 Oct 2019 13:32:00 +0800</pubDate>
+      <guid>/tags/%E7%8A%B6%E6%80%81%E6%9C%BA/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>stl</title>
+      <link>/tags/stl/</link>
+      <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
+      <guid>/tags/stl/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>对抗数据生成</title>
+      <link>/tags/%E5%AF%B9%E6%8A%97%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90/</link>
+      <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
+      <guid>/tags/%E5%AF%B9%E6%8A%97%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>快速排序</title>
+      <link>/tags/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
+      <guid>/tags/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>排序</title>
+      <link>/tags/%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
+      <guid>/tags/%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>复数</title>
+      <link>/tags/%E5%A4%8D%E6%95%B0/</link>
+      <pubDate>Fri, 18 Oct 2019 14:17:00 +0800</pubDate>
+      <guid>/tags/%E5%A4%8D%E6%95%B0/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>数学</title>
+      <link>/tags/%E6%95%B0%E5%AD%A6/</link>
+      <pubDate>Fri, 18 Oct 2019 14:17:00 +0800</pubDate>
+      <guid>/tags/%E6%95%B0%E5%AD%A6/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>数论</title>
+      <link>/tags/%E6%95%B0%E8%AE%BA/</link>
+      <pubDate>Fri, 18 Oct 2019 14:17:00 +0800</pubDate>
+      <guid>/tags/%E6%95%B0%E8%AE%BA/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>smooth sort</title>
+      <link>/tags/smooth-sort/</link>
+      <pubDate>Thu, 17 Oct 2019 17:14:00 +0800</pubDate>
+      <guid>/tags/smooth-sort/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>weakheap sort</title>
+      <link>/tags/weakheap-sort/</link>
+      <pubDate>Thu, 17 Oct 2019 17:14:00 +0800</pubDate>
+      <guid>/tags/weakheap-sort/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>堆排序</title>
+      <link>/tags/%E5%A0%86%E6%8E%92%E5%BA%8F/</link>
+      <pubDate>Tue, 15 Oct 2019 20:52:52 +0800</pubDate>
+      <guid>/tags/%E5%A0%86%E6%8E%92%E5%BA%8F/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Miller Rabbin</title>
+      <link>/tags/miller-rabbin/</link>
+      <pubDate>Sun, 13 Oct 2019 15:37:00 +0800</pubDate>
+      <guid>/tags/miller-rabbin/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Pollard&#39;s Rho</title>
+      <link>/tags/pollards-rho/</link>
+      <pubDate>Sun, 13 Oct 2019 15:37:00 +0800</pubDate>
+      <guid>/tags/pollards-rho/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>python</title>
+      <link>/tags/python/</link>
+      <pubDate>Sun, 13 Oct 2019 15:37:00 +0800</pubDate>
+      <guid>/tags/python/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>素数</title>
+      <link>/tags/%E7%B4%A0%E6%95%B0/</link>
+      <pubDate>Sun, 13 Oct 2019 15:37:00 +0800</pubDate>
+      <guid>/tags/%E7%B4%A0%E6%95%B0/</guid>
       <description></description>
     </item>
     
@@ -45,26 +301,10 @@
     </item>
     
     <item>
-      <title>算法</title>
-      <link>/tags/%E7%AE%97%E6%B3%95/</link>
-      <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
-      <guid>/tags/%E7%AE%97%E6%B3%95/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>希尔排序</title>
       <link>/tags/%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F/</link>
       <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
       <guid>/tags/%E5%B8%8C%E5%B0%94%E6%8E%92%E5%BA%8F/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>排序</title>
-      <link>/tags/%E6%8E%92%E5%BA%8F/</link>
-      <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
-      <guid>/tags/%E6%8E%92%E5%BA%8F/</guid>
       <description></description>
     </item>
     
@@ -125,14 +365,6 @@
     </item>
     
     <item>
-      <title>快速排序</title>
-      <link>/tags/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</link>
-      <pubDate>Mon, 07 Oct 2019 14:18:22 +0800</pubDate>
-      <guid>/tags/%E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>mingw</title>
       <link>/tags/mingw/</link>
       <pubDate>Sun, 06 Oct 2019 13:04:08 +0800</pubDate>
@@ -145,14 +377,6 @@
       <link>/tags/random_shuffle/</link>
       <pubDate>Sun, 06 Oct 2019 13:04:08 +0800</pubDate>
       <guid>/tags/random_shuffle/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>stl</title>
-      <link>/tags/stl/</link>
-      <pubDate>Sun, 06 Oct 2019 13:04:08 +0800</pubDate>
-      <guid>/tags/stl/</guid>
       <description></description>
     </item>
     

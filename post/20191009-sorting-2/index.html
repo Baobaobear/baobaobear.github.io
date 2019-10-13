@@ -28,7 +28,11 @@
   
     
   
-  <meta name="description" content="本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。
+  <meta name="description" content="本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。我们来看插入排序的动图演示
+
+
+
+插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。
 
 插入排序基本实现
 
@@ -135,7 +139,11 @@ void insert_sort(sort_element_t * beg, sort_element_t * end)
   <meta property="og:site_name" content="Baobaobear">
   <meta property="og:url" content="/post/20191009-sorting-2/">
   <meta property="og:title" content="插入排序与希尔排序优化思路 | Baobaobear">
-  <meta property="og:description" content="本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。
+  <meta property="og:description" content="本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。我们来看插入排序的动图演示
+
+
+
+插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。
 
 插入排序基本实现
 
@@ -208,7 +216,7 @@ void insert_sort(sort_element_t * beg, sort_element_t * end)
       "url": "/img/icon-512.png"
     }
   },
-  "description": "\u003cp\u003e本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看\u003ca href=\"../20191008-sorting-1\"\u003e前一篇\u003c/a\u003e。\u003c/p\u003e\n\n\u003ch2 id=\"插入排序基本实现\"\u003e插入排序基本实现\u003c/h2\u003e\n\n\u003cp\u003e我们先来看插入排序的基本实现\u003c/p\u003e\n\n\u003cpre\u003e\u003ccode class=\"language-cpp\"\u003evoid insert_sort(sort_element_t * beg, sort_element_t * end)\n{\n    for (sort_element_t* i = beg + 1; i \u0026lt; end; ++i)\n    {\n        sort_element_t val = *i;\n        sort_element_t* j = i;\n        for (; j \u0026gt; beg \u0026amp;\u0026amp; val \u0026lt; j[-1]; --j)\n        {\n            *j = j[-1];\n        }\n        *j = val;\n    }\n}\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003cp\u003e插入排序即使不做任何优化，效率也明显高于上篇所说的冒泡排序和选择排序。那么按照惯例，先上双向看看效果\u003c/p\u003e"
+  "description": "\u003cp\u003e本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看\u003ca href=\"../20191008-sorting-1\"\u003e前一篇\u003c/a\u003e。我们来看插入排序的动图演示\u003c/p\u003e\n\n\u003cp\u003e\u003ca href=\"https://en.wikipedia.org/wiki/Insertion_sort\" target=\"_blank\"\u003e\u003cimg src=\"https://github.com/heray1990/AlgorithmVisualization/blob/master/images/insertion_sort_50samples_fps30_dpi50.gif?raw=true\" alt=\"\" /\u003e\u003c/a\u003e\u003c/p\u003e\n\n\u003cp\u003e插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。\u003c/p\u003e\n\n\u003ch2 id=\"插入排序基本实现\"\u003e插入排序基本实现\u003c/h2\u003e\n\n\u003cp\u003e我们先来看插入排序的基本实现\u003c/p\u003e\n\n\u003cpre\u003e\u003ccode class=\"language-cpp\"\u003evoid insert_sort(sort_element_t * beg, sort_element_t * end)\n{\n    for (sort_element_t* i = beg + 1; i \u0026lt; end; ++i)\n    {\n        sort_element_t val = *i;\n        sort_element_t* j = i;\n        for (; j \u0026gt; beg \u0026amp;\u0026amp; val \u0026lt; j[-1]; --j)\n        {\n            *j = j[-1];\n        }\n        *j = val;\n    }\n}\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003cp\u003e插入排序即使不做任何优化，效率也明显高于上篇所说的冒泡排序和选择排序。那么按照惯例，先上双向看看效果\u003c/p\u003e"
 }
 </script>
 
@@ -485,6 +493,90 @@ void insert_sort(sort_element_t * beg, sort_element_t * end)
 
   
     
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191009-sorting-2/&amp;text=%e6%8f%92%e5%85%a5%e6%8e%92%e5%ba%8f%e4%b8%8e%e5%b8%8c%e5%b0%94%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191009-sorting-2/&amp;t=%e6%8f%92%e5%85%a5%e6%8e%92%e5%ba%8f%e4%b8%8e%e5%b8%8c%e5%b0%94%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e6%8f%92%e5%85%a5%e6%8e%92%e5%ba%8f%e4%b8%8e%e5%b8%8c%e5%b0%94%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af&amp;body=/post/20191009-sorting-2/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191009-sorting-2/&amp;title=%e6%8f%92%e5%85%a5%e6%8e%92%e5%ba%8f%e4%b8%8e%e5%b8%8c%e5%b0%94%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e6%8f%92%e5%85%a5%e6%8e%92%e5%ba%8f%e4%b8%8e%e5%b8%8c%e5%b0%94%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af%20/post/20191009-sorting-2/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191009-sorting-2/&amp;title=%e6%8f%92%e5%85%a5%e6%8e%92%e5%ba%8f%e4%b8%8e%e5%b8%8c%e5%b0%94%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
 
   
 
@@ -513,7 +605,11 @@ void insert_sort(sort_element_t * beg, sort_element_t * end)
   <div class="article-container">
 
     <div class="article-style">
-      <p>本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看<a href="../20191008-sorting-1">前一篇</a>。</p>
+      <p>本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看<a href="../20191008-sorting-1">前一篇</a>。我们来看插入排序的动图演示</p>
+
+<p><a href="https://en.wikipedia.org/wiki/Insertion_sort" target="_blank"><img src="https://github.com/heray1990/AlgorithmVisualization/blob/master/images/insertion_sort_50samples_fps30_dpi50.gif?raw=true" alt="" /></a></p>
+
+<p>插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。</p>
 
 <h2 id="插入排序基本实现">插入排序基本实现</h2>
 
@@ -721,7 +817,11 @@ void insert_sort(sort_element_t * beg, sort_element_t * end)
 
 <h2 id="希尔排序">希尔排序</h2>
 
-<p>希尔排序的坑特别深，你需要有心理准备。希尔排序和梳排序类似，都是通过使用较大的步长让元素更快速地到达正确位置附近，不过在步长的选择上，希尔排序与梳排序差别巨大。首先梳排序的步长选择较为简单，每次乘以0.8即可，这个数字就不要管怎么来的了，我也不知道。梳排序的研究资料较少，但希尔排序则不一样，步长选择的研究非常多，也就是说光是步长的选择就是一门学问，这就是一个大坑，而且这个步长选择对性能的影响十分明显。我们先来看最早的希尔排序版本，最早的版本使用步长每次乘以0.5。</p>
+<p>希尔排序的坑特别深，你需要有心理准备。希尔排序和梳排序类似，都是通过使用较大的步长让元素更快速地到达正确位置附近</p>
+
+<p><a href="https://en.wikipedia.org/wiki/Shellsort" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/d/d8/Sorting_shellsort_anim.gif" alt="" /></a></p>
+
+<p>不过在步长的选择上，希尔排序与梳排序差别巨大。首先梳排序的步长选择较为简单，每次乘以0.8即可，这个数字就不要管怎么来的了，我也不知道。梳排序的研究资料较少，但希尔排序则不一样，步长选择的研究非常多，也就是说光是步长的选择就是一门学问，这就是一个大坑，而且这个步长选择对性能的影响十分明显。我们先来看最早的希尔排序版本，最早的版本使用步长每次乘以0.5。</p>
 
 <pre><code class="language-cpp">void shell_sort_0_5(sort_element_t * beg, sort_element_t * end)
 {
@@ -853,7 +953,7 @@ void insert_sort(sort_element_t * beg, sort_element_t * end)
 }
 </code></pre>
 
-<p>这个哨兵技巧在其它的排序里面甚至别的问题里同样也会存在。除了这个还有没有别的优化空间呢？例如，shellsort的最优情况下的时间复杂度还是<code>O(nlogn)</code>，那有没有办法使得最优情况时间复杂度下降到<code>O(n)</code>呢？确实有办法，如果在某一轮发现没有数进行交换，那么就立即转成带次数限制的插入排序进行尝试，具体请参阅我的<a href="(https://github.com/Baobaobear/sort)" target="_blank">sort项目</a>。</p>
+<p>这个哨兵技巧在其它的排序里面甚至别的问题里同样也会存在。除了这个还有没有别的优化空间呢？例如，shellsort的最优情况下的时间复杂度还是<code>O(nlogn)</code>，那有没有办法使得最优情况时间复杂度下降到<code>O(n)</code>呢？确实有办法，如果在某一轮发现没有数进行交换，那么就立即转成带次数限制的插入排序进行尝试，具体请参阅我的<a href="https://github.com/Baobaobear/sort" target="_blank">sort项目</a>。</p>
 
 <h2 id="测试结果">测试结果</h2>
 
@@ -955,7 +1055,7 @@ void insert_sort(sort_element_t * beg, sort_element_t * end)
 </tbody>
 </table>
 
-<p>其中<code>bao_shell</code>是我在<a href="(https://github.com/Baobaobear/sort)" target="_blank">sort项目</a>中写的希尔排序，使用了更优的步长序列，里面包含更多的优化技巧，本篇就不一一介绍了。</p>
+<p>其中<code>bao_shell</code>是我在<a href="https://github.com/Baobaobear/sort" target="_blank">sort项目</a>中写的希尔排序，使用了更优的步长序列，里面包含更多的优化技巧，本篇就不一一介绍了。</p>
     </div>
 
     
@@ -1204,7 +1304,7 @@ void insert_sort(sort_element_t * beg, sort_element_t * end)
     
     
     
-    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
 
     
 

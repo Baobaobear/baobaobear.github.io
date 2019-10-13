@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>后缀数组 | Baobaobear</title>
+    <link>/tags/%E5%90%8E%E7%BC%80%E6%95%B0%E7%BB%84/</link>
+      <atom:link href="/tags/%E5%90%8E%E7%BC%80%E6%95%B0%E7%BB%84/index.xml" rel="self" type="application/rss+xml" />
+    <description>后缀数组</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Wed, 13 Nov 2019 18:26:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>后缀数组</title>
+      <link>/tags/%E5%90%8E%E7%BC%80%E6%95%B0%E7%BB%84/</link>
+    </image>
+    
+    <item>
+      <title>后缀数组</title>
+      <link>/post/20191113-suffixarray/</link>
+      <pubDate>Wed, 13 Nov 2019 18:26:00 +0800</pubDate>
+      <guid>/post/20191113-suffixarray/</guid>
+      <description>&lt;p&gt;后缀数组其实概念很好理解，就是给出一个字符串，长度是n，对它所有的n个后缀编号从1到n进行排序，排序后，最小的那个后缀的编号假设是m1，那么&lt;code&gt;sa[1] = m1&lt;/code&gt;，类似地，第二小的是m2的话，&lt;code&gt;sa[2] = m2&lt;/code&gt;，sa这个数组就是我们所需要的后缀数组。根据这个，我们可以直接用sort算出sa，以下为最简单的实现&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct SA_simple
+{
+    vector&amp;lt;int&amp;gt; sa;
+    int s_size;
+    const char* p_s;
+    int size() const
+    {
+        return s_size;
+    }
+    static bool cmp(const char* x, const char* y)
+    {
+        return strcmp(x, y) &amp;lt; 0;
+    }
+    void init(char * str)
+    {
+        int n = strlen(str);
+        s_size = n;
+        p_s = str - 1;
+
+        sa.resize(n + 1);
+        vector&amp;lt; const char* &amp;gt; rp;
+        rp.resize(n + 1);
+
+        for (int i = 1; i &amp;lt;= n; ++i)
+        {
+            rp[i] = p_s + i;
+        }
+        sort(rp.begin() + 1, rp.end(), cmp);
+        for (int i = 1; i &amp;lt;= n; ++i)
+        {
+            sa[i] = rp[i] - p_s;
+        }
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个实现的时间复杂度 $O(n^2logn)$&lt;/p&gt;
+
+&lt;p&gt;要注意的一点是下标从1开始。有了这个，可以做点什么呢？例如给你一个串p，求出p在主串s中出现了多少次。那么在有了sa的情况下，因为sa是有序的，问题就变成了二分搜索，分别用&lt;code&gt;lower_bound&lt;/code&gt;和&lt;code&gt;upper_bound&lt;/code&gt;通过sa搜索p，两个相减便得出现次数。&lt;/p&gt;
+
+&lt;h2 id=&#34;rank-数组&#34;&gt;rank 数组&lt;/h2&gt;
+
+&lt;p&gt;光有sa其实还不够用，我们还需要rank数组，&lt;code&gt;rank[m]&lt;/code&gt;的值是p的话，那么表示字符串中编号m的后缀，它的排名是p，即与sa数组是互逆，所以我们可以得到 &lt;code&gt;sa[rank[i]] == rank[sa[i]] == i&lt;/code&gt; ，也就是说通过rank，可以快速判断某两个后缀的大小关系。&lt;/p&gt;
+
+&lt;h2 id=&#34;height-数组&#34;&gt;height 数组&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;height[i]&lt;/code&gt;的值表示的是，&lt;code&gt;sa[i-1]&lt;/code&gt;与&lt;code&gt;sa[i]&lt;/code&gt;这两个后缀的相同前缀长度，特别地，&lt;code&gt;height[1] == 0&lt;/code&gt;，求解height需要用到rank数组和sa数组，以及如下引理&lt;/p&gt;
+
+&lt;p&gt;$$height[rank[i]]\ge height[rank[i-1]]-1$$&lt;/p&gt;
+
+&lt;p&gt;通过以上引理直接暴力实现即可，复杂度 $O(n)$ ，这里不做证明。&lt;/p&gt;
+
+&lt;p&gt;三个数组的完整实现如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct SA_simple
+{
+    vector&amp;lt;int&amp;gt; sa, rk, ht;
+protected:
+    int s_size;
+    const char* p_s;
+public:
+    int size() const
+    {
+        return s_size;
+    }
+
+    static bool cmp(const char* x, const char* y)
+    {
+        return strcmp(x, y) &amp;lt; 0;
+    }
+
+    void init(char * str, bool h = true)
+    {
+        int n = strlen(str);
+        s_size = n;
+        p_s = str - 1;
+
+        sa.resize(n + 1);
+        rk.resize(n + 1);
+        vector&amp;lt;const char*&amp;gt; rp;
+        rp.resize(n + 1);
+
+        for (int i = 1; i &amp;lt;= n; ++i)
+        {
+            rp[i] = p_s + i;
+        }
+        sort(rp.begin() + 1, rp.end(), cmp);
+        for (int i = 1; i &amp;lt;= n; ++i)
+        {
+            sa[i] = rp[i] - p_s;
+            rk[sa[i]] = i;
+        }
+        if (h) create_height();
+    }
+    void create_height()
+    {
+        ht.resize(s_size + 1);
+        for (int i = 1, k = 0; i &amp;lt;= s_size; ++i)
+        {
+            if (k) --k;
+            while (p_s[i + k] == p_s[sa[rk[i] - 1] + k])
+                ++k;
+            ht[rk[i]] = k;
+        }
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;应用1-可重叠最长重复子串&#34;&gt;应用1 可重叠最长重复子串&lt;/h2&gt;
+
+&lt;p&gt;这个题目在本博客讲&lt;a href=&#34;../20191028-kmp/&#34;&gt;kmp&lt;/a&gt;部分已经有介绍，例如&lt;code&gt;eabcaefabcabc&lt;/code&gt;，最长重复子串是&lt;code&gt;abca&lt;/code&gt;，长度是4，这里介绍用后缀数组的解法。其实所谓的最长重复子串，就是找到两个后缀，让它们的公共前缀最长，那这就简单了，我们只要在height数组里找最大值就可以了，查找时间 $O(n)$ 。&lt;/p&gt;
+
+&lt;h2 id=&#34;应用2-不同子串的个数&#34;&gt;应用2 不同子串的个数&lt;/h2&gt;
+
+&lt;p&gt;来看这道题 &lt;a href=&#34;https://vjudge.net/problem/SPOJ-DISUBSTR&#34; target=&#34;_blank&#34;&gt;SPOJ-DISUBSTR&lt;/a&gt; ，说的是统计一个字符串里有多少不同的子串。&lt;/p&gt;
+
+&lt;p&gt;这里我们就需要用到height数组，由于它表示的正是和前一个后缀的相同前缀长度，那么我们对任意的后缀&lt;code&gt;sa[i]&lt;/code&gt;，取这个后缀的长度，即&lt;code&gt;len(s)-sa[i]&lt;/code&gt;，减去&lt;code&gt;height[i]&lt;/code&gt;再加上1，即表示&lt;code&gt;sa[i]&lt;/code&gt;这个后缀有多少个前缀与&lt;code&gt;sa[i-1]&lt;/code&gt;不相同，所以我们累加即可。核心代码也就这么几行&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int sum_h = 0;
+for (int i = 1; i &amp;lt;= sa.size(); ++i)
+{
+    sum_h += sa.size() - sa.sa[i] - sa.ht[i] + 1;
+}
+printf(&amp;quot;%d\n&amp;quot;, sum_h);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;也许有人会发现问题了，这个题直接用hash实现，才 $O(n^2)$ 的复杂度，这个后缀数组的实现，光是生成就 $O(n^2logn)$ ，不是还更慢吗？单看时间复杂度的确是这样，但事实上后缀数组可以0ms通过，hash实现约400ms左右。&lt;/p&gt;
+
+&lt;h2 id=&#34;优化&#34;&gt;优化&lt;/h2&gt;
+
+&lt;p&gt;直接排序的后缀数组确实过于暴力了，虽然不少题目已经足够AC，但我们还有更好的，这里简要介绍倍增法。假设对字符串&amp;rdquo;ababaabb&amp;rdquo;求后缀数组，那么先对每一个字符做排序，计算出它们的rank，注意相同串的rank结果要相同，结果在下表的&amp;rdquo;排序1&amp;rdquo;，然后我们对每个&lt;code&gt;i&lt;/code&gt;和&lt;code&gt;i+1&lt;/code&gt;在&amp;rdquo;排序1&amp;rdquo;上的rank组合起来，这个组合的key再做排序，如下表&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;th&gt;8&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;原&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;排序1&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;组合1&lt;/td&gt;
+&lt;td&gt;1 2&lt;/td&gt;
+&lt;td&gt;2 1&lt;/td&gt;
+&lt;td&gt;1 2&lt;/td&gt;
+&lt;td&gt;2 1&lt;/td&gt;
+&lt;td&gt;1 1&lt;/td&gt;
+&lt;td&gt;1 2&lt;/td&gt;
+&lt;td&gt;2 2&lt;/td&gt;
+&lt;td&gt;2 0&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;排序2&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;事实上这样得到了所有后缀中，前缀长度为2的排名，接下来，我们步长翻倍，对每个&lt;code&gt;i&lt;/code&gt;和&lt;code&gt;i+2&lt;/code&gt;在&amp;rdquo;排序2&amp;rdquo;上的rank组合起来再排序&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;th&gt;8&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;排序2&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;组合2&lt;/td&gt;
+&lt;td&gt;2 2&lt;/td&gt;
+&lt;td&gt;4 4&lt;/td&gt;
+&lt;td&gt;2 1&lt;/td&gt;
+&lt;td&gt;4 2&lt;/td&gt;
+&lt;td&gt;1 5&lt;/td&gt;
+&lt;td&gt;2 3&lt;/td&gt;
+&lt;td&gt;5 0&lt;/td&gt;
+&lt;td&gt;3 0&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;排序3&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;事实上这样得到了所有后缀中，前缀长度为4的排名，接下来，我们步长翻倍，对每个&lt;code&gt;i&lt;/code&gt;和&lt;code&gt;i+4&lt;/code&gt;在&amp;rdquo;排序3&amp;rdquo;上的rank组合起来再排序&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;th&gt;8&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;排序3&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;组合3&lt;/td&gt;
+&lt;td&gt;3 1&lt;/td&gt;
+&lt;td&gt;7 4&lt;/td&gt;
+&lt;td&gt;2 8&lt;/td&gt;
+&lt;td&gt;6 5&lt;/td&gt;
+&lt;td&gt;1 0&lt;/td&gt;
+&lt;td&gt;4 0&lt;/td&gt;
+&lt;td&gt;8 0&lt;/td&gt;
+&lt;td&gt;5 0&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;排序4&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;至此，再下一轮的步长是8，已经大于等于字符串长度的时候，rank数组便计算完成了。以下是使用此思路的实现代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct SA_2_sort
+{
+    vector&amp;lt;int&amp;gt; sa, ht;
+    int *rk;
+protected:
+    vector&amp;lt;int&amp;gt; rk1, rk2;
+    int s_size;
+    int *p_rk, *o_rk;
+    const char* p_s;
+
+    struct SA_2_sort_cmp
+    {
+        int *rk, w;
+        SA_2_sort_cmp(int *_rk, int _w) :rk(_rk), w(_w) {}
+        bool operator()(int x, int y) const
+        {
+            return rk[x] == rk[y] ? rk[x + w] &amp;lt; rk[y + w] : rk[x] &amp;lt; rk[y];
+        }
+    };
+public:
+    bool cmp(int x, int y, int w)
+    {
+        return o_rk[x] == o_rk[y] &amp;amp;&amp;amp; o_rk[x + w] == o_rk[y + w];
+    }
+    int size() const
+    {
+        return s_size;
+    }
+    void init(char * str, bool h = true)
+    {
+        int n = strlen(str);
+        s_size = n;
+        p_s = str - 1;
+        sa.resize(n + 1);
+        rk1.clear(); rk1.resize(n * 2 + 2);
+        rk2.clear(); rk2.resize(n * 2 + 2);
+        p_rk = &amp;amp;*rk1.begin();
+        o_rk = &amp;amp;*rk2.begin();
+
+        for (int i = 1; i &amp;lt;= n; ++i) p_rk[i] = p_s[i];
+
+        for (int w = 1, i, p; w &amp;lt; n; w &amp;lt;&amp;lt;= 1)
+        {
+            // init sa
+            for (int i = 1; i &amp;lt;= n; ++i) sa[i] = i;
+
+            sort(sa.begin() + 1, sa.end(), SA_2_sort_cmp(p_rk, w));
+
+            // write new rank
+            for (std::swap(p_rk, o_rk), p = 0, i = 1; i &amp;lt;= n; ++i)
+                p_rk[sa[i]] = cmp(sa[i], sa[i - 1], w) ? p : ++p;
+        }
+        rk = p_rk;
+        if (n == 1) sa[1] = rk[1] = 1;
+        if (h) create_height();
+    }
+    void create_height()
+    {
+        int n = s_size;
+        ht.resize(n + 1);
+        for (int i = 1, k = 0; i &amp;lt;= n; ++i)
+        {
+            if (k) --k;
+            while (p_s[i + k] == p_s[sa[p_rk[i] - 1] + k])
+                ++k;
+            ht[p_rk[i]] = k;
+        }
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以上实现的时间复杂度是 $O(nlog^2n)$ ，如果你想要更快，那就用 $O(n)$ 的计数排序吧，便可把整体时间复杂度下降到 $O(nlogn)$&lt;/p&gt;
+
+&lt;h2 id=&#34;再优化&#34;&gt;再优化&lt;/h2&gt;
+
+&lt;p&gt;绝大多数情况下，使用以上方法 $O(nlogn)$ 复杂度已经够用了，但如果你是一个更有追求的人，可以继续学习 $O(n)$ 复杂度建立后缀数组的办法，名字叫做&lt;code&gt;SA-IS&lt;/code&gt;和&lt;code&gt;DC3&lt;/code&gt;，你可以通过搜索以上两个名字得到更具体的介绍，本文就只介绍到这里。&lt;/p&gt;
+
+&lt;h2 id=&#34;o-nlogn-模板&#34;&gt;$O(nlogn)$ 模板&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct SA_2
+{
+    vector&amp;lt;int&amp;gt; sa, ht;
+    int *rk;
+protected:
+    vector&amp;lt;int&amp;gt; rk1, rk2;
+    int s_size;
+    int *p_rk, *o_rk;
+    const char* p_s;
+public:
+    bool cmp(int x, int y, int w)
+    {
+        return o_rk[x] == o_rk[y] &amp;amp;&amp;amp; o_rk[x + w] == o_rk[y + w];
+    }
+    int size() const
+    {
+        return s_size;
+    }
+    void init(char * str, bool h = true)
+    {
+        int n = strlen(str);
+        s_size = n;
+        p_s = str - 1;
+        int cnt_size = max(256, n) + 1;
+        vector&amp;lt;int&amp;gt; vid, vpx, vcnt;
+        sa.resize(n + 1);
+        rk1.clear(); rk1.resize(n * 2 + 2);
+        rk2.clear(); rk2.resize(n * 2 + 2);
+        vid.resize(n + 1); vpx.resize(n + 1);
+        vcnt.resize(cnt_size);
+        int* id = &amp;amp;*vid.begin();
+        int* px = &amp;amp;*vpx.begin();
+        int* cnt = &amp;amp;*vcnt.begin();
+        p_rk = &amp;amp;*rk1.begin();
+        o_rk = &amp;amp;*rk2.begin();
+
+        int m = 128, p = 0;
+        for (int i = 1; i &amp;lt;= n; ++i) ++cnt[p_rk[i] = p_s[i]];
+        for (int i = 1; i &amp;lt;= m; ++i) cnt[i] += cnt[i - 1];
+        for (int i = n; i &amp;gt;= 1; --i) sa[cnt[p_rk[i]]--] = i;
+
+        for (int w = 1, i; w &amp;lt; n; w &amp;lt;&amp;lt;= 1, m = p)
+        {
+            // init id
+            for (p = 0, i = n; i &amp;gt; n - w; --i)
+                id[++p] = i;
+            for (int i = 1; i &amp;lt;= n; ++i)
+                if (sa[i] &amp;gt; w) id[++p] = sa[i] - w;
+
+            sort(cnt, id, px, n, m);
+
+            // write new rank
+            for (std::swap(p_rk, o_rk), p = 0, i = 1; i &amp;lt;= n; ++i)
+                p_rk[sa[i]] = cmp(sa[i], sa[i - 1], w) ? p : ++p;
+        }
+        rk = p_rk;
+        if (n == 1) sa[1] = rk[1] = 1;
+        if (h) create_height();
+    }
+    void sort(int* cnt, int* id, int* px, int n, int m)
+    {
+        memset(cnt, 0, sizeof(int) * (m + 1));
+        for (int i = 1; i &amp;lt;= n; ++i)
+            ++cnt[px[i] = p_rk[id[i]]];
+        for (int i = 1; i &amp;lt;= m; ++i)
+            cnt[i] += cnt[i - 1];
+        for (int i = n; i &amp;gt;= 1; --i)
+            sa[cnt[px[i]]--] = id[i];
+    }
+    void create_height()
+    {
+        int n = s_size;
+        ht.resize(n + 1);
+        for (int i = 1, k = 0; i &amp;lt;= n; ++i)
+        {
+            if (k) --k;
+            while (p_s[i + k] == p_s[sa[p_rk[i] - 1] + k])
+                ++k;
+            ht[p_rk[i]] = k;
+        }
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

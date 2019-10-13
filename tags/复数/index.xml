@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>复数 | Baobaobear</title>
+    <link>/tags/%E5%A4%8D%E6%95%B0/</link>
+      <atom:link href="/tags/%E5%A4%8D%E6%95%B0/index.xml" rel="self" type="application/rss+xml" />
+    <description>复数</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Fri, 18 Oct 2019 14:17:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>复数</title>
+      <link>/tags/%E5%A4%8D%E6%95%B0/</link>
+    </image>
+    
+    <item>
+      <title>毕氏三元数与复数</title>
+      <link>/post/20191018-pythagorean-triple/</link>
+      <pubDate>Fri, 18 Oct 2019 14:17:00 +0800</pubDate>
+      <guid>/post/20191018-pythagorean-triple/</guid>
+      <description>&lt;p&gt;所谓毕氏（毕达哥拉斯）三元数（Pythagorean triple），又叫做勾股数，商高数，是由毕氏定理衍生出来的，即直角三角形两直角边的平方和等于第三边的平方。毕氏三元数就是满足方程 $a^2+b^2=c^2$ 的正整数解，例如3,4,5这组解，以下我们用 $(3,4,5)$ 来表示一组毕氏三元数。这里存在一个问题，有没有可能表示出所有的正整数解呢？&lt;/p&gt;
+
+&lt;p&gt;假设我们随意取直角边的长度，例如1和2，那么斜边长为 $\sqrt{5}$ ，斜边长度不是整数，那怎么把它变成整数呢，很简单，直接平方一下，可是两直角边就不对了，那怎么解决呢？标题上已经剧透了我们要使用复数，那么，我们可以把斜边看成是一个复数，而两直角边分别是复数的实部和虚部，那么我们就可以把刚刚例子中的直角三角形用 $2+i$ 来表示，那我们对这个复数计算平方，$(2+i)(2+i)=4+4i-1=3+4i$，这个复数的模就是5。哎？我们看到了这是啥？是不是正好表示 $(3,4,5)$ ，这是巧合吗？&lt;/p&gt;
+
+&lt;p&gt;我们再来换一组，就 $3+2i$ 吧，平方一下，得到 $(3+2i)(3+2i)=9+12i-4=5+12i$ ，模是13，表示的是 $(5,12,13)$ 。刚刚的都是实部比虚部要大的，再试试虚部大的 $(2+3i)(2+3i)=4+12-9=-5+12i$ ，得到的是方程的负数解。你继续试验其它的值的话将得到更多的毕氏三元数。&lt;/p&gt;
+
+&lt;p&gt;首先我们要知道一个结论，实部虚部都是整数的复数，它平方后实部虚部仍然是整数，同时它的模也会得到整数，那么它的实部虚部的平方和，就等于模的平方。例如 $(a+bi)(a+bi)=a^2+2abi-b^2=a^2-b^2+2abi$ ，而这个复数的模是 $a^2+b^2$，于是我们得到毕氏三元数的整数解公式&lt;/p&gt;
+
+&lt;p&gt;$$(u^2-v^2,2uv,u^2+v^2)$$&lt;/p&gt;
+
+&lt;p&gt;接下来我们用另一种方法证明&lt;/p&gt;
+
+&lt;p&gt;根据原式公式 $a^2+b^2=c^2$ ，我们假定a与b互质，那么可推论a,b,c两两互质，又称为素三元数。原式子可以改写为 $a^2=c^2-b^2=(c+b)(c-b)$ 那么 $\frac{a}{c-b}=\frac{c+b}{a}$ ，令 $\frac{c-b}{a}=\frac{c}{a}-\frac{b}{a}=\frac{n}{m}$ ，其中$m,n$都是正整数且互质，得$\frac{c+b}{a}=\frac{c}{a}+\frac{b}{a}=\frac{m}{n}$ 两式相加得&lt;/p&gt;
+
+&lt;p&gt;$$\frac{c}{a}=\frac{1}{2}(\frac{n}{m}+\frac{m}{n})=\frac{m^2+n^2}{2mn}$$&lt;/p&gt;
+
+&lt;p&gt;两式相减得&lt;/p&gt;
+
+&lt;p&gt;$$\frac{b}{a}=\frac{1}{2}(\frac{m}{n}-\frac{n}{m})=\frac{m^2-n^2}{2mn}$$&lt;/p&gt;
+
+&lt;p&gt;因为我们需要$a,b,c$都是正整数，所以$\frac{c}{a}$与$\frac{b}{a}$是有理数且不可约简（它们之间互质），而且两数分母一样，而这两个等式右边分母都是$2mn$，即式子左右两边分母相等，所以$a=2mn$且$\frac{m^2+n^2}{2mn}$与$\frac{m^2-n^2}{2mn}$不可约简（互质）。另外因为分母一定是偶数，所以$m,n$当中必须一个奇数一个偶数。由此解得三元数公式与前面完全一致。&lt;/p&gt;
+
+&lt;p&gt;那有没有这个公式无法表示的毕氏三元数呢，我们假设这个无法表示的三元数是$(a&amp;rsquo;,b&amp;rsquo;,c&amp;rsquo;)$，那么c-b是个正整数，所以$\frac{c-b}{a}$一定是有理数，满足 $\frac{c-b}{a}=\frac{n}{m}$ 的唯一的一对素质m与n必定存在，而通过这个m与n必定能通过上面的公式表示出$(a&amp;rsquo;,b&amp;rsquo;,c&amp;rsquo;)$，但前提是a,b,c之间两两互质，在这个前提下，与前面假设矛盾，所以这个公式能表示所有的素毕氏三元数，但不能表示所有的毕氏三元数。&lt;/p&gt;
+
+&lt;p&gt;那咱们回到复数表示法上，对于任意的 $(a,b,c)$ ，相应的复数定义为 $a+bi$ ，再通过前面的公式替换为 $m^2-n^2+2mni$ ，然后我们来求解 $\sqrt{m^2-n^2+2mni}=m+ni$，即任意整系数复数的平方，均能表示一组毕氏三元数。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

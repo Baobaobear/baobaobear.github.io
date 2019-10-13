@@ -1,0 +1,1843 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>模式匹配 | Baobaobear</title>
+    <link>/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/</link>
+      <atom:link href="/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/index.xml" rel="self" type="application/rss+xml" />
+    <description>模式匹配</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 16 Dec 2019 18:23:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>模式匹配</title>
+      <link>/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/</link>
+    </image>
+    
+    <item>
+      <title>扩展KMP与Manacher</title>
+      <link>/post/20191216-kmp-manacher/</link>
+      <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
+      <guid>/post/20191216-kmp-manacher/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;../20191028-kmp/&#34;&gt;KMP&lt;/a&gt;已经介绍过了，这次主要介绍的是Manacher&lt;/p&gt;
+
+&lt;h2 id=&#34;最长回文子串&#34;&gt;最长回文子串&lt;/h2&gt;
+
+&lt;p&gt;Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。&lt;/p&gt;
+
+&lt;p&gt;先定义数组v，&lt;code&gt;v[i]&lt;/code&gt;表示以第i个字符为中心，到回文串一端的距离，我们以字符串&lt;code&gt;&amp;quot;acabacab&amp;quot;&lt;/code&gt;为例，如下表（index是下标）&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针&lt;/p&gt;
+
+&lt;p&gt;然后++i，注意这时候，由于以字符b两边是对称的，所以在求&lt;code&gt;v[4]&lt;/code&gt;的值的时候，可以先查&lt;code&gt;v[2]&lt;/code&gt;的值，是1，所以&lt;code&gt;v[4]&lt;/code&gt;也是1&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;再继续++i，同样的，在求&lt;code&gt;v[5]&lt;/code&gt;的值的时候，可以先查&lt;code&gt;v[1]&lt;/code&gt;的值，是2，但是，这个长度达到了e指针的位置，即&lt;code&gt;i+2&amp;gt;=e&lt;/code&gt;，这时候就更新指针m，并扩展e的位置，即比较&lt;code&gt;str[7]&lt;/code&gt;与&lt;code&gt;str[3]&lt;/code&gt;，找到以下标5为中心的回文串边界。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;然后，&lt;code&gt;v[5]&lt;/code&gt;的值就是&lt;code&gt;e-i&lt;/code&gt;，再接着，求&lt;code&gt;v[6]&lt;/code&gt;的值就查&lt;code&gt;v[4]&lt;/code&gt;的&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;再接着，求&lt;code&gt;v[7]&lt;/code&gt;的值就查&lt;code&gt;v[3]&lt;/code&gt;的，不过&lt;code&gt;v[3]&lt;/code&gt;的值是4，而&lt;code&gt;i+4&amp;gt;=e&lt;/code&gt;又满足了，就再次更新指针m，并扩展e&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;index&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;m&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;v&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;最后得到的v数组最大值乘以2减1就是答案，以上指针在算法里只增不减，所以时间复杂度是 $O(n)$ 。但问题是，这只能求出奇数长度的回文串，所以，这里用到一个技巧，把原来的字符串&lt;code&gt;&amp;quot;acabacab&amp;quot;&lt;/code&gt;转成&lt;code&gt;&amp;quot;a#c#a#b#a#c#a#b&amp;quot;&lt;/code&gt;，其中#号是任意一个在原字符串中不会出现的字符，这样一来，任意原串的回文串都存在中心字符了。&lt;/p&gt;
+
+&lt;p&gt;还有一个细节，如果要计算的串是&lt;code&gt;&amp;quot;a&amp;quot;&lt;/code&gt;，那么回文串的长度应该是1，但是，在这个算法里，会产生越界访问，因为要判断字符a后面的&lt;code&gt;&#39;\0&#39;&lt;/code&gt;是不是与a前面的字符相同，如果正好都是&lt;code&gt;&#39;\0&#39;&lt;/code&gt;，就会导致计算错误。所以，计算的时候还要对原来的字符串在最前面添加第二个在原字符串中不会出现的字符，例如转成&lt;code&gt;&amp;quot;$a#c#a#b#a#c#a#b&amp;quot;&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;扩展kmp模板和manacher模板对比&#34;&gt;扩展KMP模板和Manacher模板对比&lt;/h2&gt;
+
+&lt;p&gt;代码高度相似，你看看就知道了&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void extkmp_z(const char* str, int z[])
+{
+    int s_len = strlen(str);
+    z[0] = s_len;
+    for (int i = 1, p = 1, e = 1; i &amp;lt; s_len; ++i)
+    {
+        if (i + z[i - p] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &amp;lt; s_len &amp;amp;&amp;amp; str[e] == str[e - i])
+                ++e;
+
+            z[i] = e - i;
+        }
+        else
+            z[i] = z[i - p];
+    }
+}
+
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, p = 0, e = 0; i &amp;lt; s_len; ++i)
+    {
+        if (i + z[i - p] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &amp;lt; s_len &amp;amp;&amp;amp; str[e] == pattern[e - i])
+                ++e;
+
+            ext[i] = e - i;
+        }
+        else
+            ext[i] = z[i - p];
+    }
+}
+
+void init_str(const char* str, char* t)
+{
+    int len = strlen(str);
+    t[0] = &#39;$&#39;;
+    t[1] = &#39;#&#39;;
+    for (int i = 0; str[i]; ++i)
+    {
+        t[(i + 1) &amp;lt;&amp;lt; 1] = str[i];
+        t[((i + 1) &amp;lt;&amp;lt; 1) + 1] = &#39;#&#39;;
+    }
+    t[(len + 1) &amp;lt;&amp;lt; 1] = 0;
+}
+
+int manacher(const char* s, int v[])
+{
+    int len = strlen(s);
+    int max_len = 0;
+    v[0] = 1;
+    v[1] = 1;
+    for (int i = 1, m = 1, e = 1; i &amp;lt; len; ++i)
+    {
+        if (i + v[m - (i - m)] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            m = i;
+
+            while (e &amp;lt; len &amp;amp;&amp;amp; s[e] == s[i - (e - i)])
+                ++e;
+
+            v[i] = e - i;
+        }
+        else
+            v[i] = v[m - (i - m)];
+        max_len = std::max(max_len, v[i]);
+    }
+    return max_len - 1;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以上是第一种写法的模板，再对比写法二&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, l = 0, r = 0; i &amp;lt; s_len; ++i)
+    {
+        if (i &amp;lt; r)
+        {
+            ext[i] = std::min(r - i, z[i - l]);
+        }
+        else
+        {
+            ext[i] = 0;
+        }
+        while (i + ext[i] &amp;lt; s_len &amp;amp;&amp;amp; str[i + ext[i]] == pattern[ext[i]])
+        {
+            ++ext[i];
+        }
+        if (i + ext[i] &amp;gt; r)
+        {
+            r = i + ext[i];
+            l = i;
+        }
+    }
+}
+
+int manacher(const char* s, int v[])
+{
+    int len = strlen(s);
+    int max_len = 0;
+    for (int i = 1, m = 1, r = 1; i &amp;lt; len; ++i)
+    {
+        if (i &amp;lt; r)
+        {
+            v[i] = std::min(v[m - (i - m)], r - i);
+        }
+        else
+        {
+            v[i] = 1;
+        }
+        while (s[i + v[i]] == s[i - v[i]])
+        {
+            ++v[i];
+        }
+        if (i + v[i] &amp;gt; r)
+        {
+            r = i + v[i];
+            m = i;
+        }
+        max_len = std::max(max_len, v[i]);
+    }
+    return max_len - 1;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;其它解法&#34;&gt;其它解法&lt;/h2&gt;
+
+&lt;p&gt;用后缀数组来解回文串也是可以的，原串是s的话，把s反向，得到s1，然后构造&lt;code&gt;S = s + &#39;#&#39; + s1&lt;/code&gt;，对S求后缀数组后，要注意的是并不是只找height的最大值即可，网上很多文章在这里的算法是错误的，反例是&lt;code&gt;abcdefba&lt;/code&gt;，&lt;strong&gt;单纯枚举相邻的sa是不正确的&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;正确做法是枚举i从1到len(s)/2，分别针对奇数长度和偶数长度要分别计算LCP（最长公共前缀），奇数长度时它的对称位置就是&lt;code&gt;j=len-i+1&lt;/code&gt;，偶数长度时对称位置是&lt;code&gt;j=len-i&lt;/code&gt;或&lt;code&gt;j=len-i+2&lt;/code&gt;，然后对height数组求从&lt;code&gt;rank[i]+1&lt;/code&gt;到&lt;code&gt;rank[j]&lt;/code&gt;的最小值。最小值维护用ST表，由于ST表的构造是 $O(nlogn)$ ，而查询是 $O(1)$ ，所以生成后缀数组后的计算的总时间复杂度是 $O(nlogn)$&lt;/p&gt;
+
+&lt;p&gt;示例代码&lt;a href=&#34;https://vjudge.net/problem/URAL-1297&#34; target=&#34;_blank&#34;&gt;URAL 1297&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int st[12][2048];
+
+void init_st(int a[], int n)
+{
+    for (int i = 0; i &amp;lt; n; i++)
+        st[0][i] = a[i];
+    for (int k = 1; (1 &amp;lt;&amp;lt; k) &amp;lt; n; k++)
+        for (int i = 0, m = 1 &amp;lt;&amp;lt; (k - 1); i &amp;lt; n; i++)
+            if (i + m &amp;lt; n) st[k][i] = min(st[k - 1][i], st[k - 1][i + m]);
+}
+
+int st_query(int l, int r) // [l, r)
+{
+    if (l &amp;gt; r)swap(l, r);
+    int k = (int)(log(r - l - 0.1) / log(2));
+    return min(st[k][l], st[k][r - (1 &amp;lt;&amp;lt; k)]);
+}
+
+int main()
+{
+    int n, t;
+    char s[2100], s1[1010];
+    scanf(&amp;quot;%s&amp;quot;, s1);
+    strcpy(s, s1);
+    strcat(s, &amp;quot;#&amp;quot;);
+    strcat(s, strrev(s1));
+    SA_2_sort sa;
+    sa.init(s);
+    int len = sa.size();
+    int maxh = 0, spos = 0;
+    init_st(&amp;amp;*sa.ht.begin(), len + 1);
+    for(int i = 1; i &amp;lt;= len / 2; ++i)
+    {
+        int j = len - i + 1;
+        int lcp = st_query(sa.rk[i] + 1, sa.rk[j] + 1);
+        if (lcp * 2 - 1 &amp;gt; maxh)
+        {
+            spos = i - lcp;
+            maxh = lcp * 2 - 1;
+        }
+        if (i &amp;gt; 1)
+        {
+            j = len - i + 2;
+            lcp = st_query(sa.rk[i] + 1, sa.rk[j] + 1);
+            if (lcp * 2 &amp;gt; maxh)
+            {
+                spos = i - lcp - 1;
+                maxh = lcp * 2;
+            }
+        }
+    }
+    strncpy(s1, s + spos, maxh);
+    s1[maxh] = 0;
+    puts(s1);
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注：后缀数组模板请从&lt;a href=&#34;../20191113-suffixarray/&#34;&gt;之前的文章&lt;/a&gt;里复制；函数st_query是左闭右开区间，即求的是&lt;code&gt;[l, r-1]&lt;/code&gt;的最小值，采用半开半闭区间目的是为了能直接swap&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>KMP及扩展KMP</title>
+      <link>/post/20191028-kmp/</link>
+      <pubDate>Mon, 28 Oct 2019 13:32:00 +0800</pubDate>
+      <guid>/post/20191028-kmp/</guid>
+      <description>&lt;p&gt;KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀&lt;/p&gt;
+
+&lt;h2 id=&#34;最长公共前缀&#34;&gt;最长公共前缀&lt;/h2&gt;
+
+&lt;p&gt;我们拿字符串&lt;code&gt;ababcab&lt;/code&gt;作为例子&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这里所表达的是，例如取第3、4个字符&amp;rdquo;ab&amp;rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&amp;rdquo;abc&amp;rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;pointer&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;然后两个a匹配，&lt;code&gt;arr[6] = pointer1 - arr&lt;/code&gt; 得到3，然后两指针一起移动&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;?&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;pointer&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;*&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这时候，不匹配，那么前一个指针上一次指向的是&lt;code&gt;arr[2]&lt;/code&gt;的位置，即图上&lt;code&gt;*&lt;/code&gt;的地方，值是1，这个值如果是p，那就移动到&lt;code&gt;arr[p]&lt;/code&gt;的地方，所以就移动到&lt;code&gt;arr[1]&lt;/code&gt;的地方，本质上就是找到前一个匹配此后缀的位置，即&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;len&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;pointer&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2&lt;/p&gt;
+
+&lt;h2 id=&#34;next数组&#34;&gt;next数组&lt;/h2&gt;
+
+&lt;p&gt;以上过程你需要细细理解，在理解以上过程后，再去理解next数组就非常简单了，next数组只是把以上数组加了一偏移，如下&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;next&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这么做是为了简化代码的书写，当然你直接用公共前缀的那个数组来做也是可以的&lt;/p&gt;
+
+&lt;p&gt;不过本文不介绍怎么做字符串匹配，这种文章到处都是，我们要讲的是竞赛中的典型应用&lt;/p&gt;
+
+&lt;p&gt;生成next数组的算法的时间复杂度为 $O(n)$ ，n是数组长度&lt;/p&gt;
+
+&lt;h3 id=&#34;应用1-poj2406&#34;&gt;应用1 &lt;a href=&#34;http://poj.org/problem?id=2406&#34; target=&#34;_blank&#34;&gt;poj2406&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;题目大意是给你一个字符串s，找出一个串a，使得a自己重复n次，便得到字符串s，要找到最大的n值。例如&lt;code&gt;ababab&lt;/code&gt;，可以找到&lt;code&gt;ab&lt;/code&gt;重复3次得到，所以输出3。像这种就是next数组表演的时候，它在计算自匹配方面非常合适，我们先再来理解一下next数组，它的值表示与前缀的重复长度，那么看下表，使用长度为102的&lt;code&gt;abab....abab&lt;/code&gt;&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;&amp;hellip;&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;next&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&amp;hellip;&lt;/td&gt;
+&lt;td&gt;97&lt;/td&gt;
+&lt;td&gt;98&lt;/td&gt;
+&lt;td&gt;99&lt;/td&gt;
+&lt;td&gt;100&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;我们发现，使用串长102减去next数组最后一个值，自然就得到了重复前缀的最短长度，既然它是最短的，那么我们用总长102除以2，就得到了重复的次数，就是我们想要的答案。当然前提是能整除，如果不能整除那么这样的前缀便不存在，输出1就行了。&lt;/p&gt;
+
+&lt;h3 id=&#34;应用2-poj2752&#34;&gt;应用2 &lt;a href=&#34;http://poj.org/problem?id=2752&#34; target=&#34;_blank&#34;&gt;poj2752&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;题目大意是给你一个字符串s，找出所有前缀等于后缀的串长。我们先来试试算一个短点的&lt;code&gt;ababcababcabab&lt;/code&gt;&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;next&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;可以轻松看出next的最后一个值9肯定就是其中一个长度，那接着呢？我们需要回想一下，构造这个数组的时候，如果匹配失败，是怎么找到前一个匹配当前后缀的前缀的，这个值如果是p，那就移动到&lt;code&gt;arr[p]&lt;/code&gt;的地方，如果你还记得这个，那就好办了，我们取&lt;code&gt;arr[9]&lt;/code&gt;，结果是4，再取&lt;code&gt;arr[4]&lt;/code&gt;结果是2，再取&lt;code&gt;arr[2]&lt;/code&gt;，结果是0，循环结束，所以加上整个串长14就是我们所要的答案了，完整结果是&lt;code&gt;2 4 9 14&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h3 id=&#34;应用3-子串出现次数&#34;&gt;应用3 子串出现次数&lt;/h3&gt;
+
+&lt;p&gt;给你主串s和子串t，求t在s中出现了多少次，例如&lt;code&gt;s=&amp;quot;abababa&amp;quot;&lt;/code&gt;，&lt;code&gt;t=&amp;quot;aba&amp;quot;&lt;/code&gt;，那么t在s中出现了3次。&lt;/p&gt;
+
+&lt;p&gt;这里运用到一个技巧，我们把s和t连接成这个串&lt;code&gt;u=&amp;quot;aba#abababa&amp;quot;&lt;/code&gt;，即把t放在s的前面并中间使用&lt;code&gt;#&lt;/code&gt;分隔，这个符号在两个串中都没有出现。然后我们对u计算next数组，那么next数组中值等于t的长度的元素个数就是答案。&lt;/p&gt;
+
+&lt;h3 id=&#34;应用4-可重叠最长重复子串&#34;&gt;应用4 可重叠最长重复子串&lt;/h3&gt;
+
+&lt;p&gt;大意是给你一个字符串s，任意选取两个不同的起始位置i和j，这两个位置的后缀串有相同的前缀，这个前缀可以重叠，问这个相同的前缀的最大长度&lt;/p&gt;
+
+&lt;p&gt;例如&lt;code&gt;eabcaefabcabc&lt;/code&gt;，最长重复子串是&lt;code&gt;abca&lt;/code&gt;，长度是4。&lt;/p&gt;
+
+&lt;p&gt;KMP在生成的时候，总是以串的前缀作为匹配对象，我们要做的，就是遍历那个字符串的每一个后缀，都生成一次next数组，而在生成过程中出现的最大值就是答案，所以时间复杂度 $O(n^2)$ 。当然我们还有更好的算法，这个之后再讲。&lt;/p&gt;
+
+&lt;h2 id=&#34;z-algorithm&#34;&gt;Z Algorithm&lt;/h2&gt;
+
+&lt;p&gt;Z函数的定义是对于字符串s，生成数组z，定义&lt;code&gt;z[i]&lt;/code&gt;是&lt;code&gt;s.substr(i)&lt;/code&gt;与&lt;code&gt;s&lt;/code&gt;的最长相同前缀长度&lt;/p&gt;
+
+&lt;p&gt;样例如下&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;扩展KMP需要依赖这个z数组，但是在介绍这个之前，我们先介绍下面的扩展KMP&lt;/p&gt;
+
+&lt;h2 id=&#34;扩展kmp&#34;&gt;扩展KMP&lt;/h2&gt;
+
+&lt;p&gt;所谓扩展KMP，即给定两个字符串s和p，需要求出数组&lt;code&gt;ext&lt;/code&gt;，其中&lt;code&gt;ext[i]&lt;/code&gt;的值表示&lt;code&gt;s.substr(i)&lt;/code&gt;与&lt;code&gt;p&lt;/code&gt;的最长相同前缀长度&lt;/p&gt;
+
+&lt;p&gt;这个算法依赖 Z Algorithm 中生成的z数组。&lt;/p&gt;
+
+&lt;p&gt;为了比较容易理解，我省略一堆说明，我们直接来模拟匹配过程，一边模拟一边解说，一开始数据如下，i是匹配位置指针&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;上表，一开始，不匹配，不操作，移动p&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这时，p与&lt;code&gt;s[i]&lt;/code&gt;是匹配的，我们用e指针记录&lt;strong&gt;未能匹配&lt;/strong&gt;的位置，并写入&lt;code&gt;ext[i]=e-i&lt;/code&gt;得1&lt;/p&gt;
+
+&lt;p&gt;继续移动p，并更新e，得到下表&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;得到上表这个后，令&lt;code&gt;ext[i]=e-i&lt;/code&gt;得5，这个时候，移动到下一个元素，但同时p暂时不动。这个情况出现于&lt;code&gt;p&amp;lt;e&lt;/code&gt;的时候，严格来说，应该是&lt;code&gt;z[i-p]+i &amp;lt; e&lt;/code&gt;的时候，具体原因后面解释。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;上表这个时候，不看字符匹配的情况，只看i指针位置上那一列对应的Z数组的值，即&lt;code&gt;z[i-p]&lt;/code&gt;为0，如果这个数加上i小于e的话，直接令&lt;code&gt;ext[i]=z[i-p]&lt;/code&gt;得到0&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;继续以上操作，&lt;code&gt;ext[i]=z[i-p]&lt;/code&gt;得到1。之所以能这么操作，是因为p是自匹配的，在这个位置上的z值，就同时表达了i开始，字符串s与p连续多少个字符能匹配p的前缀，前提是这个串的范围必须在e的前面。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;继续以上操作，&lt;code&gt;ext[i]=z[i-p]&lt;/code&gt;得到0，注意到，下一步i将指向a，导致&lt;code&gt;z[i-p]+i &amp;gt;= e&lt;/code&gt;，这个会导致z数组的内容不能直接复制到ext数组内，所以我们要恢复之前的字符串匹配过程，令p等于i，得如下状态&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这个时候，写入&lt;code&gt;ext[i]=e-i&lt;/code&gt;得1&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;^&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;p&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;b&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Z&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;ext&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;最后一步，第一个也不匹配，写入&lt;code&gt;ext[i]=e-i&lt;/code&gt;得0，下一步i到达字符串末尾，结束。&lt;/p&gt;
+
+&lt;p&gt;扩展kmp与经典kmp的算法的时间复杂度均为 $O(len(s)+len(p))$&lt;/p&gt;
+
+&lt;p&gt;那么讲完了扩展KMP我们回来讲Z Algorithm，其实它们的区别，仅仅是计算对象的差异，即扩展KMP是通过字符串p求出s的ext数组，而Z Algorithm是通过自身来求，我们只需要把原来扩展KMP的代码复制一份改改名字，且起点改为1行了，详见下面模板实现代码。&lt;/p&gt;
+
+&lt;p&gt;应用实例有：&lt;a href=&#34;http://acm.hdu.edu.cn/showproblem.php?pid=4333&#34; target=&#34;_blank&#34;&gt;hdu4333&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;kmp模板&#34;&gt;KMP模板&lt;/h2&gt;
+
+&lt;p&gt;以下是我写的模板代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void kmp_next(const char* pattern, int next[])
+{
+    int len = strlen(pattern);
+    next[0] = -1;
+    for (int i = 0, j = -1; i &amp;lt; len;)
+    {
+        if (j == -1 || pattern[i] == pattern[j])
+            next[++i] = ++j;
+        else
+            j = next[j];
+    }
+}
+
+const char* kmp_match(const char* str, const char* pattern, int next[])
+{
+    int len = strlen(pattern);
+    int i = 0;
+    kmp_next(pattern, next);
+    while (*str &amp;amp;&amp;amp; i &amp;lt; len)
+    {
+        if (pattern[i] == *str)
+        {
+            ++i, ++str;
+        }
+        else
+        {
+            i = next[i];
+            if (i == -1)
+            {
+                ++i, ++str;
+            }
+        }
+    }
+    return i == len ? str - i : str;
+}
+
+void extkmp_z(const char* str, int z[])
+{
+    int s_len = strlen(str);
+    z[0] = s_len;
+    for (int i = 1, p = 1, e = 1; i &amp;lt; s_len; ++i)
+    {
+        if (i + z[i - p] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &amp;lt; s_len &amp;amp;&amp;amp; str[e] == str[e - i])
+                ++e;
+
+            z[i] = e - i;
+        }
+        else
+            z[i] = z[i - p];
+    }
+}
+
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, p = 0, e = 0; i &amp;lt; s_len; ++i)
+    {
+        if (i + z[i - p] &amp;gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &amp;lt; s_len &amp;amp;&amp;amp; str[e] == pattern[e - i])
+                ++e;
+
+            ext[i] = e - i;
+        }
+        else
+            ext[i] = z[i - p];
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;最后总结&#34;&gt;最后总结&lt;/h2&gt;
+
+&lt;p&gt;字符串就是一个深坑，不过KMP也许是打开你理解后缀树或后缀数组的好工具，为后者的学习做铺垫。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -34,7 +34,11 @@ void sort(type arr[], int len)
 void sort(iter beg, iter end)
 这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 sort(arr, arr &#43; len) ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 sort(arr, arr &#43; len - 1) 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素&#43;1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以
 void sort(iter beg, iter end)
-这种方式写的，至于这样写有什么好处，接下来我们就看示例。">
+这种方式写的，至于这样写有什么好处，接下来我们就看示例。
+
+选择排序
+
+">
 
   
   <link rel="alternate" hreflang="en-us" href="/post/20191008-sorting-1/">
@@ -126,7 +130,11 @@ void sort(type arr[], int len)
 void sort(iter beg, iter end)
 这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 sort(arr, arr &#43; len) ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 sort(arr, arr &#43; len - 1) 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素&#43;1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以
 void sort(iter beg, iter end)
-这种方式写的，至于这样写有什么好处，接下来我们就看示例。"><meta property="og:image" content="/img/icon-192.png">
+这种方式写的，至于这样写有什么好处，接下来我们就看示例。
+
+选择排序
+
+"><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
     
@@ -178,7 +186,7 @@ void sort(iter beg, iter end)
       "url": "/img/icon-512.png"
     }
   },
-  "description": "\u003cp\u003e本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有\u003cbr /\u003e\n\u003ccode\u003evoid sort(type arr[], int len)\u003c/code\u003e\u003cbr /\u003e\n也许你也见过\u003cbr /\u003e\n\u003ccode\u003evoid sort(iter beg, iter end)\u003c/code\u003e\u003cbr /\u003e\n这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 \u003ccode\u003esort(arr, arr + len)\u003c/code\u003e ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 \u003ccode\u003esort(arr, arr + len - 1)\u003c/code\u003e 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以\u003cbr /\u003e\n\u003ccode\u003evoid sort(iter beg, iter end)\u003c/code\u003e\u003cbr /\u003e\n这种方式写的，至于这样写有什么好处，接下来我们就看示例。\u003c/p\u003e"
+  "description": "\u003cp\u003e本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有\u003cbr /\u003e\n\u003ccode\u003evoid sort(type arr[], int len)\u003c/code\u003e\u003cbr /\u003e\n也许你也见过\u003cbr /\u003e\n\u003ccode\u003evoid sort(iter beg, iter end)\u003c/code\u003e\u003cbr /\u003e\n这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 \u003ccode\u003esort(arr, arr + len)\u003c/code\u003e ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 \u003ccode\u003esort(arr, arr + len - 1)\u003c/code\u003e 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以\u003cbr /\u003e\n\u003ccode\u003evoid sort(iter beg, iter end)\u003c/code\u003e\u003cbr /\u003e\n这种方式写的，至于这样写有什么好处，接下来我们就看示例。\u003c/p\u003e\n\n\u003ch2 id=\"选择排序\"\u003e选择排序\u003c/h2\u003e\n\n\u003cp\u003e\u003cimg src=\"https://raw.githubusercontent.com/heray1990/AlgorithmVisualization/master/images/selection_sort_50samples_fps30_dpi50.gif\" alt=\"\" /\u003e\u003c/p\u003e"
 }
 </script>
 
@@ -455,6 +463,90 @@ void sort(iter beg, iter end)
 
   
     
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191008-sorting-1/&amp;text=%e9%80%89%e6%8b%a9%e5%92%8c%e5%86%92%e6%b3%a1%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191008-sorting-1/&amp;t=%e9%80%89%e6%8b%a9%e5%92%8c%e5%86%92%e6%b3%a1%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e9%80%89%e6%8b%a9%e5%92%8c%e5%86%92%e6%b3%a1%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af&amp;body=/post/20191008-sorting-1/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191008-sorting-1/&amp;title=%e9%80%89%e6%8b%a9%e5%92%8c%e5%86%92%e6%b3%a1%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e9%80%89%e6%8b%a9%e5%92%8c%e5%86%92%e6%b3%a1%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af%20/post/20191008-sorting-1/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191008-sorting-1/&amp;title=%e9%80%89%e6%8b%a9%e5%92%8c%e5%86%92%e6%b3%a1%e6%8e%92%e5%ba%8f%e4%bc%98%e5%8c%96%e6%80%9d%e8%b7%af" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
 
   
 
@@ -492,6 +584,8 @@ void sort(iter beg, iter end)
 这种方式写的，至于这样写有什么好处，接下来我们就看示例。</p>
 
 <h2 id="选择排序">选择排序</h2>
+
+<p><img src="https://raw.githubusercontent.com/heray1990/AlgorithmVisualization/master/images/selection_sort_50samples_fps30_dpi50.gif" alt="" /></p>
 
 <h3 id="基本实现">基本实现</h3>
 
@@ -603,7 +697,7 @@ void select_sort(sort_element_t * beg, sort_element_t * end)
 
 <p>以上这种叫做劣化版的选择排序，在大多数的情况下会比前一个方法慢，极端条件下甚至会慢1倍甚至更多</p>
 
-<p>那说完劣化再讲优化，选择排序的时间复杂度是O(n^2)，而且运行时间与原来的排列完全无关。以上的选择排序总是选择小的，那大小一起选呢？能不能起到优化的作用？如果你单纯的多写一个find_max变成双向选择来做，在VS2005下是没有优化效果的，我测试过了。那应该怎么样呢？确实还是双向选择，不过具体实现稍有点不同。</p>
+<p>那说完劣化再讲优化，选择排序的时间复杂度是$O(n^2)$，而且运行时间与原来的排列完全无关。以上的选择排序总是选择小的，那大小一起选呢？能不能起到优化的作用？如果你单纯的多写一个find_max变成双向选择来做，在VS2005下是没有优化效果的，我测试过了。那应该怎么样呢？确实还是双向选择，不过具体实现稍有点不同。</p>
 
 <h3 id="优化1-双向选择">优化1，双向选择</h3>
 
@@ -703,9 +797,11 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 
 <h3 id="优化2-数据结构">优化2，数据结构</h3>
 
-<p>选择排序的优化主要是在find_min上面，find_min的时间复杂度是O(n)，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成O(1)，而维护这个数据结构的代价是O(logn)的话，总体时间复杂度将变为O(nlogn)，这比起选择排序的O(n^2)就是一个巨大的变化，具体内容在之后的 <strong>堆排序</strong> 篇具体讲解。</p>
+<p>选择排序的优化主要是在find_min上面，find_min的时间复杂度是$O(n)$，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成$O(1)$，而维护这个数据结构的代价是$O(logn)$的话，总体时间复杂度将变为$O(nlogn)$，这比起选择排序的$O(n^2)$就是一个巨大的变化，具体内容在之后的 <a href="../20191015-sorting-3/">堆排序</a> 篇具体讲解。</p>
 
 <h2 id="冒泡排序">冒泡排序</h2>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/5/54/Sorting_bubblesort_anim.gif" alt="" /></p>
 
 <h3 id="基本实现-1">基本实现</h3>
 
@@ -724,7 +820,7 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 }
 </code></pre>
 
-<p>冒泡排序这种写法，铁定的O(n^2)时间没跑，不过好在冒泡排序的优化方法也不少。</p>
+<p>冒泡排序这种写法，铁定的$O(n^2)$时间没跑，不过好在冒泡排序的优化方法也不少。</p>
 
 <h3 id="优化1-提前跳出">优化1，提前跳出</h3>
 
@@ -747,11 +843,13 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 }
 </code></pre>
 
-<p>通过sorted变量记录某一轮是不是存在交换，如果没有交换则表明数据已经是有序的，可以提前退出循环。有这个优化对于已经有序的数据，冒泡排序将运行得特别快，即最优情况时间复杂度只有O(n)</p>
+<p>通过sorted变量记录某一轮是不是存在交换，如果没有交换则表明数据已经是有序的，可以提前退出循环。有这个优化对于已经有序的数据，冒泡排序将运行得特别快，即最优情况时间复杂度只有$O(n)$</p>
 
 <h3 id="优化2-鸡尾酒排序">优化2，鸡尾酒排序</h3>
 
 <p>前面的冒泡写法是单向冒泡，把最大值向最右边移，这回我们做成双向，一边把最大值右移，一边把最小值左移，不过这种方法有另一个命名，叫做鸡尾酒排序</p>
+
+<p><a href="https://en.wikipedia.org/wiki/Cocktail_shaker_sort" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Sorting_shaker_sort_anim.gif" alt="" /></a></p>
 
 <pre><code class="language-cpp">void cocktail_sort(sort_element_t * beg, sort_element_t * end)
 {
@@ -966,6 +1064,8 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 <h3 id="优化4-梳排序">优化4，梳排序</h3>
 
 <p>通过一开始设置较大的步长，让元素能较快移动，然后逐步减少步长，直到1变成普通的冒泡排序为止。这个方法的优点，就是快，相对前面的方法来说飞快。当然，最后一步你也可以选择不调用冒泡排序，而改调用<code>cocktail_sort</code>或<code>odd_even_sort</code>都可以，差别不明显。</p>
+
+<p><a href="https://en.wikipedia.org/wiki/Comb_sort" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/4/46/Comb_sort_demo.gif" alt="" /></a></p>
 
 <pre><code class="language-cpp">void comb_sort(sort_element_t * beg, sort_element_t * end)
 {
@@ -1593,7 +1693,7 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
     
     
     
-    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
 
     
 

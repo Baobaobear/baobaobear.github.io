@@ -364,7 +364,9 @@
     <h2><a href="/post/20191009-sorting-2/">插入排序与希尔排序优化思路</a></h2>
     <div class="article-style">
       
-      本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。
+      本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。我们来看插入排序的动图演示
+
+插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。
 插入排序基本实现 我们先来看插入排序的基本实现
 void insert_sort(sort_element_t * beg, sort_element_t * end) { for (sort_element_t* i = beg + 1; i &lt; end; ++i) { sort_element_t val = *i; sort_element_t* j = i; for (; j &gt; beg &amp;&amp; val &lt; j[-1]; --j) { *j = j[-1]; } *j = val; } }  插入排序即使不做任何优化，效率也明显高于上篇所说的冒泡排序和选择排序。那么按照惯例，先上双向看看效果
 
@@ -485,7 +487,7 @@ void insert_sort(sort_element_t * beg, sort_element_t * end) { for (sort_element
     
     
     
-    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
 
     
 

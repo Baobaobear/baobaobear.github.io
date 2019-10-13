@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="在上一篇我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。
+
+GCC的实现
+
+这个我直接给个github来源，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是__unguarded_partition函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20191019-qsort-talk-3/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20191019-qsort-talk-3/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20191019-qsort-talk-3/">
+  <meta property="og:title" content="Quick sort(快速排序)杂谈 3 | Baobaobear">
+  <meta property="og:description" content="在上一篇我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。
+
+GCC的实现
+
+这个我直接给个github来源，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是__unguarded_partition函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2019-10-21T17:32:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2019-10-21T17:32:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20191019-qsort-talk-3/"
+  },
+  "headline": "Quick sort(快速排序)杂谈 3",
+  
+  "datePublished": "2019-10-21T17:32:00+08:00",
+  "dateModified": "2019-10-21T17:32:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e在\u003ca href=\"../20191007-qsort-talk-2/\"\u003e上一篇\u003c/a\u003e我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。\u003c/p\u003e\n\n\u003ch2 id=\"gcc的实现\"\u003eGCC的实现\u003c/h2\u003e\n\n\u003cp\u003e这个我直接给个\u003ca href=\"https://github.com/gcc-mirror/gcc/blob/gcc-8-branch/libstdc++-v3/include/bits/stl_algo.h#L1896\" target=\"_blank\"\u003egithub来源\u003c/a\u003e，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是\u003ccode\u003e__unguarded_partition\u003c/code\u003e函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>Quick sort(快速排序)杂谈 3 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>Quick sort(快速排序)杂谈 3</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Oct 21, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191019-qsort-talk-3/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191019-qsort-talk-3/&amp;text=Quick%20sort%28%e5%bf%ab%e9%80%9f%e6%8e%92%e5%ba%8f%29%e6%9d%82%e8%b0%88%203" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191019-qsort-talk-3/&amp;t=Quick%20sort%28%e5%bf%ab%e9%80%9f%e6%8e%92%e5%ba%8f%29%e6%9d%82%e8%b0%88%203" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Quick%20sort%28%e5%bf%ab%e9%80%9f%e6%8e%92%e5%ba%8f%29%e6%9d%82%e8%b0%88%203&amp;body=/post/20191019-qsort-talk-3/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191019-qsort-talk-3/&amp;title=Quick%20sort%28%e5%bf%ab%e9%80%9f%e6%8e%92%e5%ba%8f%29%e6%9d%82%e8%b0%88%203" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Quick%20sort%28%e5%bf%ab%e9%80%9f%e6%8e%92%e5%ba%8f%29%e6%9d%82%e8%b0%88%203%20/post/20191019-qsort-talk-3/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191019-qsort-talk-3/&amp;title=Quick%20sort%28%e5%bf%ab%e9%80%9f%e6%8e%92%e5%ba%8f%29%e6%9d%82%e8%b0%88%203" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>在<a href="../20191007-qsort-talk-2/">上一篇</a>我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。</p>
+
+<h2 id="gcc的实现">GCC的实现</h2>
+
+<p>这个我直接给个<a href="https://github.com/gcc-mirror/gcc/blob/gcc-8-branch/libstdc++-v3/include/bits/stl_algo.h#L1896" target="_blank">github来源</a>，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是<code>__unguarded_partition</code>函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。</p>
+
+<pre><code class="language-cpp">  /// Swaps the median value of *__a, *__b and *__c under __comp to *__result
+  template&lt;typename _Iterator, typename _Compare&gt;
+    void
+    __move_median_to_first(_Iterator __result,_Iterator __a, _Iterator __b,
+                           _Iterator __c, _Compare __comp)
+    {
+      if (__comp(__a, __b))
+        {
+          if (__comp(__b, __c))
+            std::iter_swap(__result, __b);
+          else if (__comp(__a, __c))
+            std::iter_swap(__result, __c);
+          else
+            std::iter_swap(__result, __a);
+        }
+      else if (__comp(__a, __c))
+        std::iter_swap(__result, __a);
+      else if (__comp(__b, __c))
+        std::iter_swap(__result, __c);
+      else
+        std::iter_swap(__result, __b);
+    }
+
+  /// This is a helper function...
+  template&lt;typename _RandomAccessIterator, typename _Compare&gt;
+    _RandomAccessIterator
+    __unguarded_partition(_RandomAccessIterator __first,
+                          _RandomAccessIterator __last,
+                          _RandomAccessIterator __pivot, _Compare __comp)
+    {
+      while (true)
+        {
+          while (__comp(__first, __pivot))
+            ++__first;
+          --__last;
+          while (__comp(__pivot, __last))
+            --__last;
+          if (!(__first &lt; __last))
+            return __first;
+          std::iter_swap(__first, __last);
+          ++__first;
+        }
+    }
+
+  /// This is a helper function...
+  template&lt;typename _RandomAccessIterator, typename _Compare&gt;
+    inline _RandomAccessIterator
+    __unguarded_partition_pivot(_RandomAccessIterator __first,
+                                _RandomAccessIterator __last, _Compare __comp)
+    {
+      _RandomAccessIterator __mid = __first + (__last - __first) / 2;
+      std::__move_median_to_first(__first, __first + 1, __mid, __last - 1,
+                                  __comp);
+      return std::__unguarded_partition(__first + 1, __last, __first, __comp);
+    }
+
+  template&lt;typename _RandomAccessIterator, typename _Compare&gt;
+    inline void
+    __partial_sort(_RandomAccessIterator __first,
+                   _RandomAccessIterator __middle,
+                   _RandomAccessIterator __last,
+                   _Compare __comp)
+    {
+      std::__heap_select(__first, __middle, __last, __comp);
+      std::__sort_heap(__first, __middle, __comp);
+    }
+
+  /// This is a helper function for the sort routine.
+  template&lt;typename _RandomAccessIterator, typename _Size, typename _Compare&gt;
+    void
+    __introsort_loop(_RandomAccessIterator __first,
+                     _RandomAccessIterator __last,
+                     _Size __depth_limit, _Compare __comp)
+    {
+      while (__last - __first &gt; int(_S_threshold))
+        {
+          if (__depth_limit == 0)
+            {
+              std::__partial_sort(__first, __last, __last, __comp);
+              return;
+            }
+          --__depth_limit;
+          _RandomAccessIterator __cut =
+            std::__unguarded_partition_pivot(__first, __last, __comp);
+          std::__introsort_loop(__cut, __last, __depth_limit, __comp);
+          __last = __cut;
+        }
+    }
+
+  // sort
+
+  template&lt;typename _RandomAccessIterator, typename _Compare&gt;
+    inline void
+    __sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+           _Compare __comp)
+    {
+      if (__first != __last)
+        {
+          std::__introsort_loop(__first, __last,
+                                std::__lg(__last - __first) * 2,
+                                __comp);
+          std::__final_insertion_sort(__first, __last, __comp);
+        }
+    }
+</code></pre>
+
+<p><del>吐槽一句，连gcc源代码也把tab和空格混合使用我也是醉了，源代码的tab在这里已替换为空格以保证版面一致</del></p>
+
+<p>这里我们并不需要关注太多东西，在上一篇我们讲到过，快排最大的弱点正在于它的划分元素选择上，所以我们只需要看这个函数</p>
+
+<pre><code class="language-cpp">  template&lt;typename _RandomAccessIterator, typename _Compare&gt;
+    inline _RandomAccessIterator
+    __unguarded_partition_pivot(_RandomAccessIterator __first,
+                                _RandomAccessIterator __last, _Compare __comp)
+    {
+      _RandomAccessIterator __mid = __first + (__last - __first) / 2;
+      std::__move_median_to_first(__first, __first + 1, __mid, __last - 1,
+                                  __comp);
+      return std::__unguarded_partition(__first + 1, __last, __first, __comp);
+    }
+</code></pre>
+
+<p>这个函数从<code>__first + 1</code>, <code>__mid</code>, <code>__last - 1</code>三个数里面，取一个中位数交换到<code>__first</code>的位置，知道这个就能想办法生成对抗数据了。为了让它运行缓慢，那么只要让它这个函数每次都选到<strong>第二小</strong>的元素放最左边，这样每次调用<code>__unguarded_partition</code>的结果，就是把划分点划分到了<code>__first + 2</code>的位置上，即每次只划分两个元素，这就是它的最坏情况。</p>
+
+<p>构造这个东西需要一些技巧，我们要模拟std::sort的过程，但为了复杂性降低，我们令最右边元素值最大，那么中位数必定在<code>__first + 1</code>与<code>__mid</code>中选出，这样在partition过程中就能保证不会动到最后的元素，只会在这两个之间换来换去。然后我们只模拟出交换的结果，而不必去遍历，否则你生成的复杂度就$O(n^2)$了。</p>
+
+<p>另外，还要注意的一点是，它使用的是<code>intro sort</code>来实现，也就是说深度到一定程度后，会转化为堆排序，而堆排序的最坏情况是乱序数组，我们不必一直这么做，否则堆排序时间并不是最长的，我们只要弄深度150的就够用了。我们来看看生成的数据在8000000长度下，使用mingw64-gcc8编译参数-O3的实测结果</p>
+
+<table>
+<thead>
+<tr>
+<th>int</th>
+<th align="right">1</th>
+<th align="right">2</th>
+<th align="right">3</th>
+<th align="right">4</th>
+<th align="right">5</th>
+<th align="right">evil</th>
+<th align="right">Avg</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>intro_sort</td>
+<td align="right">6</td>
+<td align="right">76</td>
+<td align="right">82</td>
+<td align="right">509</td>
+<td align="right">510</td>
+<td align="right">510</td>
+<td align="right">282</td>
+</tr>
+
+<tr>
+<td>std::sort</td>
+<td align="right">86</td>
+<td align="right">92</td>
+<td align="right">94</td>
+<td align="right">473</td>
+<td align="right">487</td>
+<td align="right">1650</td>
+<td align="right">480</td>
+</tr>
+
+<tr>
+<td>std::heap</td>
+<td align="right">584</td>
+<td align="right">369</td>
+<td align="right">421</td>
+<td align="right">1436</td>
+<td align="right">1467</td>
+<td align="right">1499</td>
+<td align="right">962</td>
+</tr>
+</tbody>
+</table>
+
+<p>第4、5列是随机打乱的数据，作为对比组，而evil列就是生成的对抗数据，我把<code>heap sort</code>及前一篇的<code>intro_sort</code>实现放上来做比较，可以看出在这组数据下，<code>std::sort</code>必然地比堆排序还要慢，是乱序数据的3.5倍左右，当然这个时间完全取决于堆排序的时间。</p>
+
+<p>附上生成代码</p>
+
+<pre><code class="language-cpp">struct save_index
+{
+    int val;
+    int index;
+
+    save_index(int i = 0, int v = -1)
+        : val(v)
+        , index(i)
+    {}
+    void swap(save_pos&amp; p)
+    {
+        int t = p.val;
+        p.val = val;
+        val = t;
+    }
+    bool operator &lt; (const save_index&amp; p) const
+    {
+        return index &lt; p.index;
+    }
+};
+
+void qsort_sim_gcc(save_index * beg, save_index * end, int max_round)
+{
+    int cur_num = 0;
+    if ((end-1)-&gt;val == -1)
+    {
+        (end - 1)-&gt;val = (end - beg) * 2;
+    }
+    while (beg + 1 &lt; end &amp;&amp; --max_round &gt; 0)
+    {
+        save_index *l = beg + 1, *r = end - 1, *m = beg + (end - beg) / 2;
+
+        if (l-&gt;val == -1)
+            l-&gt;val = ++cur_num;
+        if (r-&gt;val == -1)
+            r-&gt;val = ++cur_num;
+        if (m-&gt;val == -1)
+            m-&gt;val = ++cur_num;
+
+        if (l-&gt;val &gt; m-&gt;val)
+        {
+            if (m-&gt;val &gt; r-&gt;val)
+                std::swap(*beg, *m);
+            else if (l-&gt;val &gt; r-&gt;val)
+                std::swap(*beg, *r);
+            else
+                std::swap(*beg, *l);
+        }
+        else
+        {
+            if (m-&gt;val &lt; r-&gt;val)
+                std::swap(*beg, *m);
+            else if (l-&gt;val &gt; r-&gt;val)
+                std::swap(*beg, *l);
+            else
+                std::swap(*beg, *r);
+        }
+        if (l-&gt;val &lt; beg-&gt;val &amp;&amp; l-&gt;val != -1)
+            ;
+        else if (m-&gt;val &lt; beg-&gt;val &amp;&amp; m-&gt;val != -1)
+            std::swap(*l, *m);
+        beg += 2;
+    }
+}
+
+void anti_qsort_gen_gcc(std::vector&lt;save_index&gt;&amp; vec, size_t len, int max_round)
+{
+    for (size_t i = 0; i &lt; len; ++i)
+    {
+        vec.push_back(save_index((int)i));
+    }
+    qsort_sim_gcc(&amp;*vec.begin(), &amp;*vec.begin() + len, max_round);
+    int cnt = 0;
+    for (size_t i = 0; i &lt; len; ++i)
+    {
+        if (vec[i].val == -1)
+            ++cnt;
+    }
+    std::vector&lt;int&gt; val_list(cnt);
+    for (int i = 0; i &lt; cnt; ++i)
+    {
+        val_list[i] = i + len - cnt;
+    }
+    // 以下 random_shuffle 实现需要自己实现，如果你用的是mingw
+    // 不能使用std::random_shuffle，注意
+    random_shuffle(val_list.begin(), val_list.end());
+    for (int i = 0, j = 0; i &lt; len; ++i)
+    {
+        if (vec[i].val == -1)
+        {
+            vec[i].val = val_list[j++];
+        }
+    }
+    std::sort(vec.begin(), vec.end());
+}
+
+void anti_qsort_gen_gcc(sort_element_t arr[], size_t len)
+{
+    std::vector&lt;save_index&gt; vec;
+    anti_qsort_gen_gcc(vec, len, 150);
+    for (size_t i = 0; i &lt; len; ++i)
+    {
+        arr[i] = vec[i].val;
+    }
+}
+</code></pre>
+
+<p>代码中注释的random_shuffle问题参见<a href="../20191006-mingw-bug/">这篇文章</a></p>
+
+<p>最后总结，老实加个rand比啥都强，至少大大增加构造evil数据的难度，也大大降低遇到最坏情况的可能。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">算法</a>
+  
+  <a class="badge badge-light" href="">排序</a>
+  
+  <a class="badge badge-light" href="">快速排序</a>
+  
+  <a class="badge badge-light" href="">对抗数据生成</a>
+  
+  <a class="badge badge-light" href="/tags/c&#43;&#43;/">c&#43;&#43;</a>
+  
+  <a class="badge badge-light" href="/tags/stl/">stl</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191019-qsort-talk-2/">Quick sort(快速排序)杂谈 2</a></li>
+          
+          <li><a href="/post/20191007-qsort-talk-1/">Quick sort(快速排序)杂谈 1</a></li>
+          
+          <li><a href="/post/20191017-weakheapsort/">smooth sort与weakheap sort实现</a></li>
+          
+          <li><a href="/post/20191015-sorting-3/">堆排序优化思路</a></li>
+          
+          <li><a href="/post/20191009-sorting-2/">插入排序与希尔排序优化思路</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

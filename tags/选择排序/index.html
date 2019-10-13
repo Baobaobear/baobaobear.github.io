@@ -371,7 +371,7 @@ void sort(iter beg, iter end)
 这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 sort(arr, arr + len) ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 sort(arr, arr + len - 1) 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以
 void sort(iter beg, iter end)
 这种方式写的，至于这样写有什么好处，接下来我们就看示例。
-
+选择排序 
       
     </div>
   </div>
@@ -489,7 +489,7 @@ void sort(iter beg, iter end)
     
     
     
-    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
 
     
 

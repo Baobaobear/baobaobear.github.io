@@ -17,7 +17,11 @@
       <link>/post/20191009-sorting-2/</link>
       <pubDate>Thu, 10 Oct 2019 20:52:52 +0800</pubDate>
       <guid>/post/20191009-sorting-2/</guid>
-      <description>&lt;p&gt;本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看&lt;a href=&#34;../20191008-sorting-1&#34;&gt;前一篇&lt;/a&gt;。&lt;/p&gt;
+      <description>&lt;p&gt;本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看&lt;a href=&#34;../20191008-sorting-1&#34;&gt;前一篇&lt;/a&gt;。我们来看插入排序的动图演示&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Insertion_sort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://github.com/heray1990/AlgorithmVisualization/blob/master/images/insertion_sort_50samples_fps30_dpi50.gif?raw=true&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。&lt;/p&gt;
 
 &lt;h2 id=&#34;插入排序基本实现&#34;&gt;插入排序基本实现&lt;/h2&gt;
 
@@ -225,7 +229,11 @@
 
 &lt;h2 id=&#34;希尔排序&#34;&gt;希尔排序&lt;/h2&gt;
 
-&lt;p&gt;希尔排序的坑特别深，你需要有心理准备。希尔排序和梳排序类似，都是通过使用较大的步长让元素更快速地到达正确位置附近，不过在步长的选择上，希尔排序与梳排序差别巨大。首先梳排序的步长选择较为简单，每次乘以0.8即可，这个数字就不要管怎么来的了，我也不知道。梳排序的研究资料较少，但希尔排序则不一样，步长选择的研究非常多，也就是说光是步长的选择就是一门学问，这就是一个大坑，而且这个步长选择对性能的影响十分明显。我们先来看最早的希尔排序版本，最早的版本使用步长每次乘以0.5。&lt;/p&gt;
+&lt;p&gt;希尔排序的坑特别深，你需要有心理准备。希尔排序和梳排序类似，都是通过使用较大的步长让元素更快速地到达正确位置附近&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Shellsort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/d/d8/Sorting_shellsort_anim.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;不过在步长的选择上，希尔排序与梳排序差别巨大。首先梳排序的步长选择较为简单，每次乘以0.8即可，这个数字就不要管怎么来的了，我也不知道。梳排序的研究资料较少，但希尔排序则不一样，步长选择的研究非常多，也就是说光是步长的选择就是一门学问，这就是一个大坑，而且这个步长选择对性能的影响十分明显。我们先来看最早的希尔排序版本，最早的版本使用步长每次乘以0.5。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void shell_sort_0_5(sort_element_t * beg, sort_element_t * end)
 {
@@ -357,7 +365,7 @@
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;这个哨兵技巧在其它的排序里面甚至别的问题里同样也会存在。除了这个还有没有别的优化空间呢？例如，shellsort的最优情况下的时间复杂度还是&lt;code&gt;O(nlogn)&lt;/code&gt;，那有没有办法使得最优情况时间复杂度下降到&lt;code&gt;O(n)&lt;/code&gt;呢？确实有办法，如果在某一轮发现没有数进行交换，那么就立即转成带次数限制的插入排序进行尝试，具体请参阅我的&lt;a href=&#34;(https://github.com/Baobaobear/sort)&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;这个哨兵技巧在其它的排序里面甚至别的问题里同样也会存在。除了这个还有没有别的优化空间呢？例如，shellsort的最优情况下的时间复杂度还是&lt;code&gt;O(nlogn)&lt;/code&gt;，那有没有办法使得最优情况时间复杂度下降到&lt;code&gt;O(n)&lt;/code&gt;呢？确实有办法，如果在某一轮发现没有数进行交换，那么就立即转成带次数限制的插入排序进行尝试，具体请参阅我的&lt;a href=&#34;https://github.com/Baobaobear/sort&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;。&lt;/p&gt;
 
 &lt;h2 id=&#34;测试结果&#34;&gt;测试结果&lt;/h2&gt;
 
@@ -459,7 +467,7 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 
-&lt;p&gt;其中&lt;code&gt;bao_shell&lt;/code&gt;是我在&lt;a href=&#34;(https://github.com/Baobaobear/sort)&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;中写的希尔排序，使用了更优的步长序列，里面包含更多的优化技巧，本篇就不一一介绍了。&lt;/p&gt;</description>
+&lt;p&gt;其中&lt;code&gt;bao_shell&lt;/code&gt;是我在&lt;a href=&#34;https://github.com/Baobaobear/sort&#34; target=&#34;_blank&#34;&gt;sort项目&lt;/a&gt;中写的希尔排序，使用了更优的步长序列，里面包含更多的优化技巧，本篇就不一一介绍了。&lt;/p&gt;</description>
     </item>
     
   </channel>

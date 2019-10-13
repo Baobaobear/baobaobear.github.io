@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于treap的文章。
+
+序列维护
+
+在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20191213-tree-sequence/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20191213-tree-sequence/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20191213-tree-sequence/">
+  <meta property="og:title" content="平衡树与序列维护 | Baobaobear">
+  <meta property="og:description" content="平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于treap的文章。
+
+序列维护
+
+在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2019-12-13T13:10:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2019-12-13T13:10:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20191213-tree-sequence/"
+  },
+  "headline": "平衡树与序列维护",
+  
+  "datePublished": "2019-12-13T13:10:00+08:00",
+  "dateModified": "2019-12-13T13:10:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于\u003ca href=\"../20191211-treap-sbt/\"\u003etreap\u003c/a\u003e的文章。\u003c/p\u003e\n\n\u003ch2 id=\"序列维护\"\u003e序列维护\u003c/h2\u003e\n\n\u003cp\u003e在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>平衡树与序列维护 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>平衡树与序列维护</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Dec 13, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    9 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191213-tree-sequence/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191213-tree-sequence/&amp;text=%e5%b9%b3%e8%a1%a1%e6%a0%91%e4%b8%8e%e5%ba%8f%e5%88%97%e7%bb%b4%e6%8a%a4" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191213-tree-sequence/&amp;t=%e5%b9%b3%e8%a1%a1%e6%a0%91%e4%b8%8e%e5%ba%8f%e5%88%97%e7%bb%b4%e6%8a%a4" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e5%b9%b3%e8%a1%a1%e6%a0%91%e4%b8%8e%e5%ba%8f%e5%88%97%e7%bb%b4%e6%8a%a4&amp;body=/post/20191213-tree-sequence/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191213-tree-sequence/&amp;title=%e5%b9%b3%e8%a1%a1%e6%a0%91%e4%b8%8e%e5%ba%8f%e5%88%97%e7%bb%b4%e6%8a%a4" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e5%b9%b3%e8%a1%a1%e6%a0%91%e4%b8%8e%e5%ba%8f%e5%88%97%e7%bb%b4%e6%8a%a4%20/post/20191213-tree-sequence/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191213-tree-sequence/&amp;title=%e5%b9%b3%e8%a1%a1%e6%a0%91%e4%b8%8e%e5%ba%8f%e5%88%97%e7%bb%b4%e6%8a%a4" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于<a href="../20191211-treap-sbt/">treap</a>的文章。</p>
+
+<h2 id="序列维护">序列维护</h2>
+
+<p>在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。</p>
+
+<h2 id="基本模板">基本模板</h2>
+
+<p>以下模板我实现成真·模板，就几乎可以作为数组使用了</p>
+
+<pre><code class="language-cpp">template &lt;typename T&gt;
+struct treap_seq
+{
+    struct data
+    {
+        T v;
+        data(T _v = 0) :v(_v) {}
+        operator bool() const { return v != 0; }
+        operator T() const { return v; }
+    };
+    struct node
+    {
+        int ch[2], sz;
+        unsigned k;
+        data d;
+        node(int z = 1) :sz(z), k(rnd()) { d = ch[0] = ch[1] = 0; }
+        void clone(const node&amp; n) { d = n.d; }
+        static unsigned rnd()
+        {
+            static unsigned r = 0x123;
+            r = r * 69069 + 1;
+            return r;
+        }
+    };
+    vector&lt;node&gt; nodes;
+    vector&lt;int&gt; recycle;
+    int root;
+    int reserve_size;
+    void reserve()
+    {
+        if (size() &gt;= reserve_size)
+            nodes.reserve((reserve_size *= 2) + 1);
+    }
+    int new_node()
+    {
+        int id = (int)nodes.size();
+        if (!recycle.empty())
+        {
+            id = recycle.back();
+            recycle.pop_back();
+            nodes[id] = node();
+        }
+        else nodes.push_back(node());
+        return id;
+    }
+    void update(int tp)
+    {
+        node&amp; n = nodes[tp];
+        n.sz = 1 + nodes[n.ch[0]].sz + nodes[n.ch[1]].sz;
+    }
+    int insert(int&amp; tp, int k, const data&amp; d)
+    {
+        if (tp == 0)
+        {
+            tp = new_node();
+            nodes[tp].d = d;
+            return tp;
+        }
+        node&amp; n = nodes[tp];
+        int sz = nodes[n.ch[0]].sz + 1;
+        int r = sz &lt; k;
+        int&amp; s = n.ch[r];
+        int ret = insert(s, k - sz * r, d);
+        update(s);
+        if (nodes[s].k &lt; n.k) rotate(tp, r);
+        else update(tp);
+        return ret;
+    }
+    void rotate(int&amp; tp, int r)
+    {
+        node&amp; n = nodes[tp];
+        int s = n.ch[r];
+        n.ch[r] = nodes[s].ch[r ^ 1];
+        nodes[s].ch[r ^ 1] = tp;
+        update(tp); update(s);
+        tp = s;
+    }
+    int erasefind(int&amp; tp, int k) // return deleted
+    {
+        if (tp == 0) return 0;
+        node&amp; n = nodes[tp];
+        int sz = nodes[n.ch[0]].sz + 1;
+        if (sz == k)
+        {
+            remove(tp);
+            return 1;
+        }
+        int r = sz &lt; k;
+        int&amp; s = n.ch[r];
+        int ret = erasefind(s, k - sz * r);
+        if (ret)
+        {
+            update(tp);
+            return 1;
+        }
+        return 0;
+    }
+    void remove(int&amp; tp)
+    {
+        if (tp == 0) return;
+        if (!nodes[tp].ch[0] || !nodes[tp].ch[1])
+        {
+            recycle.push_back(tp);
+            tp = nodes[tp].ch[!nodes[tp].ch[0]];
+        }
+        else
+        {
+            int r = nodes[nodes[tp].ch[0]].k &lt; nodes[nodes[tp].ch[1]].k;
+            rotate(tp, r ^ 1);
+            remove(nodes[tp].ch[r]);
+            update(tp);
+        }
+    }
+    int kth(int tp, int k) // return id
+    {
+        if (tp == 0) return tp;
+        node n = nodes[tp];
+        int sz = nodes[n.ch[0]].sz;
+        if (sz &gt;= k) return kth(n.ch[0], k);
+        if (sz + 1 &gt;= k) return tp;
+        return kth(n.ch[1], k - sz - 1);
+    }
+    // interface
+    void init(int size)
+    {
+        nodes.clear();
+        recycle.clear();
+        nodes.reserve(size + 1);
+        nodes.push_back(node(0));
+        root = 0; reserve_size = size;
+    }
+    T get(int id) { return nodes[id].d; }
+    int size() { return nodes[root].sz; }
+    int insert(int k, data v) { if (size() &gt;= reserve_size) nodes.reserve((reserve_size *= 2) + 1); return insert(root, k, v); }
+    int erase(int k) { return erasefind(root, k); }
+    int kth(int k) { return kth(root, k); } // return id
+};
+</code></pre>
+
+<h2 id="动态版本线段树">动态版本线段树</h2>
+
+<p>有了这个，我们就可以把它改成动态版本的线段树，就是每个根节点多维护一个sum字段，再加一个懒惰标记，就能实现区间加和区间求和。不过和线段树不同的是，线段树的子树的根只维护区间的结果，而平衡树的根本身就是一个元素，所以代码和线段树略有差别。以下我们实现一个支持区间加和区间求和且能动态增减数据的平衡树，实测与前面讲线段树文章的普通线段树模板，在解决同一问题的执行时间非常接近</p>
+
+<pre><code class="language-cpp">template &lt;typename T&gt;
+struct treap_seq
+{
+    struct data
+    {
+        T v;
+        data(T _v = 0) :v(_v) {}
+        data operator + (const data&amp; d) const
+        {
+            data r;
+            r.v = v + d.v;
+            return r;
+        }
+        data operator * (int t) const
+        {
+            data r;
+            r.v = v * t;
+            return r;
+        }
+        operator bool() const { return v != 0; }
+        operator T() const { return v; }
+    };
+    struct node
+    {
+        int ch[2], sz;
+        unsigned k;
+        data d;
+        data sum;
+        data lz_add;
+        node(int z = 1) :sz(z), k(rnd()) { sum = lz_add = d = ch[0] = ch[1] = 0; }
+        void clone(const node&amp; n) { d = n.d; sum = n.sum; }
+        static unsigned rnd()
+        {
+            static unsigned r = 0x123;
+            r = r * 69069 + 1;
+            return r;
+        }
+    };
+    vector&lt;node&gt; nodes;
+    vector&lt;int&gt; recycle;
+    int root;
+    int reserve_size;
+    void reserve()
+    {
+        if (size() &gt;= reserve_size)
+            nodes.reserve((reserve_size *= 2) + 1);
+    }
+    int new_node()
+    {
+        int id = (int)nodes.size();
+        if (!recycle.empty())
+        {
+            id = recycle.back();
+            recycle.pop_back();
+            nodes[id] = node();
+        }
+        else nodes.push_back(node());
+        return id;
+    }
+    void _add(int tp, const data&amp; d)
+    {
+        node&amp; n = nodes[tp];
+        n.lz_add = n.lz_add + d;
+        n.d = n.d + d;
+        n.sum = n.sum + d * n.sz;
+    }
+    void pushdown(int tp)
+    {
+        node&amp; n = nodes[tp];
+        if (n.lz_add)
+        {
+            _add(n.ch[0], n.lz_add);
+            _add(n.ch[1], n.lz_add);
+            n.lz_add = 0;
+        }
+    }
+    void update(int tp)
+    {
+        node&amp; n = nodes[tp];
+        n.sz = 1 + nodes[n.ch[0]].sz + nodes[n.ch[1]].sz;
+        n.sum = n.d + nodes[n.ch[0]].sum + nodes[n.ch[1]].sum;
+    }
+    int insert(int&amp; tp, int k, const data&amp; d)
+    {
+        if (tp == 0)
+        {
+            tp = new_node();
+            nodes[tp].d = d;
+            nodes[tp].sum = d;
+            return tp;
+        }
+        node&amp; n = nodes[tp];
+        pushdown(tp);
+        int sz = nodes[n.ch[0]].sz + 1;
+        int r = sz &lt; k;
+        int&amp; s = n.ch[r];
+        int ret = insert(s, k - sz * r, d);
+        update(s);
+        if (nodes[s].k &lt; n.k) rotate(tp, r);
+        else update(tp);
+        return ret;
+    }
+    void rotate(int&amp; tp, int r)
+    {
+        node&amp; n = nodes[tp];
+        pushdown(tp);
+        int s = n.ch[r];
+        pushdown(s);
+        n.ch[r] = nodes[s].ch[r ^ 1];
+        nodes[s].ch[r ^ 1] = tp;
+        update(tp); update(s);
+        tp = s;
+    }
+    int erasefind(int&amp; tp, int k) // return deleted
+    {
+        if (tp == 0) return 0;
+        node&amp; n = nodes[tp];
+        pushdown(tp);
+        int sz = nodes[n.ch[0]].sz + 1;
+        if (sz == k)
+        {
+            remove(tp);
+            return 1;
+        }
+        int r = sz &lt; k;
+        int&amp; s = n.ch[r];
+        int ret = erasefind(s, k - sz * r);
+        if (ret)
+        {
+            update(tp);
+            return 1;
+        }
+        return 0;
+    }
+    void remove(int&amp; tp)
+    {
+        if (tp == 0) return;
+        if (!nodes[tp].ch[0] || !nodes[tp].ch[1])
+        {
+            recycle.push_back(tp);
+            tp = nodes[tp].ch[!nodes[tp].ch[0]];
+        }
+        else
+        {
+            int r = nodes[nodes[tp].ch[0]].k &lt; nodes[nodes[tp].ch[1]].k;
+            rotate(tp, r ^ 1);
+            remove(nodes[tp].ch[r]);
+            update(tp);
+        }
+    }
+    int kth(int tp, int k) // return id
+    {
+        if (tp == 0) return tp;
+        node n = nodes[tp];
+        pushdown(tp);
+        int sz = nodes[n.ch[0]].sz;
+        if (sz &gt;= k) return kth(n.ch[0], k);
+        if (sz + 1 &gt;= k) return tp;
+        return kth(n.ch[1], k - sz - 1);
+    }
+    data getsum(int&amp; tp, int l, int r)
+    {
+        if (tp == 0 || l &gt;= r) return 0;
+        node&amp; n = nodes[tp];
+        int sz = nodes[n.ch[0]].sz + 1;
+        if (l &lt;= 1 &amp;&amp; r &gt; n.sz)
+        {
+            return n.sum;
+        }
+        else
+        {
+            pushdown(tp);
+            data sum = 0;
+            if (l &lt;= sz &amp;&amp; sz &lt; r)
+            {
+                sum = nodes[tp].d;
+            }
+            sum = sum + getsum(n.ch[0], l, min(sz, r));
+            sum = sum + getsum(n.ch[1], max(1, l - sz), r - sz);
+            return sum;
+        }
+    }
+    void range_add(int&amp; tp, int l, int r, const data&amp; d)
+    {
+        if (tp == 0 || l &gt;= r) return;
+        node&amp; n = nodes[tp];
+        int sz = nodes[n.ch[0]].sz + 1;
+        if (l &lt;= 1 &amp;&amp; r &gt; n.sz)
+        {
+            _add(tp, d);
+        }
+        else
+        {
+            //pushdown(tp);
+            if (l &lt;= sz &amp;&amp; sz &lt; r)
+            {
+                nodes[tp].d = nodes[tp].d + d;
+            }
+            nodes[tp].sum = nodes[tp].sum + d * (r - l);
+            range_add(n.ch[0], l, min(sz, r), d);
+            range_add(n.ch[1], max(1, l - sz), r - sz, d);
+        }
+    }
+    // interface
+    void init(int size)
+    {
+        nodes.clear();
+        recycle.clear();
+        nodes.reserve(size + 1);
+        nodes.push_back(node(0));
+        root = 0; reserve_size = size;
+    }
+    T get(int id) { return nodes[id].d; }
+    int size() { return nodes[root].sz; }
+    int insert(int k, data v) { reserve(); return insert(root, k, v); }
+    int erase(int k) { return erasefind(root, k); }
+    int kth(int k) { return kth(root, k); } // return id
+    T getsum(int l, int r) { return getsum(root, l, r + 1); }
+    void range_add(int l, int r, data v) { range_add(root, l, r + 1, v); }
+};
+</code></pre>
+
+<h2 id="splay-tree">Splay tree</h2>
+
+<p>使用以上这个Treap的自由度还是不够好，有些操作还是不容易做，例如区间翻转，或者区间删除。所以我们需要一个功能更为强大的树，因为那个随机数的限制，不能任意节点都能当树根，而没有那个随机数字段的树，就是伸展树Splay tree，区别主要是三个地方，一是需要父节点字段，维护关系时常数更大，二是旋转，使用双旋，三是splay操作，作用是把节点提升到树根。这个splay操作就是神器，能把很多区间操作写得非常简单，代码也确实是目前介绍的树里面代码最少的。不过伸展树的缺点是编码理解难度稍大。</p>
+
+<p>和其它树的不同点是，为了保证区间操作代码简短，初始化的时候直接插入两个元素作为序列的一头一尾，于是实际操作区间是2到n+1，这个细节要注意，有了这两个元素可以减少很多特判操作。例如说，要找区间<code>[l,r]</code>，那么只要让位置r+1的元素splay到根，然后再让位置l-1的元素splay到根的左边，那么l-1位的元素的右子树就是整个操作区间了，而为了让这个总是能做，所以才要预先加两个元素。这个技巧用在了几乎所有操作里面，包括插入，删除，所有的区间操作。splay操作的时间复杂度 $O(logn)$</p>
+
+<p>以下是序列维护用的基本splaytree模板，要改成支持区间求和什么的就自己改吧。</p>
+
+<pre><code class="language-cpp">template&lt;typename T&gt;
+struct splaytree_seq
+{
+    struct data
+    {
+        T v;
+        data(int _v = 0) :v(_v) {}
+        operator T() const { return v; }
+    };
+    struct node
+    {
+        int ch[2], fa, sz;
+        data d;
+        node(int z = 1) :sz(z) { ch[0] = ch[1] = fa = 0; }
+    };
+    vector&lt;node&gt; nodes;
+    int root;
+    int recyc;
+    int reserve_size;
+    void reserve()
+    {
+        if (size() &gt;= reserve_size)
+            nodes.reserve((reserve_size *= 2) + 1);
+    }
+    inline int&amp; ch(int tp, int r) { return nodes[tp].ch[r]; }
+    inline int&amp; fa(int tp) { return nodes[tp].fa; }
+    inline int rch(int tp) { return ch(fa(tp), 1) == tp; }
+    int new_node()
+    {
+        int id = (int)nodes.size();
+        if (recyc)
+        {
+            id = recyc;
+            if (ch(recyc, 0) &amp;&amp; ch(recyc, 1))
+                recyc = merge(ch(recyc, 0), ch(recyc, 1));
+            else
+                recyc = ch(recyc, 0) ? ch(recyc, 0) : ch(recyc, 1);
+            fa(recyc) = 0;
+            nodes[id] = node();
+        }
+        else nodes.push_back(node());
+        return id;
+    }
+    void update(int tp)
+    {
+        node&amp; n = nodes[tp];
+        n.sz = 1 + nodes[n.ch[0]].sz + nodes[n.ch[1]].sz;
+    }
+    void add(int tp, const data&amp; d)
+    {
+        node&amp; n = nodes[tp];
+        n.d = n.d + d;
+    }
+    void rotate(int s)
+    {
+        int f1 = fa(s), f2 = fa(f1);
+        int d1 = rch(s), d2 = rch(f1);
+        ch(f2, d2) = s; fa(s) = f2;
+        fa(ch(s, d1 ^ 1)) = f1; ch(f1, d1) = ch(s, d1 ^ 1);
+        fa(f1) = s; ch(s, d1 ^ 1) = f1;
+        update(f1); update(s);
+    }
+    void splay(int tp, int goal = 0)
+    {
+        for (int f; (f = fa(tp)) != goal; rotate(tp))
+            if (fa(f) != goal) rotate(rch(tp) == rch(f) ? f : tp);
+        if (!goal) root = tp;
+    }
+    int find_m(int tp, int r)
+    {
+        int p = tp;
+        while (ch(p, r)) p = ch(p, r);
+        if (p != tp) splay(p, tp);
+        return p;
+    }
+    int merge(int tl, int tr)
+    {
+        if (!tl) { fa(tr) = 0; return tr; }
+        if (!tr) { fa(tl) = 0; return tl; }
+        int p = find_m(tl, 1);
+        ch(p, 1) = tr; fa(tr) = p;
+        return tl;
+    }
+    void insert(int k, const data&amp; d)
+    {
+        int tp = new_node();
+        splay(kth(root, k + 1)); splay(kth(root, k), root);
+        int c = ch(root, 0);
+        nodes[c].ch[1] = tp;
+        nodes[tp].fa = c;
+        nodes[tp].d = d;
+        update(c); update(root);
+    }
+    void remove(int&amp; tp)
+    {
+        fa(tp) = 0;
+        if (recyc == 0) recyc = tp;
+        else recyc = merge(recyc, tp);
+        tp = 0;
+    }
+    int kth(int tp, int k)
+    {
+        if (tp == 0) return tp;
+        node&amp; n = nodes[tp];
+        //pushdown(tp);
+        int sz = nodes[n.ch[0]].sz + 1;
+        if (sz &gt; k) return kth(n.ch[0], k);
+        if (sz &gt;= k) return tp;
+        return kth(n.ch[1], k - sz);
+    }
+    // interface
+    void init(int size)
+    {
+        nodes.clear();
+        nodes.reserve((size = max(size, 15)) + 1);
+        nodes.push_back(node(0));
+        nodes.push_back(node()); nodes.push_back(node());
+        nodes[1].ch[0] = 2; nodes[1].sz = 2; nodes[2].fa = 1;
+        root = 1; // be the bound
+        recyc = 0; reserve_size = size + 1;
+    }
+    T get(int id) { return nodes[id].d; }
+    int size() { return nodes[root].sz - 2; }
+    int kth(int k) { int id = kth(root, k + 1); splay(id); return id; }
+    void erase(int l, int r)
+    {
+        splay(kth(root, r + 2)); splay(kth(root, l), root);
+        remove(ch(ch(root, 0), 1));
+        update(ch(root, 0)); update(root);
+    }
+    void range_add(int l, int r, data v)
+    {
+        splay(kth(root, r + 2)); splay(kth(root, l), root);
+        add(ch(ch(root, 0), 1), v);
+        update(ch(root, 0)); update(root);
+    }
+};
+</code></pre>
+
+<p>以上已经直接写好了区间删除，对于区间反转等操作，可以模仿线段树加懒惰标记即可。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">数据结构</a>
+  
+  <a class="badge badge-light" href="/tags/treap/">Treap</a>
+  
+  <a class="badge badge-light" href="/tags/splaytree/">SplayTree</a>
+  
+  <a class="badge badge-light" href="">模板</a>
+  
+  <a class="badge badge-light" href="/tags/c&#43;&#43;/">c&#43;&#43;</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191211-treap-sbt/">Treap与SBT</a></li>
+          
+          <li><a href="/post/20191208-segtree/">线段树</a></li>
+          
+          <li><a href="/post/20191113-suffixarray/">后缀数组</a></li>
+          
+          <li><a href="/post/20191111-fenwicktree/">树状数组</a></li>
+          
+          <li><a href="/post/20191028-kmp/">KMP及扩展KMP</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

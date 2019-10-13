@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="树状数组，是一个用于在近似 $O(logn)$ 时间内动态修改以及查询前缀和的数据结构，以下我们先来看以下树关系表格
+
+
+
+
+层
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+
+
+
+
+
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+16
+
+
+
+2
+
+
+
+
+
+
+
+8
+
+
+
+12
+
+14
+15
+
+
+
+
+3
+
+
+
+4
+
+6
+7
+
+
+10
+11
+
+13
+
+
+
+
+
+
+4
+
+2
+3
+
+5
+
+
+
+9
+
+
+
+
+
+
+
+
+
+
+5
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+这里表达的是，16的子节点有8, 12, 14, 15
+
+8的子节点有4, 6, 7
+
+12的子节点有10, 11，即夹在12与它的同级节点8之间
+
+我们把数值与它的二进制一起形象化画出下图
+
+graph TD;
+2,0010--&gt;1,0001
+4,0100--&gt;3,0011
+4,0100--&gt;2,0010
+6,0110--&gt;5,0101
+8,1000--&gt;7,0111
+8,1000--&gt;6,0110
+8,1000--&gt;4,0100
+10,1010--&gt;9,1001
+12,1100--&gt;11,1011
+12,1100--&gt;10,1010
+14,1110--&gt;13,1101
+16,10000--&gt;8,1000
+16,10000--&gt;12,1100
+16,10000--&gt;14,1110
+16,10000--&gt;15,1111
+
+
+这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是x &#43; (x &amp; -x)，其中，x &amp; -x是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是6&#43;2=8，更多的可以参考这篇二进制技巧。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20191111-fenwicktree/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20191111-fenwicktree/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20191111-fenwicktree/">
+  <meta property="og:title" content="树状数组 | Baobaobear">
+  <meta property="og:description" content="树状数组，是一个用于在近似 $O(logn)$ 时间内动态修改以及查询前缀和的数据结构，以下我们先来看以下树关系表格
+
+
+
+
+层
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+
+
+
+
+
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+16
+
+
+
+2
+
+
+
+
+
+
+
+8
+
+
+
+12
+
+14
+15
+
+
+
+
+3
+
+
+
+4
+
+6
+7
+
+
+10
+11
+
+13
+
+
+
+
+
+
+4
+
+2
+3
+
+5
+
+
+
+9
+
+
+
+
+
+
+
+
+
+
+5
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+这里表达的是，16的子节点有8, 12, 14, 15
+
+8的子节点有4, 6, 7
+
+12的子节点有10, 11，即夹在12与它的同级节点8之间
+
+我们把数值与它的二进制一起形象化画出下图
+
+graph TD;
+2,0010--&gt;1,0001
+4,0100--&gt;3,0011
+4,0100--&gt;2,0010
+6,0110--&gt;5,0101
+8,1000--&gt;7,0111
+8,1000--&gt;6,0110
+8,1000--&gt;4,0100
+10,1010--&gt;9,1001
+12,1100--&gt;11,1011
+12,1100--&gt;10,1010
+14,1110--&gt;13,1101
+16,10000--&gt;8,1000
+16,10000--&gt;12,1100
+16,10000--&gt;14,1110
+16,10000--&gt;15,1111
+
+
+这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是x &#43; (x &amp; -x)，其中，x &amp; -x是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是6&#43;2=8，更多的可以参考这篇二进制技巧。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2019-11-11T13:32:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2019-11-11T13:32:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20191111-fenwicktree/"
+  },
+  "headline": "树状数组",
+  
+  "datePublished": "2019-11-11T13:32:00+08:00",
+  "dateModified": "2019-11-11T13:32:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e树状数组，是一个用于在近似 $O(logn)$ 时间内动态修改以及查询前缀和的数据结构，以下我们先来看以下树关系表格\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003e层\u003c/th\u003e\n\u003cth\u003e1\u003c/th\u003e\n\u003cth\u003e2\u003c/th\u003e\n\u003cth\u003e3\u003c/th\u003e\n\u003cth\u003e4\u003c/th\u003e\n\u003cth\u003e5\u003c/th\u003e\n\u003cth\u003e6\u003c/th\u003e\n\u003cth\u003e7\u003c/th\u003e\n\u003cth\u003e8\u003c/th\u003e\n\u003cth\u003e9\u003c/th\u003e\n\u003cth\u003e10\u003c/th\u003e\n\u003cth\u003e11\u003c/th\u003e\n\u003cth\u003e12\u003c/th\u003e\n\u003cth\u003e13\u003c/th\u003e\n\u003cth\u003e14\u003c/th\u003e\n\u003cth\u003e15\u003c/th\u003e\n\u003cth\u003e16\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e16\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e8\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e12\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e14\u003c/td\u003e\n\u003ctd\u003e15\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e4\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e6\u003c/td\u003e\n\u003ctd\u003e7\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e10\u003c/td\u003e\n\u003ctd\u003e11\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e13\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e4\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e9\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e这里表达的是，16的子节点有8, 12, 14, 15\u003c/p\u003e\n\n\u003cp\u003e8的子节点有4, 6, 7\u003c/p\u003e\n\n\u003cp\u003e12的子节点有10, 11，即夹在12与它的同级节点8之间\u003c/p\u003e\n\n\u003cp\u003e我们把数值与它的二进制一起形象化画出下图\u003c/p\u003e\n\n\u003cpre\u003e\u003ccode class=\"language-mermaid\"\u003egraph TD;\n2,0010--\u0026gt;1,0001\n4,0100--\u0026gt;3,0011\n4,0100--\u0026gt;2,0010\n6,0110--\u0026gt;5,0101\n8,1000--\u0026gt;7,0111\n8,1000--\u0026gt;6,0110\n8,1000--\u0026gt;4,0100\n10,1010--\u0026gt;9,1001\n12,1100--\u0026gt;11,1011\n12,1100--\u0026gt;10,1010\n14,1110--\u0026gt;13,1101\n16,10000--\u0026gt;8,1000\n16,10000--\u0026gt;12,1100\n16,10000--\u0026gt;14,1110\n16,10000--\u0026gt;15,1111\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003cp\u003e这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是\u003ccode\u003ex + (x \u0026amp; -x)\u003c/code\u003e，其中，\u003ccode\u003ex \u0026amp; -x\u003c/code\u003e是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是\u003ccode\u003e6+2=8\u003c/code\u003e，更多的可以参考这篇\u003ca href=\"../post/20191012-binary-skill/\"\u003e二进制技巧\u003c/a\u003e。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>树状数组 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>树状数组</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Nov 11, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    3 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191111-fenwicktree/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191111-fenwicktree/&amp;text=%e6%a0%91%e7%8a%b6%e6%95%b0%e7%bb%84" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191111-fenwicktree/&amp;t=%e6%a0%91%e7%8a%b6%e6%95%b0%e7%bb%84" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e6%a0%91%e7%8a%b6%e6%95%b0%e7%bb%84&amp;body=/post/20191111-fenwicktree/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191111-fenwicktree/&amp;title=%e6%a0%91%e7%8a%b6%e6%95%b0%e7%bb%84" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e6%a0%91%e7%8a%b6%e6%95%b0%e7%bb%84%20/post/20191111-fenwicktree/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191111-fenwicktree/&amp;title=%e6%a0%91%e7%8a%b6%e6%95%b0%e7%bb%84" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>树状数组，是一个用于在近似 $O(logn)$ 时间内动态修改以及查询前缀和的数据结构，以下我们先来看以下树关系表格</p>
+
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+<th>13</th>
+<th>14</th>
+<th>15</th>
+<th>16</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>16</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>8</td>
+<td></td>
+<td></td>
+<td></td>
+<td>12</td>
+<td></td>
+<td>14</td>
+<td>15</td>
+<td></td>
+</tr>
+
+<tr>
+<td>3</td>
+<td></td>
+<td></td>
+<td></td>
+<td>4</td>
+<td></td>
+<td>6</td>
+<td>7</td>
+<td></td>
+<td></td>
+<td>10</td>
+<td>11</td>
+<td></td>
+<td>13</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>4</td>
+<td></td>
+<td>2</td>
+<td>3</td>
+<td></td>
+<td>5</td>
+<td></td>
+<td></td>
+<td></td>
+<td>9</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>这里表达的是，16的子节点有8, 12, 14, 15</p>
+
+<p>8的子节点有4, 6, 7</p>
+
+<p>12的子节点有10, 11，即夹在12与它的同级节点8之间</p>
+
+<p>我们把数值与它的二进制一起形象化画出下图</p>
+
+<pre><code class="language-mermaid">graph TD;
+2,0010--&gt;1,0001
+4,0100--&gt;3,0011
+4,0100--&gt;2,0010
+6,0110--&gt;5,0101
+8,1000--&gt;7,0111
+8,1000--&gt;6,0110
+8,1000--&gt;4,0100
+10,1010--&gt;9,1001
+12,1100--&gt;11,1011
+12,1100--&gt;10,1010
+14,1110--&gt;13,1101
+16,10000--&gt;8,1000
+16,10000--&gt;12,1100
+16,10000--&gt;14,1110
+16,10000--&gt;15,1111
+</code></pre>
+
+<p>这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是<code>x + (x &amp; -x)</code>，其中，<code>x &amp; -x</code>是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是<code>6+2=8</code>，更多的可以参考这篇<a href="../post/20191012-binary-skill/">二进制技巧</a>。</p>
+
+<h2 id="前缀和">前缀和</h2>
+
+<p>给一个数组a，如果我们需要计算前n个元素的和 $\sum_{i=1}^n{a[i]}$ ，直接累加是很慢的，这里我们用树状数组，我们规定，每个节点保存的值，是它和它的子节点的和，我们用数组 <code>9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2, 1</code> 画个表格，注意数组下标从1开始。</p>
+
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+<th>13</th>
+<th>14</th>
+<th>15</th>
+<th>16</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>原</td>
+<td>9</td>
+<td>8</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+<td>4</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>6</td>
+<td>5</td>
+<td>4</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>66</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>44</td>
+<td></td>
+<td></td>
+<td></td>
+<td>12</td>
+<td></td>
+<td>7</td>
+<td>2</td>
+<td></td>
+</tr>
+
+<tr>
+<td>3</td>
+<td></td>
+<td></td>
+<td></td>
+<td>30</td>
+<td></td>
+<td>9</td>
+<td>3</td>
+<td></td>
+<td></td>
+<td>1</td>
+<td>6</td>
+<td></td>
+<td>4</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>4</td>
+<td></td>
+<td>17</td>
+<td>7</td>
+<td></td>
+<td>5</td>
+<td></td>
+<td></td>
+<td></td>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>9</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>那有了这个表，我们要是求出前4个数的和，直接看第4列是30，答案就出来了，因为它上面的数就是它和它所有子结点的和。但如果是别的数呢，例如要求前7个数的和，就不能光看第7列了，需要把第4列、第6列和第7列的3个数相加，即<code>30+9+3=42</code>就是前7个数的和。注意到这三列其实就是三个同级节点，而且我们通过7这个数本身可以轻松计算前两列的数，计算的方法是<code>x - (x &amp; -x)</code>，把<code>x=7</code>代入，得到6，再把6代入，得到4，再把4代入，得到0，0就结束了，而在这个迭代的过程里，就知道我们应该把4,6,7三列的数相加。</p>
+
+<p>再换一个数，例如11呢，把<code>x=11</code>代入，得到10，再把10代入，得到8，再把8代入，得到0，所以我们应该把8,10,11三列的数加起来，即<code>44+1+6=51</code>就是前11个数的和。</p>
+
+<p>把以上过程写成函数，就是</p>
+
+<pre><code class="language-cpp">int sum(int fwtree[], int x)
+{
+    int r = 0;
+    while (x &gt; 0)
+    {
+        r += fwtree[x];
+        x -= x&amp;-x;
+    }
+    return r;
+}
+</code></pre>
+
+<p>可以看出，这段代码的时间复杂度近似是 $O(logx)$</p>
+
+<h2 id="动态维护">动态维护</h2>
+
+<p>还是前面的数组 <code>9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2, 1</code> ，现在假如已经计算好了树状数组，但我们需要对第6个元素，让它减少6，怎么操作呢，其实很简单，根据定义，在子节点修改的时候，让它的所有父节点都做相同的修改，那么6的父节点分别有8,16，所以我们对第6,8,16列都一起减少6，得到以下新表格</p>
+
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+<th>13</th>
+<th>14</th>
+<th>15</th>
+<th>16</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>原</td>
+<td>9</td>
+<td>8</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+<td>-2</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>6</td>
+<td>5</td>
+<td>4</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>60</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>38</td>
+<td></td>
+<td></td>
+<td></td>
+<td>12</td>
+<td></td>
+<td>7</td>
+<td>2</td>
+<td></td>
+</tr>
+
+<tr>
+<td>3</td>
+<td></td>
+<td></td>
+<td></td>
+<td>30</td>
+<td></td>
+<td>3</td>
+<td>3</td>
+<td></td>
+<td></td>
+<td>1</td>
+<td>6</td>
+<td></td>
+<td>4</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>4</td>
+<td></td>
+<td>17</td>
+<td>7</td>
+<td></td>
+<td>5</td>
+<td></td>
+<td></td>
+<td></td>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>9</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>这样就维护完成了，所以咱们的实现代码也非常的简单</p>
+
+<pre><code class="language-cpp">void add(int fwtree[], int treesize, int x, int add)
+{
+    while (x &lt;= treesize)
+    {
+        fwtree[x] += add;
+        x += x&amp;-x;
+    }
+}
+</code></pre>
+
+<h2 id="区间和">区间和</h2>
+
+<p>我们之所以需要前缀和，就是为了能快速求区间和。例如我们需要求出数组第i个到第j个元素的和，那么我们用<code>sum(x)</code>表示前x个元素的和，那么可以转化为求<code>sum(j) - sum(i-1)</code></p>
+
+<h2 id="区间操作-单点查询">区间操作+单点查询</h2>
+
+<p>因为树状数组的修改是单点修改，即每次只能修改一个数，那么现在我们提出一个新问题，如果我们需要多次做区间操作（整个区间的数同时加上y），然后查询数组里面指定第k个元素是什么，例如这个题<a href="https://loj.ac/problem/131" target="_blank">loj131</a></p>
+
+<p>由于树状数组不能快速做区间操作，我们用到另一个技巧叫做差分法，我们对数组 <code>9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2, 1</code>求相邻元素的差，得到新的数组</p>
+
+<p><code>9, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6, -1, -1, -1, -1, -1</code></p>
+
+<p>这样做了后，如果我们要求出原来第k个元素，那么就是求前k个元素之和，所以如果第i个元素加上a，那么相当于i后面所有元素都加上a。</p>
+
+<p>所以，这时候的区间操作，就会变成单点操作，例如我们要对区间<code>[i,j]</code>所有的元素加上a，那么在差分了以后，其实就是对第i个元素加上a，再对第j+1个元素减去a。</p>
+
+<h2 id="区间操作-区间和">区间操作+区间和</h2>
+
+<p>如果我们既要做区间操作，同时还要求区间和怎么办，为了支持区间操作，我们仍然先做差分，然后接下来就是让人头痛的数学推导，假设数组a是原数组，b是a的差分数组，由前缀和的定义，我们求前n个元素的和，即</p>
+
+<p>$$ \sum_{i=1}^{n} a_i $$</p>
+
+<p>展开为b数组表达</p>
+
+<p>$$ = \sum_{i=1}^n{} \sum_{j=1}^i b_j $$</p>
+
+<p>展开，合并同类项</p>
+
+<p>$$ = \sum_{i=1}^n b_i\times(n-i+1) $$</p>
+
+<p>$$ = (n+1)\times\sum_{i=1}^n b_i - \sum_{i=1}^n b_i\times i $$</p>
+
+<p>那么，我们再定义一个c数组，满足<code>c[i] == b[i] * i</code>，然后我们再分别对b和c维护一个树状数组，定义<code>sum(b,x)</code>表示数组b前x个元素的和，<code>sum(c,x)</code>表示数组c前x个元素的和，那么我们便可以通过计算<code>(x + 1) * sum(b, x) - sum(c, x)</code>求出数组a的前缀和。</p>
+
+<p>习题：<a href="https://loj.ac/problem/132" target="_blank">loj132</a></p>
+
+<h2 id="拓展">拓展</h2>
+
+<p>树状数组还有一些别的技巧，一是 $O(n)$ 建立，通过已知数组a在 $O(n)$ 时间生成对应的树状数组（直接add来操作是nlogn），这个在这里不做介绍。</p>
+
+<p>还有权值树状数组求第k小元素。所谓权值树状数组，就是用<code>a[i] = v</code>来表示数值i重复出现了v次，所以v是非负数，那么这个数组的前缀和就是递增的，即存在二分。然后对数组a维护的树状数组直接二分的话是 $O(lognlogn)$ ，但我们可以运用树状数组的特性优化到 $O(logn)$ ，以下是实现代码</p>
+
+<pre><code class="language-cpp">int kth(int fwtree[], int size, int k)
+{
+    int cnt = 0, ret = 0;
+    for (int i = (int)(log(size + 0.1) / log(2)); ~i; --i)
+    {
+        ret += 1 &lt;&lt; i;
+        if (ret &gt;= size || cnt + fwtree[ret] &gt;= k)
+            ret -= 1 &lt;&lt; i;
+        else
+            cnt += fwtree[ret];
+    }
+    return ret + 1;
+}
+</code></pre>
+
+<p>权值树状数组还有一个应用，就是用来求<strong>逆序数</strong>，先对原数组排序求出每个元素的rank，转化为长度n，元素为1~n的一个排列，之后使用权值树状数组，就可以轻松求出在<code>a[1]</code>到<code>a[i-1]</code>有多少个元素比<code>a[i]</code>要大，计算<code>sum(n) - sum(a[i])</code>便知，把结果累加就是逆序数。</p>
+
+<h2 id="模板">模板</h2>
+
+<p>区间修改+区间求和模板</p>
+
+<pre><code class="language-cpp">#include &lt;vector&gt;
+typedef long long ll;
+
+
+struct fwtree_range
+{
+    std::vector&lt;int&gt; ta;
+    std::vector&lt;ll&gt; tb;
+    int sz;
+    void init(int size)
+    {
+        ta.clear(); ta.resize(size + 1);
+        tb.clear(); tb.resize(size + 1);
+        sz = size;
+    }
+    void add(int x, int a)
+    {
+        ll v = a * (ll)x;
+        for (; x &lt;= sz; x += x&amp;-x)
+        {
+            ta[x] += a;
+            tb[x] += v;
+        }
+    }
+    template &lt;class T&gt;
+    ll sum_t(T&amp; t, int x)
+    {
+        ll r = 0;
+        for (; x &gt; 0; x -= x&amp;-x)
+            r += t[x];
+        return r;
+    }
+    ll sum(int x)
+    {
+        return (x + 1) * sum_t(ta, x) - sum_t(tb, x);
+    }
+    void range_add(int l, int r, int a)
+    {
+        add(l, a);
+        add(r + 1, -a);
+    }
+    ll range_sum(int l, int r)
+    {
+        return sum(r) - sum(l - 1);
+    }
+};
+</code></pre>
+
+<p>用法，调用<code>init</code>初始化大小后，使用<code>range_add</code>及<code>range_sum</code>做区间修改及区间和查询就行了，当然它也支持单点修改和单点查询，你令区间<code>l == r</code>就行了。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">数据结构</a>
+  
+  <a class="badge badge-light" href="">树状数组</a>
+  
+  <a class="badge badge-light" href="/tags/fenwick-tree/">Fenwick Tree</a>
+  
+  <a class="badge badge-light" href="">模板</a>
+  
+  <a class="badge badge-light" href="/tags/c&#43;&#43;/">c&#43;&#43;</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191028-kmp/">KMP及扩展KMP</a></li>
+          
+          <li><a href="/post/20191019-qsort-talk-3/">Quick sort(快速排序)杂谈 3</a></li>
+          
+          <li><a href="/post/20191019-qsort-talk-2/">Quick sort(快速排序)杂谈 2</a></li>
+          
+          <li><a href="/post/20191017-weakheapsort/">smooth sort与weakheap sort实现</a></li>
+          
+          <li><a href="/post/20191015-sorting-3/">堆排序优化思路</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

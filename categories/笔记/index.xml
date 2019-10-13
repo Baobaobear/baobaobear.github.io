@@ -5,7 +5,7 @@
     <link>/categories/%E7%AC%94%E8%AE%B0/</link>
       <atom:link href="/categories/%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" />
     <description>笔记</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 12 Oct 2019 15:18:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 17 Oct 2019 17:14:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>笔记</title>
@@ -13,11 +13,422 @@
     </image>
     
     <item>
+      <title>smooth sort与weakheap sort实现</title>
+      <link>/post/20191017-weakheapsort/</link>
+      <pubDate>Thu, 17 Oct 2019 17:14:00 +0800</pubDate>
+      <guid>/post/20191017-weakheapsort/</guid>
+      <description>&lt;p&gt;本篇补充&lt;code&gt;smooth sort&lt;/code&gt;和&lt;code&gt;weakheap sort&lt;/code&gt;，不打算做太多介绍，&lt;del&gt;因为自己太菜不会讲，&lt;/del&gt;只作为笔记来记录一下实现代码。&lt;code&gt;smooth sort&lt;/code&gt;在接近排序完成的情况下的动态图&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Smoothsort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/a/a5/Smoothsort.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;smooth-sort&#34;&gt;smooth sort&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;// http://www.keithschwarz.com/smoothsort/
+static const unsigned int leonardo[] =
+{
+   1, 1, 3, 5, 9, 15, 25, 41, 67, 109, 177, 287, 465, 753, 1219, 1973,
+   3193, 5167, 8361, 13529, 21891, 35421, 57313, 92735, 150049, 242785,
+   392835, 635621, 1028457, 1664079, 2692537, 4356617, 7049155, 11405773,
+   18454929, 29860703, 48315633, 78176337, 126491971, 204668309, 331160281,
+   535828591, 866988873, 1402817465, 2269806339u, 3672623805u,
+};
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort_fix(RandomAccessIterator arr, size_t current_heap, int level_index, int levels[], Comp compare)
+{
+    while (level_index &amp;gt; 0)
+    {
+        size_t prev_heap = current_heap - leonardo[levels[level_index]];
+        if (compare(arr[current_heap], arr[prev_heap]))
+        {
+            if (levels[level_index] &amp;gt; 1)
+            {
+                size_t child_heap2 = current_heap - 1;
+                size_t child_heap1 = child_heap2 - leonardo[levels[level_index] - 2];
+                if (compare(arr[prev_heap], arr[child_heap1])
+                    || compare(arr[prev_heap], arr[child_heap2]))
+                    break;
+            }
+            std::swap(arr[current_heap], arr[prev_heap]);
+            current_heap = prev_heap;
+            level_index -= 1;
+        }
+        else
+            break;
+    }
+
+    int current_level = levels[level_index];
+    while (current_level &amp;gt; 1)
+    {
+        size_t max_child = current_heap;
+        size_t child_heap2 = current_heap - 1;
+        size_t child_heap1 = child_heap2 - leonardo[current_level - 2];
+
+        if (compare(arr[max_child], arr[child_heap1])) max_child = child_heap1;
+        if (compare(arr[max_child], arr[child_heap2])) max_child = child_heap2;
+        if (max_child == child_heap1)
+        {
+            std::swap(arr[current_heap], arr[child_heap1]);
+            current_heap = child_heap1;
+            current_level -= 1;
+        }
+        else if (max_child == child_heap2)
+        {
+            std::swap(arr[current_heap], arr[child_heap2]);
+            current_heap = child_heap2;
+            current_level -= 2;
+        }
+        else break;
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort(RandomAccessIterator arr, size_t size, Comp compare)
+{
+    int levels[64] = { 1 };
+    int toplevel = 0;
+
+    for (size_t i = 1; i &amp;lt; size; ++i)
+    {
+        if (toplevel &amp;gt; 0 &amp;amp;&amp;amp; levels[toplevel - 1] - levels[toplevel] == 1)
+        {
+            toplevel -= 1;
+            levels[toplevel] += 1;
+        }
+        else if (levels[toplevel] != 1)
+        {
+            toplevel += 1;
+            levels[toplevel] = 1;
+        }
+        else
+        {
+            toplevel += 1;
+            levels[toplevel] = 0;
+        }
+        smooth_sort_fix(arr, i, toplevel, levels, compare);
+    }
+
+    for (size_t i = size - 2; i &amp;gt; 0; --i)
+    {
+        if (levels[toplevel] &amp;lt;= 1)
+        {
+            toplevel -= 1;
+        }
+        else
+        {
+            levels[toplevel] -= 1;
+            levels[toplevel + 1] = levels[toplevel] - 1;
+            toplevel += 1;
+
+            smooth_sort_fix(arr, i - leonardo[levels[toplevel]], toplevel - 1, levels, compare);
+            smooth_sort_fix(arr, i, toplevel, levels, compare);
+        }
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    if (end - beg &amp;gt; 1)
+    {
+        smooth_sort(&amp;amp;*beg, (size_t)(end - beg), compare);
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator&amp;gt;
+void smooth_sort(RandomAccessIterator beg, RandomAccessIterator end)
+{
+    smooth_sort(beg, end, std::less&amp;lt;typename std::iterator_traits&amp;lt;RandomAccessIterator&amp;gt;::value_type&amp;gt;());
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;weakheap-sort&#34;&gt;weakheap sort&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;unsigned char weakheap_getflag(unsigned char *r, size_t index)
+{
+    return (r[index &amp;gt;&amp;gt; 3] &amp;gt;&amp;gt; (index &amp;amp; 7)) &amp;amp; 1;
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void weakheap_merge(unsigned char flags[], RandomAccessIterator beg, RandomAccessIterator i, RandomAccessIterator j, Comp compare)
+{
+    if (compare(*i, *j))
+    {
+        flags[(j - beg) &amp;gt;&amp;gt; 3] ^= 1 &amp;lt;&amp;lt; ((j - beg) &amp;amp; 7);
+        std::swap(*i, *j);
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void weakheap_sort(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    if (end - beg &amp;gt; 1)
+    {
+        size_t n = (size_t)(end - beg);
+        unsigned char * flags = new unsigned char[(n + 7) / 8];
+        for (size_t i = 0; i &amp;lt; n / 8; ++i)
+            flags[i] = 0;
+        for (size_t i = n - 1; i &amp;gt; 0; --i)
+        {
+            size_t j = i;
+            while ((j &amp;amp; 1) == weakheap_getflag(flags, j &amp;gt;&amp;gt; 1))
+                j &amp;gt;&amp;gt;= 1;
+            weakheap_merge(flags, beg, beg + (j &amp;gt;&amp;gt; 1), beg + i, compare);
+        }
+        for (size_t i = n - 1; i &amp;gt; 1; --i)
+        {
+            std::swap(*beg, *(beg + i));
+            size_t j = 1, k;
+            while ((k = 2 * j + weakheap_getflag(flags, j)) &amp;lt; i)
+                j = k;
+            while (j &amp;gt; 0)
+            {
+                weakheap_merge(flags, beg, beg, beg + j, compare);
+                j &amp;gt;&amp;gt;= 1;
+            }
+        }
+        std::swap(*beg, *(beg + 1));
+        delete[] flags;
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator&amp;gt;
+void weakheap_sort(RandomAccessIterator beg, RandomAccessIterator end)
+{
+    weakheap_sort(beg, end, std::less&amp;lt;typename std::iterator_traits&amp;lt;RandomAccessIterator&amp;gt;::value_type&amp;gt;());
+}
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+    <item>
+      <title>素数判断和因子分解</title>
+      <link>/post/20191013-prime-number/</link>
+      <pubDate>Sun, 13 Oct 2019 15:37:00 +0800</pubDate>
+      <guid>/post/20191013-prime-number/</guid>
+      <description>&lt;p&gt;这里记录的是素数判断 &lt;code&gt;Miller Rabbin&lt;/code&gt; 的快速判定算法，而分解使用的算法是 &lt;code&gt;Pollard Rho&lt;/code&gt; 的玄学分解算法，这个算法的理论依据是&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%94%9F%E6%97%A5%E5%95%8F%E9%A1%8C&#34; target=&#34;_blank&#34;&gt;生日悖论&lt;/a&gt;，这里不具体讨论这个数学问题，具体讨论看前面链接就可以了。&lt;/p&gt;
+
+&lt;p&gt;以下我们分别简要介绍这两个算法的原理&lt;/p&gt;
+
+&lt;p&gt;首先这是&lt;a href=&#34;https://zh.wikipedia.org/wiki/%E7%B1%B3%E5%8B%92-%E6%8B%89%E5%AE%BE%E6%A3%80%E9%AA%8C&#34; target=&#34;_blank&#34;&gt;Miller Rabbin&lt;/a&gt;的维基百科介绍页，由于页面是中文，这里不做重复介绍。&lt;/p&gt;
+
+&lt;p&gt;下面简要解释一下Pollard&amp;rsquo;s Rho算法的原理，这是它的&lt;a href=&#34;https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm&#34; target=&#34;_blank&#34;&gt;维基百科页面&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;首先我们来定义这样一个函数&lt;/p&gt;
+
+&lt;p&gt;$$f(x)=(x*x+c)%n$$&lt;/p&gt;
+
+&lt;p&gt;其中n是需要被分解的数，c是一个任意小于n的正整数常数。那么我们给一个初始值x1，通过计算 $f(x1)$ 得到x2，然后去求 $|x1-x2|$ 与 n 的最大公约数，只要结果大于1就找到了分解结果。那如果最大公约数仍然是1，那么就通过刚才的x2求出 $x3=f(x2)$ 并计算 $|x1-x3|$ 与 n 的最大公约数。也就是说，我们可以通过这个公式得到一个数列&lt;/p&gt;
+
+&lt;p&gt;$$ x1,x2,x3,&amp;hellip;,xn,&amp;hellip; $$&lt;/p&gt;
+
+&lt;p&gt;但这个数列总是不会无限的，总是会循环的，那怎么去判断它有没有陷入循环呢，这用到的办法是Floyd判环算法，两个数在数列里以不同速度前进，如果环存在，那它们总会有相遇的时刻。在代码里，我们令变量x是正常速度，变量y是在x每迭代两次后y再迭代一次，所以如果环的长度是k，那么迭代k次就能发现环的存在。&lt;/p&gt;
+
+&lt;p&gt;而在具体实现中，如果发现环的存在，我们需要变换常数c，再次进行尝试。那么我们下面不废话直接上代码，作为笔记。为了避免部分环境的输入输出问题，main函数使用了C++的输入输出，其它部分可以作为C函数使用。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include&amp;lt;iostream&amp;gt;
+#include&amp;lt;cstdint&amp;gt;
+
+int64_t gcd(int64_t a, int64_t b)
+{
+    return b == 0 ? a : gcd(b, a%b);
+}
+
+int64_t mul(int64_t a, int64_t b, int64_t mod)
+{
+    a %= mod;
+    int64_t res = 0;
+    while (b) {
+        if (b &amp;amp; 1) res = (res + a) % mod;
+        b &amp;gt;&amp;gt;= 1;
+        a = (a &amp;lt;&amp;lt; 1) % mod;
+    }
+    return res;
+}
+
+int64_t quick_pow(int64_t a, int64_t n, int64_t mod)
+{
+    int64_t res = 1;
+    while (n)
+    {
+        if (n &amp;amp; 1) res = mul(res, a, mod);
+        a = mul(a, a, mod);
+        n &amp;gt;&amp;gt;= 1;
+    }
+    return res;
+}
+
+int miller_rabbin(int64_t n, int a)
+{
+    int r = 0;
+    int64_t s = n - 1;
+    if (!(n % a))
+        return 0;
+    while (!(s &amp;amp; 1))
+    {
+        s &amp;gt;&amp;gt;= 1;
+        r++;
+    }
+    int64_t k = quick_pow(a, s, n);
+    if (k == 1)
+        return 1;
+    for (int j = 0; j &amp;lt; r; j++, k = mul(k, k, n))
+        if (k == n - 1)
+            return 1;
+    return 0;
+}
+
+int is_prime(int64_t n)
+{
+    int test_large[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23 };
+    int test_small[] = { 2, 7, 61 };
+    int test_size = 9, *test = test_large;
+    if (n &amp;lt; 2)
+        return 0;
+    if (n &amp;lt; 4759123141)
+    {
+        test = test_small;
+        test_size = 3;
+    }
+    for (int i = 0; i &amp;lt; test_size; ++i)
+    {
+        if (n == test[i])
+            return 1;
+        if (miller_rabbin(n, test[i]) == 0)
+            return 0;
+    }
+    return 1;
+}
+
+int64_t pollard_rho(int64_t n, int c)
+{
+    int64_t x = rand() % (n - 1) + 1, y;
+    y = x = (mul(x, x, n) + c) % n;
+    for (int n_try = 3, i = 0; n_try; )
+    {
+        x = (mul(x, x, n) + c) % n;
+        if (y == x)
+        {
+            --n_try;
+            c = rand() % (n - 1) + 1;
+            continue;
+        }
+        int64_t d = gcd((y - x + n) % n, n);
+        if (d != 1 &amp;amp;&amp;amp; d != n)
+            return d;
+        if (++i == 2)
+        {
+            y = (mul(y, y, n) + c) % n;
+            i = 0;
+        }
+    }
+    return n;
+}
+
+int main(void)
+{
+    int64_t n;
+    std::cout &amp;lt;&amp;lt; &amp;quot;质数计算器，请输入任意小于1e18的正整数&amp;quot; &amp;lt;&amp;lt; std::endl;
+    while (std::cin &amp;gt;&amp;gt; n)
+    {
+        if (is_prime(n))
+        {
+            std::cout &amp;lt;&amp;lt; n &amp;lt;&amp;lt; &amp;quot;是质数&amp;quot; &amp;lt;&amp;lt; std::endl;
+        }
+        else if (n &amp;gt; 2)
+        {
+            int64_t p = pollard_rho(n, rand() % (n - 1) + 1);
+            std::cout &amp;lt;&amp;lt; n &amp;lt;&amp;lt; &amp;quot;不是质数，能被&amp;quot; &amp;lt;&amp;lt; p &amp;lt;&amp;lt; &amp;quot;整除&amp;quot; &amp;lt;&amp;lt; std::endl;
+        }
+        else
+        {
+            std::cout &amp;lt;&amp;lt; &amp;quot;请输入大于1小于1e18的整数&amp;quot; &amp;lt;&amp;lt; std::endl;
+        }
+    }
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以下为python版本实现&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import random
+
+def _try_composite(a, d, n, s):
+    if pow(a, d, n) == 1:
+        return False
+    for i in range(s):
+        if pow(a, 2**i * d, n) == n-1:
+            return False
+    return True
+
+def _is_prime(n):
+    if n in _known_primes:
+        return True
+    if n &amp;lt; 2 or any((n % p) == 0 for p in _known_primes):
+        return False
+    return True
+
+def is_prime(n, _precision_for_huge_n = 32):
+    if n in _known_primes:
+        return True
+    d, s = n - 1, 0
+    while not d % 2:
+        d, s = d &amp;gt;&amp;gt; 1, s + 1
+    if n &amp;lt; 4759123141: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 7, 61))
+    if n &amp;lt; 1122004669633: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 13, 23, 1662803))
+    if n &amp;lt; 3317044064679887385961981: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41))
+    return not any(_try_composite(a, d, n, s) 
+                   for a in _test_primes[:_precision_for_huge_n])
+ 
+_known_primes = [2, 3]
+_known_primes += [x for x in range(5, 1000, 2) if _is_prime(x)]
+_test_primes = [2,3,307] + _known_primes[2:]
+
+def gcd(a, b):
+    if b == 0:
+        return a
+    return gcd(b, a%b)
+
+def pollard_rho(n):
+    x, c, 0 = random.randint(1, n - 1), random.randint(1, n - 1), 0
+    y = x = (pow(x, 2, n) + c) % n
+    for n_try in range(3):
+        while True:
+            x = (pow(x, 2, n) + c) % n
+            if x == y:
+                c = random.randint(1, n - 1)
+                break
+            d = gcd(y - x + n, n)
+            if d &amp;gt; 1 and d &amp;lt; n:
+                return d
+            a += 1
+            if a == 2:
+                y = (pow(y, 2, n) + c) % n
+                a = 0
+    return n
+
+number = 3451973391686190983
+for i in range(number, number + 100, 2):
+    if is_prime(i):
+        print(i)
+        break
+
+if is_prime(number):
+    print(number, &amp;quot;prime number&amp;quot;)
+else:
+    a = pollard_rho(number)
+    print(number, &amp;quot;=&amp;quot;, a, &amp;quot;*&amp;quot;, number // a)
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+    <item>
       <title>二进制技巧</title>
       <link>/post/20191012-binary-skill/</link>
       <pubDate>Sat, 12 Oct 2019 15:18:00 +0800</pubDate>
       <guid>/post/20191012-binary-skill/</guid>
-      <description>&lt;p&gt;二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了&lt;/p&gt;
+      <description>&lt;p&gt;二进制位运算的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了&lt;/p&gt;
 
 &lt;h2 id=&#34;单行表达式&#34;&gt;单行表达式&lt;/h2&gt;
 

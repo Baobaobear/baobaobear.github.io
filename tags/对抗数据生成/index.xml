@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>对抗数据生成 | Baobaobear</title>
+    <link>/tags/%E5%AF%B9%E6%8A%97%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90/</link>
+      <atom:link href="/tags/%E5%AF%B9%E6%8A%97%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90/index.xml" rel="self" type="application/rss+xml" />
+    <description>对抗数据生成</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 21 Oct 2019 17:32:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>对抗数据生成</title>
+      <link>/tags/%E5%AF%B9%E6%8A%97%E6%95%B0%E6%8D%AE%E7%94%9F%E6%88%90/</link>
+    </image>
+    
+    <item>
+      <title>Quick sort(快速排序)杂谈 3</title>
+      <link>/post/20191019-qsort-talk-3/</link>
+      <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
+      <guid>/post/20191019-qsort-talk-3/</guid>
+      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
+
+&lt;h2 id=&#34;gcc的实现&#34;&gt;GCC的实现&lt;/h2&gt;
+
+&lt;p&gt;这个我直接给个&lt;a href=&#34;https://github.com/gcc-mirror/gcc/blob/gcc-8-branch/libstdc++-v3/include/bits/stl_algo.h#L1896&#34; target=&#34;_blank&#34;&gt;github来源&lt;/a&gt;，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是&lt;code&gt;__unguarded_partition&lt;/code&gt;函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;  /// Swaps the median value of *__a, *__b and *__c under __comp to *__result
+  template&amp;lt;typename _Iterator, typename _Compare&amp;gt;
+    void
+    __move_median_to_first(_Iterator __result,_Iterator __a, _Iterator __b,
+                           _Iterator __c, _Compare __comp)
+    {
+      if (__comp(__a, __b))
+        {
+          if (__comp(__b, __c))
+            std::iter_swap(__result, __b);
+          else if (__comp(__a, __c))
+            std::iter_swap(__result, __c);
+          else
+            std::iter_swap(__result, __a);
+        }
+      else if (__comp(__a, __c))
+        std::iter_swap(__result, __a);
+      else if (__comp(__b, __c))
+        std::iter_swap(__result, __c);
+      else
+        std::iter_swap(__result, __b);
+    }
+
+  /// This is a helper function...
+  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    _RandomAccessIterator
+    __unguarded_partition(_RandomAccessIterator __first,
+                          _RandomAccessIterator __last,
+                          _RandomAccessIterator __pivot, _Compare __comp)
+    {
+      while (true)
+        {
+          while (__comp(__first, __pivot))
+            ++__first;
+          --__last;
+          while (__comp(__pivot, __last))
+            --__last;
+          if (!(__first &amp;lt; __last))
+            return __first;
+          std::iter_swap(__first, __last);
+          ++__first;
+        }
+    }
+
+  /// This is a helper function...
+  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    inline _RandomAccessIterator
+    __unguarded_partition_pivot(_RandomAccessIterator __first,
+                                _RandomAccessIterator __last, _Compare __comp)
+    {
+      _RandomAccessIterator __mid = __first + (__last - __first) / 2;
+      std::__move_median_to_first(__first, __first + 1, __mid, __last - 1,
+                                  __comp);
+      return std::__unguarded_partition(__first + 1, __last, __first, __comp);
+    }
+
+  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    inline void
+    __partial_sort(_RandomAccessIterator __first,
+                   _RandomAccessIterator __middle,
+                   _RandomAccessIterator __last,
+                   _Compare __comp)
+    {
+      std::__heap_select(__first, __middle, __last, __comp);
+      std::__sort_heap(__first, __middle, __comp);
+    }
+
+  /// This is a helper function for the sort routine.
+  template&amp;lt;typename _RandomAccessIterator, typename _Size, typename _Compare&amp;gt;
+    void
+    __introsort_loop(_RandomAccessIterator __first,
+                     _RandomAccessIterator __last,
+                     _Size __depth_limit, _Compare __comp)
+    {
+      while (__last - __first &amp;gt; int(_S_threshold))
+        {
+          if (__depth_limit == 0)
+            {
+              std::__partial_sort(__first, __last, __last, __comp);
+              return;
+            }
+          --__depth_limit;
+          _RandomAccessIterator __cut =
+            std::__unguarded_partition_pivot(__first, __last, __comp);
+          std::__introsort_loop(__cut, __last, __depth_limit, __comp);
+          __last = __cut;
+        }
+    }
+
+  // sort
+
+  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    inline void
+    __sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+           _Compare __comp)
+    {
+      if (__first != __last)
+        {
+          std::__introsort_loop(__first, __last,
+                                std::__lg(__last - __first) * 2,
+                                __comp);
+          std::__final_insertion_sort(__first, __last, __comp);
+        }
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;del&gt;吐槽一句，连gcc源代码也把tab和空格混合使用我也是醉了，源代码的tab在这里已替换为空格以保证版面一致&lt;/del&gt;&lt;/p&gt;
+
+&lt;p&gt;这里我们并不需要关注太多东西，在上一篇我们讲到过，快排最大的弱点正在于它的划分元素选择上，所以我们只需要看这个函数&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;  template&amp;lt;typename _RandomAccessIterator, typename _Compare&amp;gt;
+    inline _RandomAccessIterator
+    __unguarded_partition_pivot(_RandomAccessIterator __first,
+                                _RandomAccessIterator __last, _Compare __comp)
+    {
+      _RandomAccessIterator __mid = __first + (__last - __first) / 2;
+      std::__move_median_to_first(__first, __first + 1, __mid, __last - 1,
+                                  __comp);
+      return std::__unguarded_partition(__first + 1, __last, __first, __comp);
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个函数从&lt;code&gt;__first + 1&lt;/code&gt;, &lt;code&gt;__mid&lt;/code&gt;, &lt;code&gt;__last - 1&lt;/code&gt;三个数里面，取一个中位数交换到&lt;code&gt;__first&lt;/code&gt;的位置，知道这个就能想办法生成对抗数据了。为了让它运行缓慢，那么只要让它这个函数每次都选到&lt;strong&gt;第二小&lt;/strong&gt;的元素放最左边，这样每次调用&lt;code&gt;__unguarded_partition&lt;/code&gt;的结果，就是把划分点划分到了&lt;code&gt;__first + 2&lt;/code&gt;的位置上，即每次只划分两个元素，这就是它的最坏情况。&lt;/p&gt;
+
+&lt;p&gt;构造这个东西需要一些技巧，我们要模拟std::sort的过程，但为了复杂性降低，我们令最右边元素值最大，那么中位数必定在&lt;code&gt;__first + 1&lt;/code&gt;与&lt;code&gt;__mid&lt;/code&gt;中选出，这样在partition过程中就能保证不会动到最后的元素，只会在这两个之间换来换去。然后我们只模拟出交换的结果，而不必去遍历，否则你生成的复杂度就$O(n^2)$了。&lt;/p&gt;
+
+&lt;p&gt;另外，还要注意的一点是，它使用的是&lt;code&gt;intro sort&lt;/code&gt;来实现，也就是说深度到一定程度后，会转化为堆排序，而堆排序的最坏情况是乱序数组，我们不必一直这么做，否则堆排序时间并不是最长的，我们只要弄深度150的就够用了。我们来看看生成的数据在8000000长度下，使用mingw64-gcc8编译参数-O3的实测结果&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;int&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;2&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;3&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;4&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;5&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;evil&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Avg&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;intro_sort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;76&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;82&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;509&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;510&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;510&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;282&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::sort&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;86&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;92&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;94&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;473&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;487&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1650&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;480&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::heap&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;584&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;369&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;421&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1436&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1467&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1499&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;962&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;第4、5列是随机打乱的数据，作为对比组，而evil列就是生成的对抗数据，我把&lt;code&gt;heap sort&lt;/code&gt;及前一篇的&lt;code&gt;intro_sort&lt;/code&gt;实现放上来做比较，可以看出在这组数据下，&lt;code&gt;std::sort&lt;/code&gt;必然地比堆排序还要慢，是乱序数据的3.5倍左右，当然这个时间完全取决于堆排序的时间。&lt;/p&gt;
+
+&lt;p&gt;附上生成代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct save_index
+{
+    int val;
+    int index;
+
+    save_index(int i = 0, int v = -1)
+        : val(v)
+        , index(i)
+    {}
+    void swap(save_pos&amp;amp; p)
+    {
+        int t = p.val;
+        p.val = val;
+        val = t;
+    }
+    bool operator &amp;lt; (const save_index&amp;amp; p) const
+    {
+        return index &amp;lt; p.index;
+    }
+};
+
+void qsort_sim_gcc(save_index * beg, save_index * end, int max_round)
+{
+    int cur_num = 0;
+    if ((end-1)-&amp;gt;val == -1)
+    {
+        (end - 1)-&amp;gt;val = (end - beg) * 2;
+    }
+    while (beg + 1 &amp;lt; end &amp;amp;&amp;amp; --max_round &amp;gt; 0)
+    {
+        save_index *l = beg + 1, *r = end - 1, *m = beg + (end - beg) / 2;
+
+        if (l-&amp;gt;val == -1)
+            l-&amp;gt;val = ++cur_num;
+        if (r-&amp;gt;val == -1)
+            r-&amp;gt;val = ++cur_num;
+        if (m-&amp;gt;val == -1)
+            m-&amp;gt;val = ++cur_num;
+
+        if (l-&amp;gt;val &amp;gt; m-&amp;gt;val)
+        {
+            if (m-&amp;gt;val &amp;gt; r-&amp;gt;val)
+                std::swap(*beg, *m);
+            else if (l-&amp;gt;val &amp;gt; r-&amp;gt;val)
+                std::swap(*beg, *r);
+            else
+                std::swap(*beg, *l);
+        }
+        else
+        {
+            if (m-&amp;gt;val &amp;lt; r-&amp;gt;val)
+                std::swap(*beg, *m);
+            else if (l-&amp;gt;val &amp;gt; r-&amp;gt;val)
+                std::swap(*beg, *l);
+            else
+                std::swap(*beg, *r);
+        }
+        if (l-&amp;gt;val &amp;lt; beg-&amp;gt;val &amp;amp;&amp;amp; l-&amp;gt;val != -1)
+            ;
+        else if (m-&amp;gt;val &amp;lt; beg-&amp;gt;val &amp;amp;&amp;amp; m-&amp;gt;val != -1)
+            std::swap(*l, *m);
+        beg += 2;
+    }
+}
+
+void anti_qsort_gen_gcc(std::vector&amp;lt;save_index&amp;gt;&amp;amp; vec, size_t len, int max_round)
+{
+    for (size_t i = 0; i &amp;lt; len; ++i)
+    {
+        vec.push_back(save_index((int)i));
+    }
+    qsort_sim_gcc(&amp;amp;*vec.begin(), &amp;amp;*vec.begin() + len, max_round);
+    int cnt = 0;
+    for (size_t i = 0; i &amp;lt; len; ++i)
+    {
+        if (vec[i].val == -1)
+            ++cnt;
+    }
+    std::vector&amp;lt;int&amp;gt; val_list(cnt);
+    for (int i = 0; i &amp;lt; cnt; ++i)
+    {
+        val_list[i] = i + len - cnt;
+    }
+    // 以下 random_shuffle 实现需要自己实现，如果你用的是mingw
+    // 不能使用std::random_shuffle，注意
+    random_shuffle(val_list.begin(), val_list.end());
+    for (int i = 0, j = 0; i &amp;lt; len; ++i)
+    {
+        if (vec[i].val == -1)
+        {
+            vec[i].val = val_list[j++];
+        }
+    }
+    std::sort(vec.begin(), vec.end());
+}
+
+void anti_qsort_gen_gcc(sort_element_t arr[], size_t len)
+{
+    std::vector&amp;lt;save_index&amp;gt; vec;
+    anti_qsort_gen_gcc(vec, len, 150);
+    for (size_t i = 0; i &amp;lt; len; ++i)
+    {
+        arr[i] = vec[i].val;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;代码中注释的random_shuffle问题参见&lt;a href=&#34;../20191006-mingw-bug/&#34;&gt;这篇文章&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;最后总结，老实加个rand比啥都强，至少大大增加构造evil数据的难度，也大大降低遇到最坏情况的可能。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

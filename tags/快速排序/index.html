@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2019-10-07T14:18:22&#43;08:00">
+    <meta property="og:updated_time" content="2019-10-21T17:32:00&#43;08:00">
   
 
   
@@ -361,6 +361,28 @@
   
   
   <div>
+    <h2><a href="/post/20191019-qsort-talk-3/">Quick sort(快速排序)杂谈 3</a></h2>
+    <div class="article-style">
+      
+      在上一篇我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。
+GCC的实现 这个我直接给个github来源，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是__unguarded_partition函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。
+
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="/post/20191019-qsort-talk-2/">Quick sort(快速排序)杂谈 2</a></h2>
+    <div class="article-style">
+      
+      在上一篇我们介绍了四种不同的划分算法，现在我们来针对Hoare partition scheme来讲解一些优化和注意的问题。
+最坏时间复杂度的优化 在前一篇的示例代码里面，只是最简单地选择的最开头或最后面的元素作为划分，这对于乱序的数据还好，对于有序的数据这么做，时间复杂度就直接变成$O(n^2)$了，那么怎么解决？第一个要解决的反而不是划分元素的选择上，而是改成intro sort，记录递归深度或类似的办法，到达限制条件的时候改而使用堆排序，这属于混合排序，先让排序的最坏时间复杂度降下来是第一要务。所以可以改写出以下代码：
+
+      
+    </div>
+  </div>
+  
+  <div>
     <h2><a href="/post/20191007-qsort-talk-1/">Quick sort(快速排序)杂谈 1</a></h2>
     <div class="article-style">
       
@@ -484,7 +506,7 @@
     
     
     
-    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
 
     
 

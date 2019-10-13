@@ -1,0 +1,1013 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>线段树 | Baobaobear</title>
+    <link>/tags/%E7%BA%BF%E6%AE%B5%E6%A0%91/</link>
+      <atom:link href="/tags/%E7%BA%BF%E6%AE%B5%E6%A0%91/index.xml" rel="self" type="application/rss+xml" />
+    <description>线段树</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Tue, 31 Dec 2019 08:26:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>线段树</title>
+      <link>/tags/%E7%BA%BF%E6%AE%B5%E6%A0%91/</link>
+    </image>
+    
+    <item>
+      <title>可持久化线段树</title>
+      <link>/post/20191231-persistent_segtree/</link>
+      <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
+      <guid>/post/20191231-persistent_segtree/</guid>
+      <description>&lt;p&gt;可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解&lt;a href=&#34;../20191208-segtree/&#34;&gt;线段树&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;概念&#34;&gt;概念&lt;/h2&gt;
+
+&lt;p&gt;所谓的可持久化，意思是你能得到所有的历史版本，为了达到这个效果，当然可以每次修改的时候，先整体复制再修改，结果自然就是会爆内存。而事实上，由于每次修改最多改一条链，而其它分支可以重用。我们先拿链表做例子，如果有个链表内容是 1-&amp;gt;2-&amp;gt;3-&amp;gt;4-&amp;gt;5 ，现在我们把3修改成6，得到 1-&amp;gt;2-&amp;gt;6-&amp;gt;4-&amp;gt;5 ，但是后面的元素没有改动，所以我们可以把后面的元素直接重叠在一起使用，如下图：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+1--&amp;gt;2
+2--&amp;gt;3
+3--&amp;gt;4
+4--&amp;gt;5
+1&#39;--&amp;gt;2&#39;
+2&#39;--&amp;gt;6
+6--&amp;gt;4
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样，完全可以当成两条不同的链表使用，同时节省空间。而可持久化线段树做法与这一样，就是没变的部分还使用原来节点，所以这个实现不能使用之前介绍的堆式储存，要和平衡树一样动态开节点。&lt;/p&gt;
+
+&lt;h2 id=&#34;数据结构&#34;&gt;数据结构&lt;/h2&gt;
+
+&lt;p&gt;假设我们的数据是以下这样&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;数据&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;构建线段树后结果如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+1,4:8--&amp;gt;1,2:1
+1,4:8--&amp;gt;3,4:7
+1,2:1--&amp;gt;1,1:1
+1,2:1--&amp;gt;2,2:0
+3,4:7--&amp;gt;3,3:5
+3,4:7--&amp;gt;4,4:2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;冒号前面的两个数表示一条线段，冒号后表示的是数据，这个数据表示的是这个区间的和。&lt;/p&gt;
+
+&lt;p&gt;然后我们要把第3个元素从5改为1，构造第二棵线段树，首先复制一个root，包括儿子的指向也复制，得到&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+1,4:8--&amp;gt;1,2:1
+1,4:8--&amp;gt;3,4:7
+1,2:1--&amp;gt;1,1:1
+1,2:1--&amp;gt;2,2:0
+3,4:7--&amp;gt;3,3:5
+3,4:7--&amp;gt;4,4:2
+1,4&#39;:8--&amp;gt;1,2:1
+1,4&#39;:8--&amp;gt;3,4:7
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后，要更新的节点在右儿子那，所以把右儿子复制出来，得到&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+1,4:8--&amp;gt;1,2:1
+1,4:8--&amp;gt;3,4:7
+1,2:1--&amp;gt;1,1:1
+1,2:1--&amp;gt;2,2:0
+3,4:7--&amp;gt;3,3:5
+3,4:7--&amp;gt;4,4:2
+1,4&#39;:8--&amp;gt;1,2:1
+1,4&#39;:8--&amp;gt;3,4&#39;:7
+3,4&#39;:7--&amp;gt;3,3:5
+3,4&#39;:7--&amp;gt;4,4:2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最后，在区间&lt;code&gt;[3,4]&lt;/code&gt;要更新的节点在左儿子那，所以把左儿子复制出来，同时由于这是最后的节点，再从底向上更新sum，得到&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+1,4:8--&amp;gt;1,2:1
+1,4:8--&amp;gt;3,4:7
+1,2:1--&amp;gt;1,1:1
+1,2:1--&amp;gt;2,2:0
+3,4:7--&amp;gt;3,3:5
+3,4:7--&amp;gt;4,4:2
+1,4&#39;:4--&amp;gt;1,2:1
+1,4&#39;:4--&amp;gt;3,4&#39;:3
+3,4&#39;:3--&amp;gt;L3,3&#39;:1
+3,4&#39;:3--&amp;gt;4,4:2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;上图中&lt;code&gt;L3,3&#39;:1&lt;/code&gt;是&lt;code&gt;3,4&#39;:3&lt;/code&gt;的左儿子。这样就是可持久化线段树的构造过程&lt;/p&gt;
+
+&lt;h2 id=&#34;静态区间范围查询&#34;&gt;静态区间范围查询&lt;/h2&gt;
+
+&lt;p&gt;现在给出区间[L,R]和范围[a,b]，求数组中在区间[L,R]里有多少个元素在范围[a,b]里。这种查询普通的线段树并不好办，那可持久化线段树有什么方法来解呢，首先我们先构造一棵空线段树，然后对数组元素做离散化，按大小映射到[0,n-1]，然后对离散化后的数组，按下标次序，一个一个加入到可持久化线段树里，例如数字2，那么我们就要在线段树里对2号元素+1，所以这就是可持久化权值线段树，即主席树。如此这般加入后，由于我们是按下标次序加入的，所以我们非常容易地得到表示区间[0,R]的线段树，那么在范围[a,b]里的元素数量，正好就是[a,b]区间和。但如果要求的是区间[L,R]里有多少个元素在范围[a,b]里，那我们除了要求出区间[0,R]，还要求出区间[0,L-1]，然后两者的[a,b]区间和的差，就是我们所要的答案&lt;/p&gt;
+
+&lt;h2 id=&#34;基础模板&#34;&gt;基础模板&lt;/h2&gt;
+
+&lt;p&gt;以下基础模板只支持区间求和，即求区间[0,R]里有多少个元素在范围[a,b]里&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct persistent_seg_tree
+{
+    struct data
+    {
+        int sum;
+        data() :sum(0) {}
+    };
+    struct node
+    {
+        int l, r;
+        data d;
+        node() :l(0), r(0) {}
+    };
+    vector&amp;lt;node&amp;gt; nodes;
+    vector&amp;lt;int&amp;gt; roots;
+    int sz;
+
+    void up(int id)
+    {
+        nodes[id].d.sum = nodes[nodes[id].l].d.sum + nodes[nodes[id].r].d.sum;
+    }
+    int newnode(int cpy)
+    {
+        int id = (int)nodes.size();
+        node tmp = nodes[cpy];
+        nodes.push_back(tmp);
+        return id;
+    }
+    int add(int tp, int tl, int tr, int i, int v)
+    {
+        int id = newnode(tp);
+        if (tl + 1 &amp;gt;= tr)
+        {
+            nodes[id].d.sum += v;
+            return id;
+        }
+        int tmid = (tl + tr) / 2;
+        if (i &amp;lt; tmid)
+        {
+            int nid = add(nodes[id].l, tl, tmid, i, v);
+            nodes[id].l = nid;
+        }
+        else
+        {
+            int nid = add(nodes[id].r, tmid, tr, i, v);
+            nodes[id].r = nid;
+        }
+        up(id);
+        return id;
+    }
+    int getsum(int tp, int tl, int tr, int l, int r)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            return nodes[tp].d.sum;
+        }
+        int tmid = (tl + tr) / 2;
+        int sum = 0;
+        if (l &amp;lt; tmid)
+        {
+            sum += getsum(nodes[tp].l, tl, tmid, l, r);
+        }
+        if (r &amp;gt; tmid)
+        {
+            sum += getsum(nodes[tp].r, tmid, tr, l, r);
+        }
+        return sum;
+    }
+    // interface
+    void init(int range, int root_size) // 数组大小[0, range)，操作次数
+    {
+        sz = range;
+        nodes.clear();
+        roots.clear();
+        nodes.reserve(root_size * (int)(log(sz * 2.0) / log(2.0) + 1.01));
+        nodes.push_back(node());
+        roots.reserve(root_size + 1);
+        roots.push_back(0);
+    }
+    void add(int pos, int v)
+    {
+        int last = roots.back();
+        roots.push_back(add(last, 0, sz, pos, v));
+    }
+    int getsum(int t, int l, int r)
+    {
+        if (t &amp;lt;= 0) return 0;
+        if (r &amp;lt; l) return 0;
+        if (t &amp;gt;= (int)roots.size()) t = (int)roots.size() - 1;
+        return getsum(roots[t], 0, sz, l, r + 1);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;使用说明，先调用init，参数分别是离散化后的值域大小，和数组大小（对应的就是操作完后根的个数，所以名字是&lt;code&gt;root_size&lt;/code&gt;），然后循环 &lt;code&gt;add(pos, 1)&lt;/code&gt;，最后查询时，调用&lt;code&gt;getsum(R, a, b) - getsum(L - 1, a, b)&lt;/code&gt;，LR就是区间，ab就是值域范围。&lt;/p&gt;
+
+&lt;h2 id=&#34;静态区间第k大&#34;&gt;静态区间第k大&lt;/h2&gt;
+
+&lt;p&gt;此问题解法较多，本篇主要介绍使用主席树的解法，同样也是先建立一棵可持久化权值线段树，对于查询区间为[0,R]的第k大，这个问题很简单，就是找出前缀和大于等于k的区间[0,m]所对应的最小的m值，所以只要对[0,R]所对应的线段树做查找，如果左子树的sum小于等于k，那么进入左子树查询k，否则进入右子树查询k-sum即可。但对于查询区间[L,R]，我们需要找出[0,R]和[0,L-1]这两棵线段树，它们的[a,b]区间和表示在[L,R]里有多少个数的值域在[a,b]之间，所以我们就同时对这两棵线段树做查找，设 [0,R]左子树的sum 减去 [0,L-1]左子树的sum 为S，那么如果S小于等于k，那么进入左子树查询k，否则进入右子树查询k-S，实现代码如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int kth(int tpl, int tpr, int tl, int tr, int k)
+{
+    if (tl + 1 &amp;gt;= tr) return tl;
+    int tmid = (tl + tr) / 2;
+    int num = nodes[nodes[tpr].l].d.sum - nodes[nodes[tpl].l].d.sum;
+    if (k &amp;lt;= num) return kth(nodes[tpl].l, nodes[tpr].l, tl, tmid, k);
+    else return kth(nodes[tpl].r, nodes[tpr].r, tmid, tr, k - num);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;区间第k大模板&#34;&gt;区间第k大模板&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct persistent_seg_tree
+{
+    struct data
+    {
+        int sum;
+        data() :sum(0) {}
+    };
+    struct node
+    {
+        int l, r;
+        data d;
+        node() :l(0), r(0) {}
+    };
+    vector&amp;lt;node&amp;gt; nodes;
+    vector&amp;lt;int&amp;gt; roots;
+    int sz;
+
+    void up(int id)
+    {
+        nodes[id].d.sum = nodes[nodes[id].l].d.sum + nodes[nodes[id].r].d.sum;
+    }
+    int newnode(int cpy)
+    {
+        int id = (int)nodes.size();
+        node tmp = nodes[cpy];
+        nodes.push_back(tmp);
+        return id;
+    }
+    int add(int tp, int tl, int tr, int i, int v)
+    {
+        int id = newnode(tp);
+        if (tl + 1 &amp;gt;= tr)
+        {
+            nodes[id].d.sum += v;
+            return id;
+        }
+        int tmid = (tl + tr) / 2;
+        if (i &amp;lt; tmid)
+        {
+            int nid = add(nodes[id].l, tl, tmid, i, v);
+            nodes[id].l = nid;
+        }
+        else
+        {
+            int nid = add(nodes[id].r, tmid, tr, i, v);
+            nodes[id].r = nid;
+        }
+        up(id);
+        return id;
+    }
+    int kth(int tpl, int tpr, int tl, int tr, int k)
+    {
+        if (tl + 1 &amp;gt;= tr) return tl;
+        int tmid = (tl + tr) / 2;
+        int num = nodes[nodes[tpr].l].d.sum - nodes[nodes[tpl].l].d.sum;
+        if (k &amp;lt;= num) return kth(nodes[tpl].l, nodes[tpr].l, tl, tmid, k);
+        else return kth(nodes[tpl].r, nodes[tpr].r, tmid, tr, k - num);
+    }
+    // interface
+    void init(int range, int root_size) // 数组大小[0, range)，操作次数
+    {
+        sz = range;
+        nodes.clear();
+        roots.clear();
+        nodes.reserve(root_size * (int)(log(sz * 2.0) / log(2.0) + 1.01));
+        nodes.push_back(node());
+        roots.reserve(root_size + 1);
+        roots.push_back(0);
+    }
+    void add(int i, int v)
+    {
+        int last = roots.back();
+        roots.push_back(add(last, 0, sz, i, v));
+    }
+    int kth(int tpl, int tpr, int k)
+    {
+        return kth(roots[tpl - 1], roots[tpr], 0, sz, k);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;其它说明&#34;&gt;其它说明&lt;/h2&gt;
+
+&lt;p&gt;其它的可持久化数据结构大同小异，如可持久化的trie，构造方法也是一样的&lt;/p&gt;
+
+&lt;p&gt;以上只介绍了静态区间的范围查询和第k大查询，还不支持动态修改并查询，这个会在之后再做介绍。&lt;/p&gt;
+
+&lt;p&gt;习题：静态区间范围查询&lt;a href=&#34;https://vjudge.net/problem/HDU-4417&#34; target=&#34;_blank&#34;&gt;hdu 4417&lt;/a&gt;，静态区间第k大&lt;a href=&#34;https://vjudge.net/problem/POJ-2104&#34; target=&#34;_blank&#34;&gt;POJ 2104&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>线段树</title>
+      <link>/post/20191208-segtree/</link>
+      <pubDate>Sun, 08 Dec 2019 18:26:00 +0800</pubDate>
+      <guid>/post/20191208-segtree/</guid>
+      <description>&lt;p&gt;很多人在初始接触线段树的时候，一看到别人写一大堆代码就直接弃坑了，其实不要被它的外表所欺骗，线段树其实是相当好写的树结构了，而且理解起来其实很简单。要学会这个，你不能光会抄模板就会区间修改和求个区间和，因为实际应用经常会使用它的变形，还是在于理解&lt;del&gt;（理解后背板）&lt;/del&gt;。&lt;/p&gt;
+
+&lt;h2 id=&#34;数据结构&#34;&gt;数据结构&lt;/h2&gt;
+
+&lt;p&gt;首先，回想一下heap的结构，它使用一个数组，同时使用下标本身来表达父子关系，这样的方式能节省大量指针所需要的内存空间，以下也使用这种表示方法来表示一棵线段树，也就是说，这里介绍的，属于&lt;strong&gt;狭义线段树&lt;/strong&gt;。假设我们的数据是以下这样&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;下标&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;th&gt;8&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;数据&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;构建线段树后结果如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+1,8:16--&amp;gt;1,4:8
+1,8:16--&amp;gt;5,8:8
+1,4:8--&amp;gt;1,2:1
+1,4:8--&amp;gt;3,4:7
+1,2:1--&amp;gt;1,1:1
+1,2:1--&amp;gt;2,2:0
+3,4:7--&amp;gt;3,3:5
+3,4:7--&amp;gt;4,4:2
+5,8:8--&amp;gt;5,6:7
+5,8:8--&amp;gt;7,8:1
+5,6:7--&amp;gt;5,5:3
+5,6:7--&amp;gt;6,6:4
+7,8:1--&amp;gt;7,7:0
+7,8:1--&amp;gt;8,8:1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;冒号前面的两个数表示一条线段，冒号后表示的是数据，这个数据表示的是这个区间的和。如此一来，我们查询一个区间的和，可以很快地计算出来，例如求&lt;code&gt;[1,6]&lt;/code&gt;的和，那么需要拆分为&lt;code&gt;[1,4]&lt;/code&gt;与&lt;code&gt;[5,6]&lt;/code&gt;的和，分别是8和7，所以结果是&lt;code&gt;8+7=15&lt;/code&gt;，原理就是这样而已。&lt;/p&gt;
+
+&lt;h2 id=&#34;单点数据更新&#34;&gt;单点数据更新&lt;/h2&gt;
+
+&lt;p&gt;单点更新时，可以参考树状数组，先更新子节点，然后向上找父节点更新即可，也可以递归实现，这不在本节讨论范围。不过如果你确实只需要单点修改，那么可以考虑ZKW线段树，ZKW线段树是先更新子节点，然后向上找父节点更新，由于少了很多递归，常数比递归的线段树要小。后文提供一个简易的模板作为参考。&lt;/p&gt;
+
+&lt;h2 id=&#34;区间数据更新&#34;&gt;区间数据更新&lt;/h2&gt;
+
+&lt;p&gt;例如，我们希望对区间&lt;code&gt;[3,5]&lt;/code&gt;上的数都加上2，这时候需要引入懒惰标记，其实就是把操作记录在父节点上，有必要时再向下传递。像刚才的例子，都加上懒惰标记后&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+1,8:16,0--&amp;gt;1,4:8,0
+1,8:16,0--&amp;gt;5,8:8,0
+1,4:8,0--&amp;gt;1,2:1,0
+1,4:8,0--&amp;gt;3,4:7,0
+1,2:1,0--&amp;gt;1,1:1,0
+1,2:1,0--&amp;gt;2,2:0,0
+3,4:7,0--&amp;gt;3,3:5,0
+3,4:7,0--&amp;gt;4,4:2,0
+5,8:8,0--&amp;gt;5,6:7,0
+5,8:8,0--&amp;gt;7,8:1,0
+5,6:7,0--&amp;gt;5,5:3,0
+5,6:7,0--&amp;gt;6,6:4,0
+7,8:1,0--&amp;gt;7,7:0,0
+7,8:1,0--&amp;gt;8,8:1,0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后对区间&lt;code&gt;[3,5]&lt;/code&gt;上的数都加上2，那么把这个区间拆分为&lt;code&gt;[3,4]&lt;/code&gt;和&lt;code&gt;[5,5]&lt;/code&gt;，更新标记&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+1,8:16,0--&amp;gt;1,4:8,0
+1,8:16,0--&amp;gt;5,8:8,0
+1,4:8,0--&amp;gt;1,2:1,0
+1,4:8,0--&amp;gt;3,4:11,2
+1,2:1,0--&amp;gt;1,1:1,0
+1,2:1,0--&amp;gt;2,2:0,0
+3,4:11,2--&amp;gt;3,3:5,0
+3,4:11,2--&amp;gt;4,4:2,0
+5,8:8,0--&amp;gt;5,6:7,0
+5,8:8,0--&amp;gt;7,8:1,0
+5,6:7,0--&amp;gt;5,5:5,2
+5,6:7,0--&amp;gt;6,6:4,0
+7,8:1,0--&amp;gt;7,7:0,0
+7,8:1,0--&amp;gt;8,8:1,0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;也就是说，&lt;code&gt;[3,3]&lt;/code&gt;和&lt;code&gt;[4,4]&lt;/code&gt;都没有更新，更新在&lt;code&gt;[3,4]&lt;/code&gt;上了，那么接下来需要查询&lt;code&gt;[3,3]&lt;/code&gt;的话，就把标记向下传递一层，变成&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+1,8:16,0--&amp;gt;1,4:8,0
+1,8:16,0--&amp;gt;5,8:8,0
+1,4:8,0--&amp;gt;1,2:1,0
+1,4:8,0--&amp;gt;3,4:11,0
+1,2:1,0--&amp;gt;1,1:1,0
+1,2:1,0--&amp;gt;2,2:0,0
+3,4:11,0--&amp;gt;3,3:7,2
+3,4:11,0--&amp;gt;4,4:4,2
+5,8:8,0--&amp;gt;5,6:7,0
+5,8:8,0--&amp;gt;7,8:1,0
+5,6:7,0--&amp;gt;5,5:5,2
+5,6:7,0--&amp;gt;6,6:4,0
+7,8:1,0--&amp;gt;7,7:0,0
+7,8:1,0--&amp;gt;8,8:1,0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样，再获取区间&lt;code&gt;[3,3]&lt;/code&gt;的结果7，就是所需要的答案&lt;/p&gt;
+
+&lt;h2 id=&#34;基础模板&#34;&gt;基础模板&lt;/h2&gt;
+
+&lt;p&gt;以下基础模板只支持区间求和，以及区间整体加上一个数的操作，和&lt;a href=&#34;../20191111-fenwicktree/&#34;&gt;树状数组&lt;/a&gt;后面提供的模板实现了相同的功能&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct seg_tree_add
+{
+    struct node
+    {
+        int sum;
+        int lz_add;
+    };
+    int sz;
+    vector&amp;lt;node&amp;gt; d; // 仿heap的形式保存线段树
+    inline int lson(int tp) { return tp * 2 + 1; }
+    inline int rson(int tp) { return tp * 2 + 2; }
+    // 当前tp节点对应的线段区间为[tl,tr]，更新区间是[l,r]
+    void update_add(int l, int r, int v, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            d[tp].sum += (tr - tl + 1) * v;
+            d[tp].lz_add = v;
+            return;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid + 1, tr, d[tp].lz_add, tmid + 1, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        // 更新左右儿子
+        if (l &amp;lt;= tmid) update_add(l, r, v, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) update_add(l, r, v, tmid + 1, tr, rson(tp));
+        d[tp].sum = d[lson(tp)].sum + d[rson(tp)].sum;
+    }
+    int get_sum(int l, int r, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            return d[tp].sum;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid + 1, tr, d[tp].lz_add, tmid + 1, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        // 统计左右儿子
+        int sum = 0;
+        if (l &amp;lt;= tmid) sum += get_sum(l, r, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) sum += get_sum(l, r, tmid + 1, tr, rson(tp));
+        return sum;
+    }
+    void init(int size) // 可操作下标范围为0~size-1，如需要从1开始那么要+1
+    {
+        sz = size;
+        while (sz &amp;amp; (sz - 1)) sz += sz&amp;amp;-sz; // 扩展为满二叉树
+        d.resize(sz * 2);
+    }
+    void update_add(int l, int r, int v)
+    {
+        update_add(l, r, v, 0, sz - 1, 0);
+    }
+    int get_sum(int l, int r)
+    {
+        return get_sum(l, r, 0, sz - 1, 0);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;用法，调用init初始化范围（注意下标从0到size-1，下标要从1开始的话要size+1，否则如果size正好是2的k次方时操作下标为size时会出问题），然后通过&lt;code&gt;update_add&lt;/code&gt;和&lt;code&gt;get_sum&lt;/code&gt;更新数据即可。&lt;/p&gt;
+
+&lt;p&gt;另外一点，这个模板实现没有使用左闭右开区间来写，如果改用左闭右开区间，并添加build实现，则得到如下实现（代码有少许简化且更对称更好读）&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct seg_tree_add
+{
+    struct node
+    {
+        int sum;
+        int lz_add;
+    };
+    int sz;
+    vector&amp;lt;node&amp;gt; d;
+    inline int lson(int tp) { return tp * 2 + 1; }
+    inline int rson(int tp) { return tp * 2 + 2; }
+    void update_add(int l, int r, int v, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            d[tp].sum += (tr - tl) * v;
+            d[tp].lz_add = v;
+            return;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid, tr, d[tp].lz_add, tmid, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        // 更新左右儿子
+        if (l &amp;lt; tmid) update_add(l, r, v, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) update_add(l, r, v, tmid, tr, rson(tp));
+        d[tp].sum = d[lson(tp)].sum + d[rson(tp)].sum;
+    }
+    int get_sum(int l, int r, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            return d[tp].sum;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid, tr, d[tp].lz_add, tmid, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        // 统计左右儿子
+        int sum = 0;
+        if (l &amp;lt; tmid) sum += get_sum(l, r, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) sum += get_sum(l, r, tmid, tr, rson(tp));
+        return sum;
+    }
+    void build(int a[], int alen, int tl, int tr, int tp)
+    {
+        if (tl + 1 == tr)
+        {
+            if (tl &amp;lt; alen)
+                d[tp].sum = a[tl];
+            else
+                d[tp].sum = 0;
+            return;
+        }
+        int tmid = (tl + tr) / 2;
+        build(a, alen, tl, tmid, lson(tp));
+        build(a, alen, tmid, tr, rson(tp));
+        d[tp].sum = d[lson(tp)].sum + d[rson(tp)].sum;
+        d[tp].lz_add = 0;
+    }
+    void build(int a[], int alen)
+    {
+        build(a, alen, 0, sz, 0);
+    }
+    void init(int size) // 可操作下标范围为0~size-1
+    {
+        sz = size;
+        while (sz &amp;amp; (sz - 1)) sz += sz&amp;amp;-sz;
+        d.resize(sz * 2);
+    }
+    void update_add(int l, int r, int v)
+    {
+        update_add(l, r + 1, v, 0, sz, 0);
+    }
+    int get_sum(int l, int r)
+    {
+        return get_sum(l, r + 1, 0, sz, 0);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;进阶模板&#34;&gt;进阶模板&lt;/h2&gt;
+
+&lt;p&gt;如果你需要支持区间整体加上某个数，同时支持区间整体设置为指定数，那么就需要多重懒惰标记，模板可以改写如下（闭区间实现）&lt;/p&gt;
+
+&lt;p&gt;&lt;details&gt;
+&lt;summary&gt;
+  &lt;h4&gt; 点击展开 &lt;/h4&gt;
+&lt;/summary&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct seg_tree
+{
+    static const int lz_mark = 0x80000000;
+    struct node
+    {
+        int sum;
+        int lz_set;
+        int lz_add;
+    };
+    int sz;
+    vector&amp;lt;node&amp;gt; d;
+    inline int lson(int tp) { return tp * 2 + 1; }
+    inline int rson(int tp) { return tp * 2 + 2; }
+    void update_add(int l, int r, int v, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            d[tp].sum += (tr - tl + 1) * v;
+            if (d[tp].lz_set != lz_mark) d[tp].lz_set += v;
+            else d[tp].lz_add = v;
+            return;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_set != lz_mark)
+        {
+            update_set(tl, tmid, d[tp].lz_set, tl, tmid, lson(tp));
+            update_set(tmid + 1, tr, d[tp].lz_set, tmid + 1, tr, rson(tp));
+            d[tp].lz_set = lz_mark;
+        }
+        else if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid + 1, tr, d[tp].lz_add, tmid + 1, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        if (l &amp;lt;= tmid) update_add(l, r, v, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) update_add(l, r, v, tmid + 1, tr, rson(tp));
+        d[tp].sum = d[lson(tp)].sum + d[rson(tp)].sum;
+    }
+    void update_set(int l, int r, int v, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            d[tp].sum = (tr - tl + 1) * v; //区间和
+            d[tp].lz_set = v;
+            d[tp].lz_add = 0;
+            return;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_set != lz_mark)
+        {
+            update_set(tl, tmid, d[tp].lz_set, tl, tmid, lson(tp));
+            update_set(tmid + 1, tr, d[tp].lz_set, tmid + 1, tr, rson(tp));
+            d[tp].lz_set = lz_mark;
+        }
+        else if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid + 1, tr, d[tp].lz_add, tmid + 1, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        if (l &amp;lt;= tmid) update_set(l, r, v, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) update_set(l, r, v, tmid + 1, tr, rson(tp));
+        d[tp].sum = d[lson(tp)].sum + d[rson(tp)].sum;
+    }
+    int get_sum(int l, int r, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            return d[tp].sum;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_set != lz_mark)
+        {
+            update_set(tl, tmid, d[tp].lz_set, tl, tmid, lson(tp));
+            update_set(tmid + 1, tr, d[tp].lz_set, tmid + 1, tr, rson(tp));
+            d[tp].lz_set = lz_mark;
+        }
+        else if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid + 1, tr, d[tp].lz_add, tmid + 1, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        int sum = 0;
+        if (l &amp;lt;= tmid) sum += get_sum(l, r, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) sum += get_sum(l, r, tmid + 1, tr, rson(tp));
+        return sum;
+    }
+    void init(int size) // 可操作下标范围为0~size-1
+    {
+        sz = size;
+        while (sz &amp;amp; (sz - 1)) sz += sz&amp;amp;-sz;
+        d.resize(sz * 2);
+    }
+    void update_add(int l, int r, int v)
+    {
+        update_add(l, r, v, 0, sz - 1, 0);
+    }
+    void update_set(int l, int r, int v)
+    {
+        update_set(l, r, v, 0, sz - 1, 0);
+    }
+    int get_sum(int l, int r)
+    {
+        return get_sum(l, r, 0, sz - 1, 0);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;/details&gt;&lt;/p&gt;
+
+&lt;p&gt;左闭右开区间实现（接口为闭区间）&lt;/p&gt;
+
+&lt;p&gt;&lt;details&gt;
+&lt;summary&gt;
+  &lt;h4&gt; 点击展开 &lt;/h4&gt;
+&lt;/summary&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct seg_tree
+{
+    static const int lz_mark = 0x80000000;
+    struct node
+    {
+        int sum;
+        int lz_set;
+        int lz_add;
+    };
+    int sz;
+    vector&amp;lt;node&amp;gt; d;
+    inline int lson(int tp) { return tp * 2 + 1; }
+    inline int rson(int tp) { return tp * 2 + 2; }
+    void update_add(int l, int r, int v, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            d[tp].sum += (tr - tl) * v;
+            if (d[tp].lz_set != lz_mark) d[tp].lz_set += v;
+            else d[tp].lz_add = v;
+            return;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_set != lz_mark)
+        {
+            update_set(tl, tmid, d[tp].lz_set, tl, tmid, lson(tp));
+            update_set(tmid, tr, d[tp].lz_set, tmid, tr, rson(tp));
+            d[tp].lz_set = lz_mark;
+        }
+        else if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid, tr, d[tp].lz_add, tmid, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        if (l &amp;lt; tmid) update_add(l, r, v, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) update_add(l, r, v, tmid, tr, rson(tp));
+        d[tp].sum = d[lson(tp)].sum + d[rson(tp)].sum;
+    }
+    void update_set(int l, int r, int v, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            d[tp].sum = (tr - tl) * v; //区间和
+            d[tp].lz_set = v;
+            d[tp].lz_add = 0;
+            return;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_set != lz_mark)
+        {
+            update_set(tl, tmid, d[tp].lz_set, tl, tmid, lson(tp));
+            update_set(tmid, tr, d[tp].lz_set, tmid, tr, rson(tp));
+            d[tp].lz_set = lz_mark;
+        }
+        else if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid, tr, d[tp].lz_add, tmid, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        if (l &amp;lt; tmid) update_set(l, r, v, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) update_set(l, r, v, tmid, tr, rson(tp));
+        d[tp].sum = d[lson(tp)].sum + d[rson(tp)].sum;
+    }
+    ll get_sum(int l, int r, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            return d[tp].sum;
+        }
+        int tmid = (tl + tr) / 2;
+        // 下发lazy标志一层
+        if (d[tp].lz_set != lz_mark)
+        {
+            update_set(tl, tmid, d[tp].lz_set, tl, tmid, lson(tp));
+            update_set(tmid, tr, d[tp].lz_set, tmid, tr, rson(tp));
+            d[tp].lz_set = lz_mark;
+        }
+        else if (d[tp].lz_add != 0)
+        {
+            update_add(tl, tmid, d[tp].lz_add, tl, tmid, lson(tp));
+            update_add(tmid, tr, d[tp].lz_add, tmid, tr, rson(tp));
+            d[tp].lz_add = 0;
+        }
+        int sum = 0;
+        if (l &amp;lt; tmid) sum += get_sum(l, r, tl, tmid, lson(tp));
+        if (r &amp;gt; tmid) sum += get_sum(l, r, tmid, tr, rson(tp));
+        return sum;
+    }
+    void init(int size) // 可操作下标范围为0~size-1
+    {
+        sz = size;
+        while (sz &amp;amp; (sz - 1)) sz += sz&amp;amp;-sz;
+        d.resize(sz * 2);
+    }
+    void update_add(int l, int r, int v)
+    {
+        update_add(l, r + 1, v, 0, sz, 0);
+    }
+    void update_set(int l, int r, int v)
+    {
+        update_set(l, r + 1, v, 0, sz, 0);
+    }
+    ll get_sum(int l, int r)
+    {
+        return get_sum(l, r + 1, 0, sz, 0);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;/details&gt;&lt;/p&gt;
+
+&lt;p&gt;简易区间最值模板（就是简易得只有查询，如果要支持更新就自己加上）&lt;/p&gt;
+
+&lt;p&gt;&lt;details&gt;
+&lt;summary&gt;
+  &lt;h4&gt; 点击展开 &lt;/h4&gt;
+&lt;/summary&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct seg_tree
+{
+    struct node
+    {
+        int max;
+        int min;
+    };
+    int sz;
+    vector&amp;lt;node&amp;gt; d;
+    inline int lson(int tp) { return tp * 2 + 1; }
+    inline int rson(int tp) { return tp * 2 + 2; }
+    int get_max(int l, int r, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            return d[tp].max;
+        }
+        int tmid = (tl + tr) / 2;
+        int ret = INT_MIN;
+        if (l &amp;lt; tmid) ret = max(ret, get_max(l, r, tl, tmid, lson(tp)));
+        if (r &amp;gt; tmid) ret = max(ret, get_max(l, r, tmid, tr, rson(tp)));
+        return ret;
+    }
+    int get_min(int l, int r, int tl, int tr, int tp)
+    {
+        if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
+        {
+            return d[tp].min;
+        }
+        int tmid = (tl + tr) / 2;
+        int ret = INT_MAX;
+        if (l &amp;lt; tmid) ret = min(ret, get_min(l, r, tl, tmid, lson(tp)));
+        if (r &amp;gt; tmid) ret = min(ret, get_min(l, r, tmid, tr, rson(tp)));
+        return ret;
+    }
+    void build(int a[], int alen, int tl, int tr, int tp)
+    {
+        if (tl + 1 == tr)
+        {
+            if (tl &amp;lt; alen)
+            {
+                d[tp].max = a[tl];
+                d[tp].min = a[tl];
+            }
+            else
+            {
+                d[tp].max = 0;
+                d[tp].min = 0;
+            }
+            return;
+        }
+        int tmid = (tl + tr) / 2;
+        build(a, alen, tl, tmid, lson(tp));
+        build(a, alen, tmid, tr, rson(tp));
+        d[tp].max = max(d[lson(tp)].max, d[rson(tp)].max);
+        d[tp].min = min(d[lson(tp)].min, d[rson(tp)].min);
+    }
+    void build(int a[], int alen)
+    {
+        build(a, alen, 0, sz, 0);
+    }
+    void init(int size) // 可操作下标范围为0~size-1
+    {
+        sz = size;
+        while (sz &amp;amp; (sz - 1)) sz += sz&amp;amp;-sz;
+        d.resize(sz * 2);
+    }
+    int get_min(int l, int r)
+    {
+        return get_min(l, r + 1, 0, sz, 0);
+    }
+    int get_max(int l, int r)
+    {
+        return get_max(l, r + 1, 0, sz, 0);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;/details&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;zkw线段树模板&#34;&gt;ZKW线段树模板&lt;/h2&gt;
+
+&lt;p&gt;这是单点修改求区间和的模板，求区间最值稍微改改就好了，如果需要区间修改，那么可以模仿树状数组的办法做差分，或做永久化标记，适应性比递归实现的线段树差一些，优点是常数小，以下实现比前面的大约快30%左右，代码更简单，就不额外解释了。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct zkwseg_tree
+{
+    struct node
+    {
+        int sum;
+    };
+    int sz;
+    vector&amp;lt;node&amp;gt; d;
+    void init(int size) // 可操作下标范围为0~size-1
+    {
+        sz = size;
+        while (sz &amp;amp; (sz - 1)) sz += sz&amp;amp;-sz;
+        d.resize(sz * 2);
+    }
+    void update_add(int p, int v)
+    {
+        int i = sz + p;
+        while (i)
+        {
+            d[i].sum += v;
+            i &amp;gt;&amp;gt;= 1;
+        }
+    }
+    int get_sum(int l, int r)
+    {
+        int sum = 0;
+        l += sz;
+        r += sz + 1;
+        for (; l &amp;lt; r; l&amp;gt;&amp;gt;=1, r&amp;gt;&amp;gt;=1)
+        {
+            if (l &amp;amp; 1)
+            {
+                sum += d[l++].sum;
+            }
+            if (r &amp;amp; 1)
+            {
+                sum += d[--r].sum;
+            }
+        }
+        return sum;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;其它说明&#34;&gt;其它说明&lt;/h2&gt;
+
+&lt;p&gt;以上模板为了解释简单，有的实现只有&lt;code&gt;update&lt;/code&gt;和&lt;code&gt;get_sum&lt;/code&gt;操作，并没有&lt;code&gt;build&lt;/code&gt;的部分，只使用&lt;code&gt;update&lt;/code&gt;即可完成build的操作，时间复杂度也是一样的。除了维护区间和，也可以维护区间最大最小值。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

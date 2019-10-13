@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2019-10-12T15:18:00&#43;08:00">
+    <meta property="og:updated_time" content="2019-12-16T18:23:00&#43;08:00">
   
 
   
@@ -361,10 +361,64 @@
   
   
   <div>
+    <h2><a href="/post/20191216-kmp-manacher/">扩展KMP与Manacher</a></h2>
+    <div class="article-style">
+      
+      KMP已经介绍过了，这次主要介绍的是Manacher
+最长回文子串 Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。
+先定义数组v，v[i]表示以第i个字符为中心，到回文串一端的距离，我们以字符串&quot;acabacab&quot;为例，如下表（index是下标）
+   string a c a b a c a b \0     index 0 1 2 3 4 5 6 7 8   m    ^        i    ^        e        ^    v 1 2 1 4         i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针
+然后++i，注意这时候，由于以字符b两边是对称的，所以在求v[4]的值的时候，可以先查v[2]的值，是1，所以v[4]也是1
+   string a c a b a c a b \0     index 0 1 2 3 4 5 6 7 8   m    ^        i     ^       e        ^    v 1 2 1 4 1        再继续++i，同样的，在求v[5]的值的时候，可以先查v[1]的值，是2，但是，这个长度达到了e指针的位置，即i+2&gt;=e，这时候就更新指针m，并扩展e的位置，即比较str[7]与str[3]，找到以下标5为中心的回文串边界。
+
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="/post/20191028-kmp/">KMP及扩展KMP</a></h2>
+    <div class="article-style">
+      
+      KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀
+最长公共前缀 我们拿字符串ababcab作为例子
+   string a b a b c a b     len 0 0 1 2 0 1 2    这里所表达的是，例如取第3、4个字符&rdquo;ab&rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&rdquo;abc&rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子
+   string a b a c a b a b     len 0 0 1 0 1 2 3 2    最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样
+   string a b a c a b a b     len 0 0 1 0 1 2 3 ?   pointer   ^    ^     然后两个a匹配，arr[6] = pointer1 - arr 得到3，然后两指针一起移动
+   string a b a c a b a b     len 0 0 1 0 1 2 3 ?   pointer   * ^    ^    这时候，不匹配，那么前一个指针上一次指向的是arr[2]的位置，即图上*的地方，值是1，这个值如果是p，那就移动到arr[p]的地方，所以就移动到arr[1]的地方，本质上就是找到前一个匹配此后缀的位置，即
+   string a b a c a b a b     len 0 0 1 0 1 2 3 2   pointer  ^      ^    然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2
+
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="/post/20191019-qsort-talk-2/">Quick sort(快速排序)杂谈 2</a></h2>
+    <div class="article-style">
+      
+      在上一篇我们介绍了四种不同的划分算法，现在我们来针对Hoare partition scheme来讲解一些优化和注意的问题。
+最坏时间复杂度的优化 在前一篇的示例代码里面，只是最简单地选择的最开头或最后面的元素作为划分，这对于乱序的数据还好，对于有序的数据这么做，时间复杂度就直接变成$O(n^2)$了，那么怎么解决？第一个要解决的反而不是划分元素的选择上，而是改成intro sort，记录递归深度或类似的办法，到达限制条件的时候改而使用堆排序，这属于混合排序，先让排序的最坏时间复杂度降下来是第一要务。所以可以改写出以下代码：
+
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="/post/20191015-sorting-3/">堆排序优化思路</a></h2>
+    <div class="article-style">
+      
+      堆排序其实是最不好优化的一个，在数据结构都确定的情况下，优化空间太小，除非优化数据结构本身，但那样就不叫做堆排序了。类似堆排序的还有smooth sort和weakheap sort，有兴趣可以自己查找相关资料。
+堆排序原理 堆排序其实是选择排序的优化变种，选择排序是把最大或最小的元素放到最边上，然后不断重复以上过程，堆排序也是如此，只不过堆排序通过构建数据结构，让查找最大或最小元素并放到最边上的速度比选择排序快得多。
+首先我们先来介绍什么是堆。堆只是个缩写，全名是二叉堆，是一种完全二叉树，它的特点是二叉堆的父节点元素不小于子节点的元素，以下为二叉堆例图
+graph TD; 30--&gt;29 30--&gt;28 29--&gt;24 29--&gt;25 28--&gt;26 28--&gt;22 24--&gt;21 
+      
+    </div>
+  </div>
+  
+  <div>
     <h2><a href="/post/20191012-binary-skill/">二进制技巧</a></h2>
     <div class="article-style">
       
-      二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了
+      二进制位运算的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了
 单行表达式    作用 表达式     把右边连续的1变成0 n &amp; ( n + 1 )   把右边第一个1变成0 n &amp; ( n - 1 )   把右起第一个0变成1 n | ( n + 1 )   把右起连续的0变成1 n | ( n - 1 )   取右边连续的1 n ^ ( n + 1 )   去掉右起第一个1的左边 n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )   高低位交换，前x位 ( n &lt;&lt; x ) | ( x &gt;&gt; ( 32 - x ) )   有符号整数计算绝对值 ( n ^ (n &gt;&gt; 31) ) - (n &gt;&gt; 31)   
       
     </div>
@@ -374,7 +428,9 @@
     <h2><a href="/post/20191009-sorting-2/">插入排序与希尔排序优化思路</a></h2>
     <div class="article-style">
       
-      本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。
+      本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看前一篇。我们来看插入排序的动图演示
+
+插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。
 插入排序基本实现 我们先来看插入排序的基本实现
 void insert_sort(sort_element_t * beg, sort_element_t * end) { for (sort_element_t* i = beg + 1; i &lt; end; ++i) { sort_element_t val = *i; sort_element_t* j = i; for (; j &gt; beg &amp;&amp; val &lt; j[-1]; --j) { *j = j[-1]; } *j = val; } }  插入排序即使不做任何优化，效率也明显高于上篇所说的冒泡排序和选择排序。那么按照惯例，先上双向看看效果
 
@@ -393,7 +449,7 @@ void sort(iter beg, iter end)
 这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 sort(arr, arr + len) ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 sort(arr, arr + len - 1) 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以
 void sort(iter beg, iter end)
 这种方式写的，至于这样写有什么好处，接下来我们就看示例。
-
+选择排序 
       
     </div>
   </div>
@@ -522,7 +578,7 @@ void sort(iter beg, iter end)
     
     
     
-    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
 
     
 

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>smooth sort | Baobaobear</title>
+    <link>/tags/smooth-sort/</link>
+      <atom:link href="/tags/smooth-sort/index.xml" rel="self" type="application/rss+xml" />
+    <description>smooth sort</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 17 Oct 2019 17:14:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>smooth sort</title>
+      <link>/tags/smooth-sort/</link>
+    </image>
+    
+    <item>
+      <title>smooth sort与weakheap sort实现</title>
+      <link>/post/20191017-weakheapsort/</link>
+      <pubDate>Thu, 17 Oct 2019 17:14:00 +0800</pubDate>
+      <guid>/post/20191017-weakheapsort/</guid>
+      <description>&lt;p&gt;本篇补充&lt;code&gt;smooth sort&lt;/code&gt;和&lt;code&gt;weakheap sort&lt;/code&gt;，不打算做太多介绍，&lt;del&gt;因为自己太菜不会讲，&lt;/del&gt;只作为笔记来记录一下实现代码。&lt;code&gt;smooth sort&lt;/code&gt;在接近排序完成的情况下的动态图&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Smoothsort&#34; target=&#34;_blank&#34;&gt;&lt;img src=&#34;https://upload.wikimedia.org/wikipedia/commons/a/a5/Smoothsort.gif&#34; alt=&#34;&#34; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;smooth-sort&#34;&gt;smooth sort&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;// http://www.keithschwarz.com/smoothsort/
+static const unsigned int leonardo[] =
+{
+   1, 1, 3, 5, 9, 15, 25, 41, 67, 109, 177, 287, 465, 753, 1219, 1973,
+   3193, 5167, 8361, 13529, 21891, 35421, 57313, 92735, 150049, 242785,
+   392835, 635621, 1028457, 1664079, 2692537, 4356617, 7049155, 11405773,
+   18454929, 29860703, 48315633, 78176337, 126491971, 204668309, 331160281,
+   535828591, 866988873, 1402817465, 2269806339u, 3672623805u,
+};
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort_fix(RandomAccessIterator arr, size_t current_heap, int level_index, int levels[], Comp compare)
+{
+    while (level_index &amp;gt; 0)
+    {
+        size_t prev_heap = current_heap - leonardo[levels[level_index]];
+        if (compare(arr[current_heap], arr[prev_heap]))
+        {
+            if (levels[level_index] &amp;gt; 1)
+            {
+                size_t child_heap2 = current_heap - 1;
+                size_t child_heap1 = child_heap2 - leonardo[levels[level_index] - 2];
+                if (compare(arr[prev_heap], arr[child_heap1])
+                    || compare(arr[prev_heap], arr[child_heap2]))
+                    break;
+            }
+            std::swap(arr[current_heap], arr[prev_heap]);
+            current_heap = prev_heap;
+            level_index -= 1;
+        }
+        else
+            break;
+    }
+
+    int current_level = levels[level_index];
+    while (current_level &amp;gt; 1)
+    {
+        size_t max_child = current_heap;
+        size_t child_heap2 = current_heap - 1;
+        size_t child_heap1 = child_heap2 - leonardo[current_level - 2];
+
+        if (compare(arr[max_child], arr[child_heap1])) max_child = child_heap1;
+        if (compare(arr[max_child], arr[child_heap2])) max_child = child_heap2;
+        if (max_child == child_heap1)
+        {
+            std::swap(arr[current_heap], arr[child_heap1]);
+            current_heap = child_heap1;
+            current_level -= 1;
+        }
+        else if (max_child == child_heap2)
+        {
+            std::swap(arr[current_heap], arr[child_heap2]);
+            current_heap = child_heap2;
+            current_level -= 2;
+        }
+        else break;
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort(RandomAccessIterator arr, size_t size, Comp compare)
+{
+    int levels[64] = { 1 };
+    int toplevel = 0;
+
+    for (size_t i = 1; i &amp;lt; size; ++i)
+    {
+        if (toplevel &amp;gt; 0 &amp;amp;&amp;amp; levels[toplevel - 1] - levels[toplevel] == 1)
+        {
+            toplevel -= 1;
+            levels[toplevel] += 1;
+        }
+        else if (levels[toplevel] != 1)
+        {
+            toplevel += 1;
+            levels[toplevel] = 1;
+        }
+        else
+        {
+            toplevel += 1;
+            levels[toplevel] = 0;
+        }
+        smooth_sort_fix(arr, i, toplevel, levels, compare);
+    }
+
+    for (size_t i = size - 2; i &amp;gt; 0; --i)
+    {
+        if (levels[toplevel] &amp;lt;= 1)
+        {
+            toplevel -= 1;
+        }
+        else
+        {
+            levels[toplevel] -= 1;
+            levels[toplevel + 1] = levels[toplevel] - 1;
+            toplevel += 1;
+
+            smooth_sort_fix(arr, i - leonardo[levels[toplevel]], toplevel - 1, levels, compare);
+            smooth_sort_fix(arr, i, toplevel, levels, compare);
+        }
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void smooth_sort(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    if (end - beg &amp;gt; 1)
+    {
+        smooth_sort(&amp;amp;*beg, (size_t)(end - beg), compare);
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator&amp;gt;
+void smooth_sort(RandomAccessIterator beg, RandomAccessIterator end)
+{
+    smooth_sort(beg, end, std::less&amp;lt;typename std::iterator_traits&amp;lt;RandomAccessIterator&amp;gt;::value_type&amp;gt;());
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;weakheap-sort&#34;&gt;weakheap sort&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;unsigned char weakheap_getflag(unsigned char *r, size_t index)
+{
+    return (r[index &amp;gt;&amp;gt; 3] &amp;gt;&amp;gt; (index &amp;amp; 7)) &amp;amp; 1;
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void weakheap_merge(unsigned char flags[], RandomAccessIterator beg, RandomAccessIterator i, RandomAccessIterator j, Comp compare)
+{
+    if (compare(*i, *j))
+    {
+        flags[(j - beg) &amp;gt;&amp;gt; 3] ^= 1 &amp;lt;&amp;lt; ((j - beg) &amp;amp; 7);
+        std::swap(*i, *j);
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator, class Comp&amp;gt;
+void weakheap_sort(RandomAccessIterator beg, RandomAccessIterator end, Comp compare)
+{
+    if (end - beg &amp;gt; 1)
+    {
+        size_t n = (size_t)(end - beg);
+        unsigned char * flags = new unsigned char[(n + 7) / 8];
+        for (size_t i = 0; i &amp;lt; n / 8; ++i)
+            flags[i] = 0;
+        for (size_t i = n - 1; i &amp;gt; 0; --i)
+        {
+            size_t j = i;
+            while ((j &amp;amp; 1) == weakheap_getflag(flags, j &amp;gt;&amp;gt; 1))
+                j &amp;gt;&amp;gt;= 1;
+            weakheap_merge(flags, beg, beg + (j &amp;gt;&amp;gt; 1), beg + i, compare);
+        }
+        for (size_t i = n - 1; i &amp;gt; 1; --i)
+        {
+            std::swap(*beg, *(beg + i));
+            size_t j = 1, k;
+            while ((k = 2 * j + weakheap_getflag(flags, j)) &amp;lt; i)
+                j = k;
+            while (j &amp;gt; 0)
+            {
+                weakheap_merge(flags, beg, beg, beg + j, compare);
+                j &amp;gt;&amp;gt;= 1;
+            }
+        }
+        std::swap(*beg, *(beg + 1));
+        delete[] flags;
+    }
+}
+
+template&amp;lt;typename RandomAccessIterator&amp;gt;
+void weakheap_sort(RandomAccessIterator beg, RandomAccessIterator end)
+{
+    weakheap_sort(beg, end, std::less&amp;lt;typename std::iterator_traits&amp;lt;RandomAccessIterator&amp;gt;::value_type&amp;gt;());
+}
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀
+
+最长公共前缀
+
+我们拿字符串ababcab作为例子
+
+
+
+
+string
+a
+b
+a
+b
+c
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+2
+0
+1
+2
+
+
+
+
+这里所表达的是，例如取第3、4个字符&rdquo;ab&rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&rdquo;abc&rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+0
+1
+2
+3
+2
+
+
+
+
+最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+0
+1
+2
+3
+?
+
+
+
+pointer
+
+
+^
+
+
+
+^
+
+
+
+
+
+然后两个a匹配，arr[6] = pointer1 - arr 得到3，然后两指针一起移动
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+0
+1
+2
+3
+?
+
+
+
+pointer
+
+
+*
+^
+
+
+
+^
+
+
+
+
+这时候，不匹配，那么前一个指针上一次指向的是arr[2]的位置，即图上*的地方，值是1，这个值如果是p，那就移动到arr[p]的地方，所以就移动到arr[1]的地方，本质上就是找到前一个匹配此后缀的位置，即
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+0
+1
+2
+3
+2
+
+
+
+pointer
+
+^
+
+
+
+
+
+^
+
+
+
+
+然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20191028-kmp/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20191028-kmp/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20191028-kmp/">
+  <meta property="og:title" content="KMP及扩展KMP | Baobaobear">
+  <meta property="og:description" content="KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀
+
+最长公共前缀
+
+我们拿字符串ababcab作为例子
+
+
+
+
+string
+a
+b
+a
+b
+c
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+2
+0
+1
+2
+
+
+
+
+这里所表达的是，例如取第3、4个字符&rdquo;ab&rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&rdquo;abc&rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+0
+1
+2
+3
+2
+
+
+
+
+最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+0
+1
+2
+3
+?
+
+
+
+pointer
+
+
+^
+
+
+
+^
+
+
+
+
+
+然后两个a匹配，arr[6] = pointer1 - arr 得到3，然后两指针一起移动
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+0
+1
+2
+3
+?
+
+
+
+pointer
+
+
+*
+^
+
+
+
+^
+
+
+
+
+这时候，不匹配，那么前一个指针上一次指向的是arr[2]的位置，即图上*的地方，值是1，这个值如果是p，那就移动到arr[p]的地方，所以就移动到arr[1]的地方，本质上就是找到前一个匹配此后缀的位置，即
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+
+
+
+
+
+len
+0
+0
+1
+0
+1
+2
+3
+2
+
+
+
+pointer
+
+^
+
+
+
+
+
+^
+
+
+
+
+然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2019-10-28T13:32:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2019-10-28T13:32:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20191028-kmp/"
+  },
+  "headline": "KMP及扩展KMP",
+  
+  "datePublished": "2019-10-28T13:32:00+08:00",
+  "dateModified": "2019-10-28T13:32:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003eKMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀\u003c/p\u003e\n\n\u003ch2 id=\"最长公共前缀\"\u003e最长公共前缀\u003c/h2\u003e\n\n\u003cp\u003e我们拿字符串\u003ccode\u003eababcab\u003c/code\u003e作为例子\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003estring\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003elen\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e这里所表达的是，例如取第3、4个字符\u0026rdquo;ab\u0026rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符\u0026rdquo;abc\u0026rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003estring\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003elen\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003estring\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003elen\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e?\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003epointer\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e然后两个a匹配，\u003ccode\u003earr[6] = pointer1 - arr\u003c/code\u003e 得到3，然后两指针一起移动\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003estring\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003elen\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e?\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003epointer\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e*\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e这时候，不匹配，那么前一个指针上一次指向的是\u003ccode\u003earr[2]\u003c/code\u003e的位置，即图上\u003ccode\u003e*\u003c/code\u003e的地方，值是1，这个值如果是p，那就移动到\u003ccode\u003earr[p]\u003c/code\u003e的地方，所以就移动到\u003ccode\u003earr[1]\u003c/code\u003e的地方，本质上就是找到前一个匹配此后缀的位置，即\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003estring\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003elen\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003epointer\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>KMP及扩展KMP | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>KMP及扩展KMP</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Oct 28, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191028-kmp/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191028-kmp/&amp;text=KMP%e5%8f%8a%e6%89%a9%e5%b1%95KMP" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191028-kmp/&amp;t=KMP%e5%8f%8a%e6%89%a9%e5%b1%95KMP" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=KMP%e5%8f%8a%e6%89%a9%e5%b1%95KMP&amp;body=/post/20191028-kmp/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191028-kmp/&amp;title=KMP%e5%8f%8a%e6%89%a9%e5%b1%95KMP" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=KMP%e5%8f%8a%e6%89%a9%e5%b1%95KMP%20/post/20191028-kmp/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191028-kmp/&amp;title=KMP%e5%8f%8a%e6%89%a9%e5%b1%95KMP" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀</p>
+
+<h2 id="最长公共前缀">最长公共前缀</h2>
+
+<p>我们拿字符串<code>ababcab</code>作为例子</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>这里所表达的是，例如取第3、4个字符&rdquo;ab&rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&rdquo;abc&rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>?</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>然后两个a匹配，<code>arr[6] = pointer1 - arr</code> 得到3，然后两指针一起移动</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>?</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+</tbody>
+</table>
+
+<p>这时候，不匹配，那么前一个指针上一次指向的是<code>arr[2]</code>的位置，即图上<code>*</code>的地方，值是1，这个值如果是p，那就移动到<code>arr[p]</code>的地方，所以就移动到<code>arr[1]</code>的地方，本质上就是找到前一个匹配此后缀的位置，即</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+</tbody>
+</table>
+
+<p>然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2</p>
+
+<h2 id="next数组">next数组</h2>
+
+<p>以上过程你需要细细理解，在理解以上过程后，再去理解next数组就非常简单了，next数组只是把以上数组加了一偏移，如下</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>next</td>
+<td>-1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>这么做是为了简化代码的书写，当然你直接用公共前缀的那个数组来做也是可以的</p>
+
+<p>不过本文不介绍怎么做字符串匹配，这种文章到处都是，我们要讲的是竞赛中的典型应用</p>
+
+<p>生成next数组的算法的时间复杂度为 $O(n)$ ，n是数组长度</p>
+
+<h3 id="应用1-poj2406">应用1 <a href="http://poj.org/problem?id=2406" target="_blank">poj2406</a></h3>
+
+<p>题目大意是给你一个字符串s，找出一个串a，使得a自己重复n次，便得到字符串s，要找到最大的n值。例如<code>ababab</code>，可以找到<code>ab</code>重复3次得到，所以输出3。像这种就是next数组表演的时候，它在计算自匹配方面非常合适，我们先再来理解一下next数组，它的值表示与前缀的重复长度，那么看下表，使用长度为102的<code>abab....abab</code></p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>&hellip;</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>next</td>
+<td>-1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>&hellip;</td>
+<td>97</td>
+<td>98</td>
+<td>99</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+
+<p>我们发现，使用串长102减去next数组最后一个值，自然就得到了重复前缀的最短长度，既然它是最短的，那么我们用总长102除以2，就得到了重复的次数，就是我们想要的答案。当然前提是能整除，如果不能整除那么这样的前缀便不存在，输出1就行了。</p>
+
+<h3 id="应用2-poj2752">应用2 <a href="http://poj.org/problem?id=2752" target="_blank">poj2752</a></h3>
+
+<p>题目大意是给你一个字符串s，找出所有前缀等于后缀的串长。我们先来试试算一个短点的<code>ababcababcabab</code></p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>next</td>
+<td>-1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+
+<p>可以轻松看出next的最后一个值9肯定就是其中一个长度，那接着呢？我们需要回想一下，构造这个数组的时候，如果匹配失败，是怎么找到前一个匹配当前后缀的前缀的，这个值如果是p，那就移动到<code>arr[p]</code>的地方，如果你还记得这个，那就好办了，我们取<code>arr[9]</code>，结果是4，再取<code>arr[4]</code>结果是2，再取<code>arr[2]</code>，结果是0，循环结束，所以加上整个串长14就是我们所要的答案了，完整结果是<code>2 4 9 14</code>。</p>
+
+<h3 id="应用3-子串出现次数">应用3 子串出现次数</h3>
+
+<p>给你主串s和子串t，求t在s中出现了多少次，例如<code>s=&quot;abababa&quot;</code>，<code>t=&quot;aba&quot;</code>，那么t在s中出现了3次。</p>
+
+<p>这里运用到一个技巧，我们把s和t连接成这个串<code>u=&quot;aba#abababa&quot;</code>，即把t放在s的前面并中间使用<code>#</code>分隔，这个符号在两个串中都没有出现。然后我们对u计算next数组，那么next数组中值等于t的长度的元素个数就是答案。</p>
+
+<h3 id="应用4-可重叠最长重复子串">应用4 可重叠最长重复子串</h3>
+
+<p>大意是给你一个字符串s，任意选取两个不同的起始位置i和j，这两个位置的后缀串有相同的前缀，这个前缀可以重叠，问这个相同的前缀的最大长度</p>
+
+<p>例如<code>eabcaefabcabc</code>，最长重复子串是<code>abca</code>，长度是4。</p>
+
+<p>KMP在生成的时候，总是以串的前缀作为匹配对象，我们要做的，就是遍历那个字符串的每一个后缀，都生成一次next数组，而在生成过程中出现的最大值就是答案，所以时间复杂度 $O(n^2)$ 。当然我们还有更好的算法，这个之后再讲。</p>
+
+<h2 id="z-algorithm">Z Algorithm</h2>
+
+<p>Z函数的定义是对于字符串s，生成数组z，定义<code>z[i]</code>是<code>s.substr(i)</code>与<code>s</code>的最长相同前缀长度</p>
+
+<p>样例如下</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Z</td>
+<td>8</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>4</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+
+<p>扩展KMP需要依赖这个z数组，但是在介绍这个之前，我们先介绍下面的扩展KMP</p>
+
+<h2 id="扩展kmp">扩展KMP</h2>
+
+<p>所谓扩展KMP，即给定两个字符串s和p，需要求出数组<code>ext</code>，其中<code>ext[i]</code>的值表示<code>s.substr(i)</code>与<code>p</code>的最长相同前缀长度</p>
+
+<p>这个算法依赖 Z Algorithm 中生成的z数组。</p>
+
+<p>为了比较容易理解，我省略一堆说明，我们直接来模拟匹配过程，一边模拟一边解说，一开始数据如下，i是匹配位置指针</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>b</th>
+<th>a</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>i</td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>p</td>
+<td>a</td>
+<td>b</td>
+<td>a</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Z</td>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>ext</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+<p>上表，一开始，不匹配，不操作，移动p</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>b</th>
+<th>a</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>p</td>
+<td></td>
+<td>a</td>
+<td>b</td>
+<td>a</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Z</td>
+<td></td>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>ext</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+<p>这时，p与<code>s[i]</code>是匹配的，我们用e指针记录<strong>未能匹配</strong>的位置，并写入<code>ext[i]=e-i</code>得1</p>
+
+<p>继续移动p，并更新e，得到下表</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>b</th>
+<th>a</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>p</td>
+<td></td>
+<td></td>
+<td>a</td>
+<td>b</td>
+<td>a</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Z</td>
+<td></td>
+<td></td>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td></td>
+</tr>
+
+<tr>
+<td>ext</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+<p>得到上表这个后，令<code>ext[i]=e-i</code>得5，这个时候，移动到下一个元素，但同时p暂时不动。这个情况出现于<code>p&lt;e</code>的时候，严格来说，应该是<code>z[i-p]+i &lt; e</code>的时候，具体原因后面解释。</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>b</th>
+<th>a</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>p</td>
+<td></td>
+<td></td>
+<td>a</td>
+<td>b</td>
+<td>a</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Z</td>
+<td></td>
+<td></td>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td></td>
+</tr>
+
+<tr>
+<td>ext</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+<p>上表这个时候，不看字符匹配的情况，只看i指针位置上那一列对应的Z数组的值，即<code>z[i-p]</code>为0，如果这个数加上i小于e的话，直接令<code>ext[i]=z[i-p]</code>得到0</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>b</th>
+<th>a</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>p</td>
+<td></td>
+<td></td>
+<td>a</td>
+<td>b</td>
+<td>a</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Z</td>
+<td></td>
+<td></td>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td></td>
+</tr>
+
+<tr>
+<td>ext</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+<p>继续以上操作，<code>ext[i]=z[i-p]</code>得到1。之所以能这么操作，是因为p是自匹配的，在这个位置上的z值，就同时表达了i开始，字符串s与p连续多少个字符能匹配p的前缀，前提是这个串的范围必须在e的前面。</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>b</th>
+<th>a</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>p</td>
+<td></td>
+<td></td>
+<td>a</td>
+<td>b</td>
+<td>a</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td></td>
+</tr>
+
+<tr>
+<td>Z</td>
+<td></td>
+<td></td>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td></td>
+</tr>
+
+<tr>
+<td>ext</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+<p>继续以上操作，<code>ext[i]=z[i-p]</code>得到0，注意到，下一步i将指向a，导致<code>z[i-p]+i &gt;= e</code>，这个会导致z数组的内容不能直接复制到ext数组内，所以我们要恢复之前的字符串匹配过程，令p等于i，得如下状态</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>b</th>
+<th>a</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>p</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>a</td>
+<td>b</td>
+<td>a</td>
+</tr>
+
+<tr>
+<td>Z</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>ext</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+<p>这个时候，写入<code>ext[i]=e-i</code>得1</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>b</th>
+<th>a</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>c</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>p</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>a</td>
+<td>b</td>
+</tr>
+
+<tr>
+<td>Z</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>6</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>ext</td>
+<td>0</td>
+<td>1</td>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+
+<p>最后一步，第一个也不匹配，写入<code>ext[i]=e-i</code>得0，下一步i到达字符串末尾，结束。</p>
+
+<p>扩展kmp与经典kmp的算法的时间复杂度均为 $O(len(s)+len(p))$</p>
+
+<p>那么讲完了扩展KMP我们回来讲Z Algorithm，其实它们的区别，仅仅是计算对象的差异，即扩展KMP是通过字符串p求出s的ext数组，而Z Algorithm是通过自身来求，我们只需要把原来扩展KMP的代码复制一份改改名字，且起点改为1行了，详见下面模板实现代码。</p>
+
+<p>应用实例有：<a href="http://acm.hdu.edu.cn/showproblem.php?pid=4333" target="_blank">hdu4333</a></p>
+
+<h2 id="kmp模板">KMP模板</h2>
+
+<p>以下是我写的模板代码</p>
+
+<pre><code class="language-cpp">void kmp_next(const char* pattern, int next[])
+{
+    int len = strlen(pattern);
+    next[0] = -1;
+    for (int i = 0, j = -1; i &lt; len;)
+    {
+        if (j == -1 || pattern[i] == pattern[j])
+            next[++i] = ++j;
+        else
+            j = next[j];
+    }
+}
+
+const char* kmp_match(const char* str, const char* pattern, int next[])
+{
+    int len = strlen(pattern);
+    int i = 0;
+    kmp_next(pattern, next);
+    while (*str &amp;&amp; i &lt; len)
+    {
+        if (pattern[i] == *str)
+        {
+            ++i, ++str;
+        }
+        else
+        {
+            i = next[i];
+            if (i == -1)
+            {
+                ++i, ++str;
+            }
+        }
+    }
+    return i == len ? str - i : str;
+}
+
+void extkmp_z(const char* str, int z[])
+{
+    int s_len = strlen(str);
+    z[0] = s_len;
+    for (int i = 1, p = 1, e = 1; i &lt; s_len; ++i)
+    {
+        if (i + z[i - p] &gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &lt; s_len &amp;&amp; str[e] == str[e - i])
+                ++e;
+
+            z[i] = e - i;
+        }
+        else
+            z[i] = z[i - p];
+    }
+}
+
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, p = 0, e = 0; i &lt; s_len; ++i)
+    {
+        if (i + z[i - p] &gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &lt; s_len &amp;&amp; str[e] == pattern[e - i])
+                ++e;
+
+            ext[i] = e - i;
+        }
+        else
+            ext[i] = z[i - p];
+    }
+}
+</code></pre>
+
+<h2 id="最后总结">最后总结</h2>
+
+<p>字符串就是一个深坑，不过KMP也许是打开你理解后缀树或后缀数组的好工具，为后者的学习做铺垫。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">算法</a>
+  
+  <a class="badge badge-light" href="">模式匹配</a>
+  
+  <a class="badge badge-light" href="/tags/kmp/">KMP</a>
+  
+  <a class="badge badge-light" href="">状态机</a>
+  
+  <a class="badge badge-light" href="">模板</a>
+  
+  <a class="badge badge-light" href="/tags/c/">c</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191019-qsort-talk-2/">Quick sort(快速排序)杂谈 2</a></li>
+          
+          <li><a href="/post/20191015-sorting-3/">堆排序优化思路</a></li>
+          
+          <li><a href="/post/20191012-binary-skill/">二进制技巧</a></li>
+          
+          <li><a href="/post/20191009-sorting-2/">插入排序与希尔排序优化思路</a></li>
+          
+          <li><a href="/post/20191008-sorting-1/">选择和冒泡排序优化思路</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

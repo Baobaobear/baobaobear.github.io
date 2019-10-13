@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="这里记录的是素数判断 Miller Rabbin 的快速判定算法，而分解使用的算法是 Pollard Rho 的玄学分解算法，这个算法的理论依据是生日悖论，这里不具体讨论这个数学问题，具体讨论看前面链接就可以了。
+
+以下我们分别简要介绍这两个算法的原理
+
+首先这是Miller Rabbin的维基百科介绍页，由于页面是中文，这里不做重复介绍。
+
+下面简要解释一下Pollard&rsquo;s Rho算法的原理，这是它的维基百科页面
+
+首先我们来定义这样一个函数
+
+$$f(x)=(x*x&#43;c)%n$$
+
+其中n是需要被分解的数，c是一个任意小于n的正整数常数。那么我们给一个初始值x1，通过计算 $f(x1)$ 得到x2，然后去求 $|x1-x2|$ 与 n 的最大公约数，只要结果大于1就找到了分解结果。那如果最大公约数仍然是1，那么就通过刚才的x2求出 $x3=f(x2)$ 并计算 $|x1-x3|$ 与 n 的最大公约数。也就是说，我们可以通过这个公式得到一个数列">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20191013-prime-number/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20191013-prime-number/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20191013-prime-number/">
+  <meta property="og:title" content="素数判断和因子分解 | Baobaobear">
+  <meta property="og:description" content="这里记录的是素数判断 Miller Rabbin 的快速判定算法，而分解使用的算法是 Pollard Rho 的玄学分解算法，这个算法的理论依据是生日悖论，这里不具体讨论这个数学问题，具体讨论看前面链接就可以了。
+
+以下我们分别简要介绍这两个算法的原理
+
+首先这是Miller Rabbin的维基百科介绍页，由于页面是中文，这里不做重复介绍。
+
+下面简要解释一下Pollard&rsquo;s Rho算法的原理，这是它的维基百科页面
+
+首先我们来定义这样一个函数
+
+$$f(x)=(x*x&#43;c)%n$$
+
+其中n是需要被分解的数，c是一个任意小于n的正整数常数。那么我们给一个初始值x1，通过计算 $f(x1)$ 得到x2，然后去求 $|x1-x2|$ 与 n 的最大公约数，只要结果大于1就找到了分解结果。那如果最大公约数仍然是1，那么就通过刚才的x2求出 $x3=f(x2)$ 并计算 $|x1-x3|$ 与 n 的最大公约数。也就是说，我们可以通过这个公式得到一个数列"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2019-10-13T15:37:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2019-10-13T15:37:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20191013-prime-number/"
+  },
+  "headline": "素数判断和因子分解",
+  
+  "datePublished": "2019-10-13T15:37:00+08:00",
+  "dateModified": "2019-10-13T15:37:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e这里记录的是素数判断 \u003ccode\u003eMiller Rabbin\u003c/code\u003e 的快速判定算法，而分解使用的算法是 \u003ccode\u003ePollard Rho\u003c/code\u003e 的玄学分解算法，这个算法的理论依据是\u003ca href=\"https://zh.wikipedia.org/wiki/%E7%94%9F%E6%97%A5%E5%95%8F%E9%A1%8C\" target=\"_blank\"\u003e生日悖论\u003c/a\u003e，这里不具体讨论这个数学问题，具体讨论看前面链接就可以了。\u003c/p\u003e\n\n\u003cp\u003e以下我们分别简要介绍这两个算法的原理\u003c/p\u003e\n\n\u003cp\u003e首先这是\u003ca href=\"https://zh.wikipedia.org/wiki/%E7%B1%B3%E5%8B%92-%E6%8B%89%E5%AE%BE%E6%A3%80%E9%AA%8C\" target=\"_blank\"\u003eMiller Rabbin\u003c/a\u003e的维基百科介绍页，由于页面是中文，这里不做重复介绍。\u003c/p\u003e\n\n\u003cp\u003e下面简要解释一下Pollard\u0026rsquo;s Rho算法的原理，这是它的\u003ca href=\"https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm\" target=\"_blank\"\u003e维基百科页面\u003c/a\u003e\u003c/p\u003e\n\n\u003cp\u003e首先我们来定义这样一个函数\u003c/p\u003e\n\n\u003cp\u003e$$f(x)=(x*x+c)%n$$\u003c/p\u003e\n\n\u003cp\u003e其中n是需要被分解的数，c是一个任意小于n的正整数常数。那么我们给一个初始值x1，通过计算 $f(x1)$ 得到x2，然后去求 $|x1-x2|$ 与 n 的最大公约数，只要结果大于1就找到了分解结果。那如果最大公约数仍然是1，那么就通过刚才的x2求出 $x3=f(x2)$ 并计算 $|x1-x3|$ 与 n 的最大公约数。也就是说，我们可以通过这个公式得到一个数列\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>素数判断和因子分解 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>素数判断和因子分解</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Oct 13, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191013-prime-number/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%ac%94%e8%ae%b0">笔记</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191013-prime-number/&amp;text=%e7%b4%a0%e6%95%b0%e5%88%a4%e6%96%ad%e5%92%8c%e5%9b%a0%e5%ad%90%e5%88%86%e8%a7%a3" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191013-prime-number/&amp;t=%e7%b4%a0%e6%95%b0%e5%88%a4%e6%96%ad%e5%92%8c%e5%9b%a0%e5%ad%90%e5%88%86%e8%a7%a3" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e7%b4%a0%e6%95%b0%e5%88%a4%e6%96%ad%e5%92%8c%e5%9b%a0%e5%ad%90%e5%88%86%e8%a7%a3&amp;body=/post/20191013-prime-number/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191013-prime-number/&amp;title=%e7%b4%a0%e6%95%b0%e5%88%a4%e6%96%ad%e5%92%8c%e5%9b%a0%e5%ad%90%e5%88%86%e8%a7%a3" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e7%b4%a0%e6%95%b0%e5%88%a4%e6%96%ad%e5%92%8c%e5%9b%a0%e5%ad%90%e5%88%86%e8%a7%a3%20/post/20191013-prime-number/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191013-prime-number/&amp;title=%e7%b4%a0%e6%95%b0%e5%88%a4%e6%96%ad%e5%92%8c%e5%9b%a0%e5%ad%90%e5%88%86%e8%a7%a3" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>这里记录的是素数判断 <code>Miller Rabbin</code> 的快速判定算法，而分解使用的算法是 <code>Pollard Rho</code> 的玄学分解算法，这个算法的理论依据是<a href="https://zh.wikipedia.org/wiki/%E7%94%9F%E6%97%A5%E5%95%8F%E9%A1%8C" target="_blank">生日悖论</a>，这里不具体讨论这个数学问题，具体讨论看前面链接就可以了。</p>
+
+<p>以下我们分别简要介绍这两个算法的原理</p>
+
+<p>首先这是<a href="https://zh.wikipedia.org/wiki/%E7%B1%B3%E5%8B%92-%E6%8B%89%E5%AE%BE%E6%A3%80%E9%AA%8C" target="_blank">Miller Rabbin</a>的维基百科介绍页，由于页面是中文，这里不做重复介绍。</p>
+
+<p>下面简要解释一下Pollard&rsquo;s Rho算法的原理，这是它的<a href="https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm" target="_blank">维基百科页面</a></p>
+
+<p>首先我们来定义这样一个函数</p>
+
+<p>$$f(x)=(x*x+c)%n$$</p>
+
+<p>其中n是需要被分解的数，c是一个任意小于n的正整数常数。那么我们给一个初始值x1，通过计算 $f(x1)$ 得到x2，然后去求 $|x1-x2|$ 与 n 的最大公约数，只要结果大于1就找到了分解结果。那如果最大公约数仍然是1，那么就通过刚才的x2求出 $x3=f(x2)$ 并计算 $|x1-x3|$ 与 n 的最大公约数。也就是说，我们可以通过这个公式得到一个数列</p>
+
+<p>$$ x1,x2,x3,&hellip;,xn,&hellip; $$</p>
+
+<p>但这个数列总是不会无限的，总是会循环的，那怎么去判断它有没有陷入循环呢，这用到的办法是Floyd判环算法，两个数在数列里以不同速度前进，如果环存在，那它们总会有相遇的时刻。在代码里，我们令变量x是正常速度，变量y是在x每迭代两次后y再迭代一次，所以如果环的长度是k，那么迭代k次就能发现环的存在。</p>
+
+<p>而在具体实现中，如果发现环的存在，我们需要变换常数c，再次进行尝试。那么我们下面不废话直接上代码，作为笔记。为了避免部分环境的输入输出问题，main函数使用了C++的输入输出，其它部分可以作为C函数使用。</p>
+
+<pre><code class="language-cpp">#include&lt;iostream&gt;
+#include&lt;cstdint&gt;
+
+int64_t gcd(int64_t a, int64_t b)
+{
+    return b == 0 ? a : gcd(b, a%b);
+}
+
+int64_t mul(int64_t a, int64_t b, int64_t mod)
+{
+    a %= mod;
+    int64_t res = 0;
+    while (b) {
+        if (b &amp; 1) res = (res + a) % mod;
+        b &gt;&gt;= 1;
+        a = (a &lt;&lt; 1) % mod;
+    }
+    return res;
+}
+
+int64_t quick_pow(int64_t a, int64_t n, int64_t mod)
+{
+    int64_t res = 1;
+    while (n)
+    {
+        if (n &amp; 1) res = mul(res, a, mod);
+        a = mul(a, a, mod);
+        n &gt;&gt;= 1;
+    }
+    return res;
+}
+
+int miller_rabbin(int64_t n, int a)
+{
+    int r = 0;
+    int64_t s = n - 1;
+    if (!(n % a))
+        return 0;
+    while (!(s &amp; 1))
+    {
+        s &gt;&gt;= 1;
+        r++;
+    }
+    int64_t k = quick_pow(a, s, n);
+    if (k == 1)
+        return 1;
+    for (int j = 0; j &lt; r; j++, k = mul(k, k, n))
+        if (k == n - 1)
+            return 1;
+    return 0;
+}
+
+int is_prime(int64_t n)
+{
+    int test_large[] = { 2, 3, 5, 7, 11, 13, 17, 19, 23 };
+    int test_small[] = { 2, 7, 61 };
+    int test_size = 9, *test = test_large;
+    if (n &lt; 2)
+        return 0;
+    if (n &lt; 4759123141)
+    {
+        test = test_small;
+        test_size = 3;
+    }
+    for (int i = 0; i &lt; test_size; ++i)
+    {
+        if (n == test[i])
+            return 1;
+        if (miller_rabbin(n, test[i]) == 0)
+            return 0;
+    }
+    return 1;
+}
+
+int64_t pollard_rho(int64_t n, int c)
+{
+    int64_t x = rand() % (n - 1) + 1, y;
+    y = x = (mul(x, x, n) + c) % n;
+    for (int n_try = 3, i = 0; n_try; )
+    {
+        x = (mul(x, x, n) + c) % n;
+        if (y == x)
+        {
+            --n_try;
+            c = rand() % (n - 1) + 1;
+            continue;
+        }
+        int64_t d = gcd((y - x + n) % n, n);
+        if (d != 1 &amp;&amp; d != n)
+            return d;
+        if (++i == 2)
+        {
+            y = (mul(y, y, n) + c) % n;
+            i = 0;
+        }
+    }
+    return n;
+}
+
+int main(void)
+{
+    int64_t n;
+    std::cout &lt;&lt; &quot;质数计算器，请输入任意小于1e18的正整数&quot; &lt;&lt; std::endl;
+    while (std::cin &gt;&gt; n)
+    {
+        if (is_prime(n))
+        {
+            std::cout &lt;&lt; n &lt;&lt; &quot;是质数&quot; &lt;&lt; std::endl;
+        }
+        else if (n &gt; 2)
+        {
+            int64_t p = pollard_rho(n, rand() % (n - 1) + 1);
+            std::cout &lt;&lt; n &lt;&lt; &quot;不是质数，能被&quot; &lt;&lt; p &lt;&lt; &quot;整除&quot; &lt;&lt; std::endl;
+        }
+        else
+        {
+            std::cout &lt;&lt; &quot;请输入大于1小于1e18的整数&quot; &lt;&lt; std::endl;
+        }
+    }
+    return 0;
+}
+</code></pre>
+
+<p>以下为python版本实现</p>
+
+<pre><code class="language-python">import random
+
+def _try_composite(a, d, n, s):
+    if pow(a, d, n) == 1:
+        return False
+    for i in range(s):
+        if pow(a, 2**i * d, n) == n-1:
+            return False
+    return True
+
+def _is_prime(n):
+    if n in _known_primes:
+        return True
+    if n &lt; 2 or any((n % p) == 0 for p in _known_primes):
+        return False
+    return True
+
+def is_prime(n, _precision_for_huge_n = 32):
+    if n in _known_primes:
+        return True
+    d, s = n - 1, 0
+    while not d % 2:
+        d, s = d &gt;&gt; 1, s + 1
+    if n &lt; 4759123141: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 7, 61))
+    if n &lt; 1122004669633: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 13, 23, 1662803))
+    if n &lt; 3317044064679887385961981: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41))
+    return not any(_try_composite(a, d, n, s) 
+                   for a in _test_primes[:_precision_for_huge_n])
+ 
+_known_primes = [2, 3]
+_known_primes += [x for x in range(5, 1000, 2) if _is_prime(x)]
+_test_primes = [2,3,307] + _known_primes[2:]
+
+def gcd(a, b):
+    if b == 0:
+        return a
+    return gcd(b, a%b)
+
+def pollard_rho(n):
+    x, c, 0 = random.randint(1, n - 1), random.randint(1, n - 1), 0
+    y = x = (pow(x, 2, n) + c) % n
+    for n_try in range(3):
+        while True:
+            x = (pow(x, 2, n) + c) % n
+            if x == y:
+                c = random.randint(1, n - 1)
+                break
+            d = gcd(y - x + n, n)
+            if d &gt; 1 and d &lt; n:
+                return d
+            a += 1
+            if a == 2:
+                y = (pow(y, 2, n) + c) % n
+                a = 0
+    return n
+
+number = 3451973391686190983
+for i in range(number, number + 100, 2):
+    if is_prime(i):
+        print(i)
+        break
+
+if is_prime(number):
+    print(number, &quot;prime number&quot;)
+else:
+    a = pollard_rho(number)
+    print(number, &quot;=&quot;, a, &quot;*&quot;, number // a)
+</code></pre>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">算法</a>
+  
+  <a class="badge badge-light" href="">素数</a>
+  
+  <a class="badge badge-light" href="/tags/c&#43;&#43;/">c&#43;&#43;</a>
+  
+  <a class="badge badge-light" href="/tags/python/">python</a>
+  
+  <a class="badge badge-light" href="/tags/miller-rabbin/">Miller Rabbin</a>
+  
+  <a class="badge badge-light" href="/tags/pollards-rho/">Pollard&#39;s Rho</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191012-binary-skill/">二进制技巧</a></li>
+          
+          <li><a href="/post/20191009-sorting-2/">插入排序与希尔排序优化思路</a></li>
+          
+          <li><a href="/post/20191008-sorting-1/">选择和冒泡排序优化思路</a></li>
+          
+          <li><a href="/post/20191007-qsort-talk-1/">Quick sort(快速排序)杂谈 1</a></li>
+          
+          <li><a href="/post/20191006-mingw-bug/">Mingw 的 Bug</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

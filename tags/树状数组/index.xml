@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>树状数组 | Baobaobear</title>
+    <link>/tags/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/</link>
+      <atom:link href="/tags/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/index.xml" rel="self" type="application/rss+xml" />
+    <description>树状数组</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 11 Nov 2019 13:32:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>树状数组</title>
+      <link>/tags/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/</link>
+    </image>
+    
+    <item>
+      <title>树状数组</title>
+      <link>/post/20191111-fenwicktree/</link>
+      <pubDate>Mon, 11 Nov 2019 13:32:00 +0800</pubDate>
+      <guid>/post/20191111-fenwicktree/</guid>
+      <description>&lt;p&gt;树状数组，是一个用于在近似 $O(logn)$ 时间内动态修改以及查询前缀和的数据结构，以下我们先来看以下树关系表格&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;层&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;th&gt;8&lt;/th&gt;
+&lt;th&gt;9&lt;/th&gt;
+&lt;th&gt;10&lt;/th&gt;
+&lt;th&gt;11&lt;/th&gt;
+&lt;th&gt;12&lt;/th&gt;
+&lt;th&gt;13&lt;/th&gt;
+&lt;th&gt;14&lt;/th&gt;
+&lt;th&gt;15&lt;/th&gt;
+&lt;th&gt;16&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;16&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;12&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;14&lt;/td&gt;
+&lt;td&gt;15&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;10&lt;/td&gt;
+&lt;td&gt;11&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;13&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这里表达的是，16的子节点有8, 12, 14, 15&lt;/p&gt;
+
+&lt;p&gt;8的子节点有4, 6, 7&lt;/p&gt;
+
+&lt;p&gt;12的子节点有10, 11，即夹在12与它的同级节点8之间&lt;/p&gt;
+
+&lt;p&gt;我们把数值与它的二进制一起形象化画出下图&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+2,0010--&amp;gt;1,0001
+4,0100--&amp;gt;3,0011
+4,0100--&amp;gt;2,0010
+6,0110--&amp;gt;5,0101
+8,1000--&amp;gt;7,0111
+8,1000--&amp;gt;6,0110
+8,1000--&amp;gt;4,0100
+10,1010--&amp;gt;9,1001
+12,1100--&amp;gt;11,1011
+12,1100--&amp;gt;10,1010
+14,1110--&amp;gt;13,1101
+16,10000--&amp;gt;8,1000
+16,10000--&amp;gt;12,1100
+16,10000--&amp;gt;14,1110
+16,10000--&amp;gt;15,1111
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是&lt;code&gt;x + (x &amp;amp; -x)&lt;/code&gt;，其中，&lt;code&gt;x &amp;amp; -x&lt;/code&gt;是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是&lt;code&gt;6+2=8&lt;/code&gt;，更多的可以参考这篇&lt;a href=&#34;../post/20191012-binary-skill/&#34;&gt;二进制技巧&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2 id=&#34;前缀和&#34;&gt;前缀和&lt;/h2&gt;
+
+&lt;p&gt;给一个数组a，如果我们需要计算前n个元素的和 $\sum_{i=1}^n{a[i]}$ ，直接累加是很慢的，这里我们用树状数组，我们规定，每个节点保存的值，是它和它的子节点的和，我们用数组 &lt;code&gt;9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2, 1&lt;/code&gt; 画个表格，注意数组下标从1开始。&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;层&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;th&gt;8&lt;/th&gt;
+&lt;th&gt;9&lt;/th&gt;
+&lt;th&gt;10&lt;/th&gt;
+&lt;th&gt;11&lt;/th&gt;
+&lt;th&gt;12&lt;/th&gt;
+&lt;th&gt;13&lt;/th&gt;
+&lt;th&gt;14&lt;/th&gt;
+&lt;th&gt;15&lt;/th&gt;
+&lt;th&gt;16&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;原&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;66&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;44&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;12&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;30&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;17&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;那有了这个表，我们要是求出前4个数的和，直接看第4列是30，答案就出来了，因为它上面的数就是它和它所有子结点的和。但如果是别的数呢，例如要求前7个数的和，就不能光看第7列了，需要把第4列、第6列和第7列的3个数相加，即&lt;code&gt;30+9+3=42&lt;/code&gt;就是前7个数的和。注意到这三列其实就是三个同级节点，而且我们通过7这个数本身可以轻松计算前两列的数，计算的方法是&lt;code&gt;x - (x &amp;amp; -x)&lt;/code&gt;，把&lt;code&gt;x=7&lt;/code&gt;代入，得到6，再把6代入，得到4，再把4代入，得到0，0就结束了，而在这个迭代的过程里，就知道我们应该把4,6,7三列的数相加。&lt;/p&gt;
+
+&lt;p&gt;再换一个数，例如11呢，把&lt;code&gt;x=11&lt;/code&gt;代入，得到10，再把10代入，得到8，再把8代入，得到0，所以我们应该把8,10,11三列的数加起来，即&lt;code&gt;44+1+6=51&lt;/code&gt;就是前11个数的和。&lt;/p&gt;
+
+&lt;p&gt;把以上过程写成函数，就是&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int sum(int fwtree[], int x)
+{
+    int r = 0;
+    while (x &amp;gt; 0)
+    {
+        r += fwtree[x];
+        x -= x&amp;amp;-x;
+    }
+    return r;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;可以看出，这段代码的时间复杂度近似是 $O(logx)$&lt;/p&gt;
+
+&lt;h2 id=&#34;动态维护&#34;&gt;动态维护&lt;/h2&gt;
+
+&lt;p&gt;还是前面的数组 &lt;code&gt;9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2, 1&lt;/code&gt; ，现在假如已经计算好了树状数组，但我们需要对第6个元素，让它减少6，怎么操作呢，其实很简单，根据定义，在子节点修改的时候，让它的所有父节点都做相同的修改，那么6的父节点分别有8,16，所以我们对第6,8,16列都一起减少6，得到以下新表格&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;层&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;th&gt;8&lt;/th&gt;
+&lt;th&gt;9&lt;/th&gt;
+&lt;th&gt;10&lt;/th&gt;
+&lt;th&gt;11&lt;/th&gt;
+&lt;th&gt;12&lt;/th&gt;
+&lt;th&gt;13&lt;/th&gt;
+&lt;th&gt;14&lt;/th&gt;
+&lt;th&gt;15&lt;/th&gt;
+&lt;th&gt;16&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;原&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;8&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;-2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;60&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;38&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;12&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;30&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;6&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;4&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;17&lt;/td&gt;
+&lt;td&gt;7&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;9&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这样就维护完成了，所以咱们的实现代码也非常的简单&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void add(int fwtree[], int treesize, int x, int add)
+{
+    while (x &amp;lt;= treesize)
+    {
+        fwtree[x] += add;
+        x += x&amp;amp;-x;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;区间和&#34;&gt;区间和&lt;/h2&gt;
+
+&lt;p&gt;我们之所以需要前缀和，就是为了能快速求区间和。例如我们需要求出数组第i个到第j个元素的和，那么我们用&lt;code&gt;sum(x)&lt;/code&gt;表示前x个元素的和，那么可以转化为求&lt;code&gt;sum(j) - sum(i-1)&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;区间操作-单点查询&#34;&gt;区间操作+单点查询&lt;/h2&gt;
+
+&lt;p&gt;因为树状数组的修改是单点修改，即每次只能修改一个数，那么现在我们提出一个新问题，如果我们需要多次做区间操作（整个区间的数同时加上y），然后查询数组里面指定第k个元素是什么，例如这个题&lt;a href=&#34;https://loj.ac/problem/131&#34; target=&#34;_blank&#34;&gt;loj131&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;由于树状数组不能快速做区间操作，我们用到另一个技巧叫做差分法，我们对数组 &lt;code&gt;9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 6, 5, 4, 3, 2, 1&lt;/code&gt;求相邻元素的差，得到新的数组&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;9, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6, -1, -1, -1, -1, -1&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;这样做了后，如果我们要求出原来第k个元素，那么就是求前k个元素之和，所以如果第i个元素加上a，那么相当于i后面所有元素都加上a。&lt;/p&gt;
+
+&lt;p&gt;所以，这时候的区间操作，就会变成单点操作，例如我们要对区间&lt;code&gt;[i,j]&lt;/code&gt;所有的元素加上a，那么在差分了以后，其实就是对第i个元素加上a，再对第j+1个元素减去a。&lt;/p&gt;
+
+&lt;h2 id=&#34;区间操作-区间和&#34;&gt;区间操作+区间和&lt;/h2&gt;
+
+&lt;p&gt;如果我们既要做区间操作，同时还要求区间和怎么办，为了支持区间操作，我们仍然先做差分，然后接下来就是让人头痛的数学推导，假设数组a是原数组，b是a的差分数组，由前缀和的定义，我们求前n个元素的和，即&lt;/p&gt;
+
+&lt;p&gt;$$ \sum_{i=1}^{n} a_i $$&lt;/p&gt;
+
+&lt;p&gt;展开为b数组表达&lt;/p&gt;
+
+&lt;p&gt;$$ = \sum_{i=1}^n{} \sum_{j=1}^i b_j $$&lt;/p&gt;
+
+&lt;p&gt;展开，合并同类项&lt;/p&gt;
+
+&lt;p&gt;$$ = \sum_{i=1}^n b_i\times(n-i+1) $$&lt;/p&gt;
+
+&lt;p&gt;$$ = (n+1)\times\sum_{i=1}^n b_i - \sum_{i=1}^n b_i\times i $$&lt;/p&gt;
+
+&lt;p&gt;那么，我们再定义一个c数组，满足&lt;code&gt;c[i] == b[i] * i&lt;/code&gt;，然后我们再分别对b和c维护一个树状数组，定义&lt;code&gt;sum(b,x)&lt;/code&gt;表示数组b前x个元素的和，&lt;code&gt;sum(c,x)&lt;/code&gt;表示数组c前x个元素的和，那么我们便可以通过计算&lt;code&gt;(x + 1) * sum(b, x) - sum(c, x)&lt;/code&gt;求出数组a的前缀和。&lt;/p&gt;
+
+&lt;p&gt;习题：&lt;a href=&#34;https://loj.ac/problem/132&#34; target=&#34;_blank&#34;&gt;loj132&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;拓展&#34;&gt;拓展&lt;/h2&gt;
+
+&lt;p&gt;树状数组还有一些别的技巧，一是 $O(n)$ 建立，通过已知数组a在 $O(n)$ 时间生成对应的树状数组（直接add来操作是nlogn），这个在这里不做介绍。&lt;/p&gt;
+
+&lt;p&gt;还有权值树状数组求第k小元素。所谓权值树状数组，就是用&lt;code&gt;a[i] = v&lt;/code&gt;来表示数值i重复出现了v次，所以v是非负数，那么这个数组的前缀和就是递增的，即存在二分。然后对数组a维护的树状数组直接二分的话是 $O(lognlogn)$ ，但我们可以运用树状数组的特性优化到 $O(logn)$ ，以下是实现代码&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int kth(int fwtree[], int size, int k)
+{
+    int cnt = 0, ret = 0;
+    for (int i = (int)(log(size + 0.1) / log(2)); ~i; --i)
+    {
+        ret += 1 &amp;lt;&amp;lt; i;
+        if (ret &amp;gt;= size || cnt + fwtree[ret] &amp;gt;= k)
+            ret -= 1 &amp;lt;&amp;lt; i;
+        else
+            cnt += fwtree[ret];
+    }
+    return ret + 1;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;权值树状数组还有一个应用，就是用来求&lt;strong&gt;逆序数&lt;/strong&gt;，先对原数组排序求出每个元素的rank，转化为长度n，元素为1~n的一个排列，之后使用权值树状数组，就可以轻松求出在&lt;code&gt;a[1]&lt;/code&gt;到&lt;code&gt;a[i-1]&lt;/code&gt;有多少个元素比&lt;code&gt;a[i]&lt;/code&gt;要大，计算&lt;code&gt;sum(n) - sum(a[i])&lt;/code&gt;便知，把结果累加就是逆序数。&lt;/p&gt;
+
+&lt;h2 id=&#34;模板&#34;&gt;模板&lt;/h2&gt;
+
+&lt;p&gt;区间修改+区间求和模板&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;vector&amp;gt;
+typedef long long ll;
+
+
+struct fwtree_range
+{
+    std::vector&amp;lt;int&amp;gt; ta;
+    std::vector&amp;lt;ll&amp;gt; tb;
+    int sz;
+    void init(int size)
+    {
+        ta.clear(); ta.resize(size + 1);
+        tb.clear(); tb.resize(size + 1);
+        sz = size;
+    }
+    void add(int x, int a)
+    {
+        ll v = a * (ll)x;
+        for (; x &amp;lt;= sz; x += x&amp;amp;-x)
+        {
+            ta[x] += a;
+            tb[x] += v;
+        }
+    }
+    template &amp;lt;class T&amp;gt;
+    ll sum_t(T&amp;amp; t, int x)
+    {
+        ll r = 0;
+        for (; x &amp;gt; 0; x -= x&amp;amp;-x)
+            r += t[x];
+        return r;
+    }
+    ll sum(int x)
+    {
+        return (x + 1) * sum_t(ta, x) - sum_t(tb, x);
+    }
+    void range_add(int l, int r, int a)
+    {
+        add(l, a);
+        add(r + 1, -a);
+    }
+    ll range_sum(int l, int r)
+    {
+        return sum(r) - sum(l - 1);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;用法，调用&lt;code&gt;init&lt;/code&gt;初始化大小后，使用&lt;code&gt;range_add&lt;/code&gt;及&lt;code&gt;range_sum&lt;/code&gt;做区间修改及区间和查询就行了，当然它也支持单点修改和单点查询，你令区间&lt;code&gt;l == r&lt;/code&gt;就行了。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

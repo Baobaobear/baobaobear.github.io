@@ -28,7 +28,7 @@
   
     
   
-  <meta name="description" content="二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了
+  <meta name="description" content="二进制位运算的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了
 
 单行表达式
 
@@ -167,7 +167,7 @@ n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )
   <meta property="og:site_name" content="Baobaobear">
   <meta property="og:url" content="/post/20191012-binary-skill/">
   <meta property="og:title" content="二进制技巧 | Baobaobear">
-  <meta property="og:description" content="二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了
+  <meta property="og:description" content="二进制位运算的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了
 
 单行表达式
 
@@ -272,7 +272,7 @@ n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )
       "url": "/img/icon-512.png"
     }
   },
-  "description": "\u003cp\u003e二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了\u003c/p\u003e\n\n\u003ch2 id=\"单行表达式\"\u003e单行表达式\u003c/h2\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003e作用\u003c/th\u003e\n\u003cth\u003e表达式\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003e把右边连续的1变成0\u003c/td\u003e\n\u003ctd\u003en \u0026amp; ( n + 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e把右边第一个1变成0\u003c/td\u003e\n\u003ctd\u003en \u0026amp; ( n - 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e把右起第一个0变成1\u003c/td\u003e\n\u003ctd\u003en | ( n + 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e把右起连续的0变成1\u003c/td\u003e\n\u003ctd\u003en | ( n - 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e取右边连续的1\u003c/td\u003e\n\u003ctd\u003en ^ ( n + 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e去掉右起第一个1的左边\u003c/td\u003e\n\u003ctd\u003en \u0026amp; -n 或 n \u0026amp; ( n ^ ( n - 1 ) )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e高低位交换，前x位\u003c/td\u003e\n\u003ctd\u003e( n \u0026lt;\u0026lt; x ) | ( x \u0026gt;\u0026gt; ( 32 - x ) )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e有符号整数计算绝对值\u003c/td\u003e\n\u003ctd\u003e( n ^ (n \u0026gt;\u0026gt; 31) ) - (n \u0026gt;\u0026gt; 31)\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e"
+  "description": "\u003cp\u003e二进制位运算的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了\u003c/p\u003e\n\n\u003ch2 id=\"单行表达式\"\u003e单行表达式\u003c/h2\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003e作用\u003c/th\u003e\n\u003cth\u003e表达式\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003e把右边连续的1变成0\u003c/td\u003e\n\u003ctd\u003en \u0026amp; ( n + 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e把右边第一个1变成0\u003c/td\u003e\n\u003ctd\u003en \u0026amp; ( n - 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e把右起第一个0变成1\u003c/td\u003e\n\u003ctd\u003en | ( n + 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e把右起连续的0变成1\u003c/td\u003e\n\u003ctd\u003en | ( n - 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e取右边连续的1\u003c/td\u003e\n\u003ctd\u003en ^ ( n + 1 )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e去掉右起第一个1的左边\u003c/td\u003e\n\u003ctd\u003en \u0026amp; -n 或 n \u0026amp; ( n ^ ( n - 1 ) )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e高低位交换，前x位\u003c/td\u003e\n\u003ctd\u003e( n \u0026lt;\u0026lt; x ) | ( x \u0026gt;\u0026gt; ( 32 - x ) )\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003e有符号整数计算绝对值\u003c/td\u003e\n\u003ctd\u003e( n ^ (n \u0026gt;\u0026gt; 31) ) - (n \u0026gt;\u0026gt; 31)\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e"
 }
 </script>
 
@@ -549,6 +549,90 @@ n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )
 
   
     
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191012-binary-skill/&amp;text=%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%8a%80%e5%b7%a7" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191012-binary-skill/&amp;t=%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%8a%80%e5%b7%a7" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%8a%80%e5%b7%a7&amp;body=/post/20191012-binary-skill/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191012-binary-skill/&amp;title=%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%8a%80%e5%b7%a7" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%8a%80%e5%b7%a7%20/post/20191012-binary-skill/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191012-binary-skill/&amp;title=%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%8a%80%e5%b7%a7" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
 
   
 
@@ -577,7 +661,7 @@ n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )
   <div class="article-container">
 
     <div class="article-style">
-      <p>二进制的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了</p>
+      <p>二进制位运算的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了</p>
 
 <h2 id="单行表达式">单行表达式</h2>
 
@@ -1041,7 +1125,7 @@ int main(void)
     
     
     
-    <script src="/js/academic.min.59335cb8abd381e470861a37a4c9db85.js"></script>
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
 
     
 

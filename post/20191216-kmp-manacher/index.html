@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="KMP已经介绍过了，这次主要介绍的是Manacher
+
+最长回文子串
+
+Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。
+
+先定义数组v，v[i]表示以第i个字符为中心，到回文串一端的距离，我们以字符串&quot;acabacab&quot;为例，如下表（index是下标）
+
+
+
+
+string
+a
+c
+a
+b
+a
+c
+a
+b
+\0
+
+
+
+
+
+index
+0
+1
+2
+3
+4
+5
+6
+7
+8
+
+
+
+m
+
+
+
+^
+
+
+
+
+
+
+
+
+i
+
+
+
+^
+
+
+
+
+
+
+
+
+e
+
+
+
+
+
+
+
+^
+
+
+
+
+v
+1
+2
+1
+4
+
+
+
+
+
+
+
+
+
+i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针
+
+然后&#43;&#43;i，注意这时候，由于以字符b两边是对称的，所以在求v[4]的值的时候，可以先查v[2]的值，是1，所以v[4]也是1
+
+
+
+
+string
+a
+c
+a
+b
+a
+c
+a
+b
+\0
+
+
+
+
+
+index
+0
+1
+2
+3
+4
+5
+6
+7
+8
+
+
+
+m
+
+
+
+^
+
+
+
+
+
+
+
+
+i
+
+
+
+
+^
+
+
+
+
+
+
+
+e
+
+
+
+
+
+
+
+^
+
+
+
+
+v
+1
+2
+1
+4
+1
+
+
+
+
+
+
+
+
+再继续&#43;&#43;i，同样的，在求v[5]的值的时候，可以先查v[1]的值，是2，但是，这个长度达到了e指针的位置，即i&#43;2&gt;=e，这时候就更新指针m，并扩展e的位置，即比较str[7]与str[3]，找到以下标5为中心的回文串边界。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20191216-kmp-manacher/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20191216-kmp-manacher/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20191216-kmp-manacher/">
+  <meta property="og:title" content="扩展KMP与Manacher | Baobaobear">
+  <meta property="og:description" content="KMP已经介绍过了，这次主要介绍的是Manacher
+
+最长回文子串
+
+Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。
+
+先定义数组v，v[i]表示以第i个字符为中心，到回文串一端的距离，我们以字符串&quot;acabacab&quot;为例，如下表（index是下标）
+
+
+
+
+string
+a
+c
+a
+b
+a
+c
+a
+b
+\0
+
+
+
+
+
+index
+0
+1
+2
+3
+4
+5
+6
+7
+8
+
+
+
+m
+
+
+
+^
+
+
+
+
+
+
+
+
+i
+
+
+
+^
+
+
+
+
+
+
+
+
+e
+
+
+
+
+
+
+
+^
+
+
+
+
+v
+1
+2
+1
+4
+
+
+
+
+
+
+
+
+
+i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针
+
+然后&#43;&#43;i，注意这时候，由于以字符b两边是对称的，所以在求v[4]的值的时候，可以先查v[2]的值，是1，所以v[4]也是1
+
+
+
+
+string
+a
+c
+a
+b
+a
+c
+a
+b
+\0
+
+
+
+
+
+index
+0
+1
+2
+3
+4
+5
+6
+7
+8
+
+
+
+m
+
+
+
+^
+
+
+
+
+
+
+
+
+i
+
+
+
+
+^
+
+
+
+
+
+
+
+e
+
+
+
+
+
+
+
+^
+
+
+
+
+v
+1
+2
+1
+4
+1
+
+
+
+
+
+
+
+
+再继续&#43;&#43;i，同样的，在求v[5]的值的时候，可以先查v[1]的值，是2，但是，这个长度达到了e指针的位置，即i&#43;2&gt;=e，这时候就更新指针m，并扩展e的位置，即比较str[7]与str[3]，找到以下标5为中心的回文串边界。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2019-12-16T18:23:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2019-12-16T18:23:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20191216-kmp-manacher/"
+  },
+  "headline": "扩展KMP与Manacher",
+  
+  "datePublished": "2019-12-16T18:23:00+08:00",
+  "dateModified": "2019-12-16T18:23:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e\u003ca href=\"../20191028-kmp/\"\u003eKMP\u003c/a\u003e已经介绍过了，这次主要介绍的是Manacher\u003c/p\u003e\n\n\u003ch2 id=\"最长回文子串\"\u003e最长回文子串\u003c/h2\u003e\n\n\u003cp\u003eManacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。\u003c/p\u003e\n\n\u003cp\u003e先定义数组v，\u003ccode\u003ev[i]\u003c/code\u003e表示以第i个字符为中心，到回文串一端的距离，我们以字符串\u003ccode\u003e\u0026quot;acabacab\u0026quot;\u003c/code\u003e为例，如下表（index是下标）\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003estring\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003e\\0\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003eindex\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e4\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e6\u003c/td\u003e\n\u003ctd\u003e7\u003c/td\u003e\n\u003ctd\u003e8\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003em\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ei\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ee\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ev\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e4\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003ei是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针\u003c/p\u003e\n\n\u003cp\u003e然后++i，注意这时候，由于以字符b两边是对称的，所以在求\u003ccode\u003ev[4]\u003c/code\u003e的值的时候，可以先查\u003ccode\u003ev[2]\u003c/code\u003e的值，是1，所以\u003ccode\u003ev[4]\u003c/code\u003e也是1\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003estring\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003e\\0\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003eindex\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e4\u003c/td\u003e\n\u003ctd\u003e5\u003c/td\u003e\n\u003ctd\u003e6\u003c/td\u003e\n\u003ctd\u003e7\u003c/td\u003e\n\u003ctd\u003e8\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003em\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ei\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ee\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e^\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ev\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e4\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003ctd\u003e\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e再继续++i，同样的，在求\u003ccode\u003ev[5]\u003c/code\u003e的值的时候，可以先查\u003ccode\u003ev[1]\u003c/code\u003e的值，是2，但是，这个长度达到了e指针的位置，即\u003ccode\u003ei+2\u0026gt;=e\u003c/code\u003e，这时候就更新指针m，并扩展e的位置，即比较\u003ccode\u003estr[7]\u003c/code\u003e与\u003ccode\u003estr[3]\u003c/code\u003e，找到以下标5为中心的回文串边界。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>扩展KMP与Manacher | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>扩展KMP与Manacher</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Dec 16, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    5 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191216-kmp-manacher/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20191216-kmp-manacher/&amp;text=%e6%89%a9%e5%b1%95KMP%e4%b8%8eManacher" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20191216-kmp-manacher/&amp;t=%e6%89%a9%e5%b1%95KMP%e4%b8%8eManacher" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e6%89%a9%e5%b1%95KMP%e4%b8%8eManacher&amp;body=/post/20191216-kmp-manacher/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20191216-kmp-manacher/&amp;title=%e6%89%a9%e5%b1%95KMP%e4%b8%8eManacher" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e6%89%a9%e5%b1%95KMP%e4%b8%8eManacher%20/post/20191216-kmp-manacher/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20191216-kmp-manacher/&amp;title=%e6%89%a9%e5%b1%95KMP%e4%b8%8eManacher" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p><a href="../20191028-kmp/">KMP</a>已经介绍过了，这次主要介绍的是Manacher</p>
+
+<h2 id="最长回文子串">最长回文子串</h2>
+
+<p>Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。</p>
+
+<p>先定义数组v，<code>v[i]</code>表示以第i个字符为中心，到回文串一端的距离，我们以字符串<code>&quot;acabacab&quot;</code>为例，如下表（index是下标）</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>index</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+</tr>
+
+<tr>
+<td>m</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>v</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针</p>
+
+<p>然后++i，注意这时候，由于以字符b两边是对称的，所以在求<code>v[4]</code>的值的时候，可以先查<code>v[2]</code>的值，是1，所以<code>v[4]</code>也是1</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>index</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+</tr>
+
+<tr>
+<td>m</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>v</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>再继续++i，同样的，在求<code>v[5]</code>的值的时候，可以先查<code>v[1]</code>的值，是2，但是，这个长度达到了e指针的位置，即<code>i+2&gt;=e</code>，这时候就更新指针m，并扩展e的位置，即比较<code>str[7]</code>与<code>str[3]</code>，找到以下标5为中心的回文串边界。</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>index</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+</tr>
+
+<tr>
+<td>m</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+
+<tr>
+<td>v</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td>3</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>然后，<code>v[5]</code>的值就是<code>e-i</code>，再接着，求<code>v[6]</code>的值就查<code>v[4]</code>的</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>index</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+</tr>
+
+<tr>
+<td>m</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+
+<tr>
+<td>v</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>再接着，求<code>v[7]</code>的值就查<code>v[3]</code>的，不过<code>v[3]</code>的值是4，而<code>i+4&gt;=e</code>又满足了，就再次更新指针m，并扩展e</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>index</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+</tr>
+
+<tr>
+<td>m</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+
+<tr>
+<td>e</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+
+<tr>
+<td>v</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>最后得到的v数组最大值乘以2减1就是答案，以上指针在算法里只增不减，所以时间复杂度是 $O(n)$ 。但问题是，这只能求出奇数长度的回文串，所以，这里用到一个技巧，把原来的字符串<code>&quot;acabacab&quot;</code>转成<code>&quot;a#c#a#b#a#c#a#b&quot;</code>，其中#号是任意一个在原字符串中不会出现的字符，这样一来，任意原串的回文串都存在中心字符了。</p>
+
+<p>还有一个细节，如果要计算的串是<code>&quot;a&quot;</code>，那么回文串的长度应该是1，但是，在这个算法里，会产生越界访问，因为要判断字符a后面的<code>'\0'</code>是不是与a前面的字符相同，如果正好都是<code>'\0'</code>，就会导致计算错误。所以，计算的时候还要对原来的字符串在最前面添加第二个在原字符串中不会出现的字符，例如转成<code>&quot;$a#c#a#b#a#c#a#b&quot;</code></p>
+
+<h2 id="扩展kmp模板和manacher模板对比">扩展KMP模板和Manacher模板对比</h2>
+
+<p>代码高度相似，你看看就知道了</p>
+
+<pre><code class="language-cpp">void extkmp_z(const char* str, int z[])
+{
+    int s_len = strlen(str);
+    z[0] = s_len;
+    for (int i = 1, p = 1, e = 1; i &lt; s_len; ++i)
+    {
+        if (i + z[i - p] &gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &lt; s_len &amp;&amp; str[e] == str[e - i])
+                ++e;
+
+            z[i] = e - i;
+        }
+        else
+            z[i] = z[i - p];
+    }
+}
+
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, p = 0, e = 0; i &lt; s_len; ++i)
+    {
+        if (i + z[i - p] &gt;= e)
+        {
+            e = std::max(i, e);
+            p = i;
+
+            while (e &lt; s_len &amp;&amp; str[e] == pattern[e - i])
+                ++e;
+
+            ext[i] = e - i;
+        }
+        else
+            ext[i] = z[i - p];
+    }
+}
+
+void init_str(const char* str, char* t)
+{
+    int len = strlen(str);
+    t[0] = '$';
+    t[1] = '#';
+    for (int i = 0; str[i]; ++i)
+    {
+        t[(i + 1) &lt;&lt; 1] = str[i];
+        t[((i + 1) &lt;&lt; 1) + 1] = '#';
+    }
+    t[(len + 1) &lt;&lt; 1] = 0;
+}
+
+int manacher(const char* s, int v[])
+{
+    int len = strlen(s);
+    int max_len = 0;
+    v[0] = 1;
+    v[1] = 1;
+    for (int i = 1, m = 1, e = 1; i &lt; len; ++i)
+    {
+        if (i + v[m - (i - m)] &gt;= e)
+        {
+            e = std::max(i, e);
+            m = i;
+
+            while (e &lt; len &amp;&amp; s[e] == s[i - (e - i)])
+                ++e;
+
+            v[i] = e - i;
+        }
+        else
+            v[i] = v[m - (i - m)];
+        max_len = std::max(max_len, v[i]);
+    }
+    return max_len - 1;
+}
+</code></pre>
+
+<p>以上是第一种写法的模板，再对比写法二</p>
+
+<pre><code class="language-cpp">
+void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
+{
+    int s_len = strlen(str);
+    extkmp_z(pattern, z);
+    for (int i = 0, l = 0, r = 0; i &lt; s_len; ++i)
+    {
+        if (i &lt; r)
+        {
+            ext[i] = std::min(r - i, z[i - l]);
+        }
+        else
+        {
+            ext[i] = 0;
+        }
+        while (i + ext[i] &lt; s_len &amp;&amp; str[i + ext[i]] == pattern[ext[i]])
+        {
+            ++ext[i];
+        }
+        if (i + ext[i] &gt; r)
+        {
+            r = i + ext[i];
+            l = i;
+        }
+    }
+}
+
+int manacher(const char* s, int v[])
+{
+    int len = strlen(s);
+    int max_len = 0;
+    for (int i = 1, m = 1, r = 1; i &lt; len; ++i)
+    {
+        if (i &lt; r)
+        {
+            v[i] = std::min(v[m - (i - m)], r - i);
+        }
+        else
+        {
+            v[i] = 1;
+        }
+        while (s[i + v[i]] == s[i - v[i]])
+        {
+            ++v[i];
+        }
+        if (i + v[i] &gt; r)
+        {
+            r = i + v[i];
+            m = i;
+        }
+        max_len = std::max(max_len, v[i]);
+    }
+    return max_len - 1;
+}
+</code></pre>
+
+<h2 id="其它解法">其它解法</h2>
+
+<p>用后缀数组来解回文串也是可以的，原串是s的话，把s反向，得到s1，然后构造<code>S = s + '#' + s1</code>，对S求后缀数组后，要注意的是并不是只找height的最大值即可，网上很多文章在这里的算法是错误的，反例是<code>abcdefba</code>，<strong>单纯枚举相邻的sa是不正确的</strong>。</p>
+
+<p>正确做法是枚举i从1到len(s)/2，分别针对奇数长度和偶数长度要分别计算LCP（最长公共前缀），奇数长度时它的对称位置就是<code>j=len-i+1</code>，偶数长度时对称位置是<code>j=len-i</code>或<code>j=len-i+2</code>，然后对height数组求从<code>rank[i]+1</code>到<code>rank[j]</code>的最小值。最小值维护用ST表，由于ST表的构造是 $O(nlogn)$ ，而查询是 $O(1)$ ，所以生成后缀数组后的计算的总时间复杂度是 $O(nlogn)$</p>
+
+<p>示例代码<a href="https://vjudge.net/problem/URAL-1297" target="_blank">URAL 1297</a></p>
+
+<pre><code class="language-cpp">int st[12][2048];
+
+void init_st(int a[], int n)
+{
+    for (int i = 0; i &lt; n; i++)
+        st[0][i] = a[i];
+    for (int k = 1; (1 &lt;&lt; k) &lt; n; k++)
+        for (int i = 0, m = 1 &lt;&lt; (k - 1); i &lt; n; i++)
+            if (i + m &lt; n) st[k][i] = min(st[k - 1][i], st[k - 1][i + m]);
+}
+
+int st_query(int l, int r) // [l, r)
+{
+    if (l &gt; r)swap(l, r);
+    int k = (int)(log(r - l - 0.1) / log(2));
+    return min(st[k][l], st[k][r - (1 &lt;&lt; k)]);
+}
+
+int main()
+{
+    int n, t;
+    char s[2100], s1[1010];
+    scanf(&quot;%s&quot;, s1);
+    strcpy(s, s1);
+    strcat(s, &quot;#&quot;);
+    strcat(s, strrev(s1));
+    SA_2_sort sa;
+    sa.init(s);
+    int len = sa.size();
+    int maxh = 0, spos = 0;
+    init_st(&amp;*sa.ht.begin(), len + 1);
+    for(int i = 1; i &lt;= len / 2; ++i)
+    {
+        int j = len - i + 1;
+        int lcp = st_query(sa.rk[i] + 1, sa.rk[j] + 1);
+        if (lcp * 2 - 1 &gt; maxh)
+        {
+            spos = i - lcp;
+            maxh = lcp * 2 - 1;
+        }
+        if (i &gt; 1)
+        {
+            j = len - i + 2;
+            lcp = st_query(sa.rk[i] + 1, sa.rk[j] + 1);
+            if (lcp * 2 &gt; maxh)
+            {
+                spos = i - lcp - 1;
+                maxh = lcp * 2;
+            }
+        }
+    }
+    strncpy(s1, s + spos, maxh);
+    s1[maxh] = 0;
+    puts(s1);
+    return 0;
+}
+</code></pre>
+
+<p>注：后缀数组模板请从<a href="../20191113-suffixarray/">之前的文章</a>里复制；函数st_query是左闭右开区间，即求的是<code>[l, r-1]</code>的最小值，采用半开半闭区间目的是为了能直接swap</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">算法</a>
+  
+  <a class="badge badge-light" href="">模式匹配</a>
+  
+  <a class="badge badge-light" href="/tags/kmp/">KMP</a>
+  
+  <a class="badge badge-light" href="/tags/manacher/">Manacher</a>
+  
+  <a class="badge badge-light" href="">模板</a>
+  
+  <a class="badge badge-light" href="/tags/c/">c</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191028-kmp/">KMP及扩展KMP</a></li>
+          
+          <li><a href="/post/20191019-qsort-talk-2/">Quick sort(快速排序)杂谈 2</a></li>
+          
+          <li><a href="/post/20191015-sorting-3/">堆排序优化思路</a></li>
+          
+          <li><a href="/post/20191012-binary-skill/">二进制技巧</a></li>
+          
+          <li><a href="/post/20191009-sorting-2/">插入排序与希尔排序优化思路</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
