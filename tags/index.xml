@@ -5,7 +5,7 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Tue, 31 Dec 2019 08:26:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 04 Jan 2020 08:26:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Tags</title>
@@ -15,8 +15,56 @@
     <item>
       <title>c&#43;&#43;</title>
       <link>/tags/c&#43;&#43;/</link>
-      <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
+      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
       <guid>/tags/c&#43;&#43;/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>LCG</title>
+      <link>/tags/lcg/</link>
+      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
+      <guid>/tags/lcg/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>PCG</title>
+      <link>/tags/pcg/</link>
+      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
+      <guid>/tags/pcg/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>xoshiro/xoroshiro</title>
+      <link>/tags/xoshiro/xoroshiro/</link>
+      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
+      <guid>/tags/xoshiro/xoroshiro/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>模板</title>
+      <link>/tags/%E6%A8%A1%E6%9D%BF/</link>
+      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
+      <guid>/tags/%E6%A8%A1%E6%9D%BF/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>算法</title>
+      <link>/tags/%E7%AE%97%E6%B3%95/</link>
+      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
+      <guid>/tags/%E7%AE%97%E6%B3%95/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>随机数</title>
+      <link>/tags/%E9%9A%8F%E6%9C%BA%E6%95%B0/</link>
+      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
+      <guid>/tags/%E9%9A%8F%E6%9C%BA%E6%95%B0/</guid>
       <description></description>
     </item>
     
@@ -33,14 +81,6 @@
       <link>/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</link>
       <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
       <guid>/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>模板</title>
-      <link>/tags/%E6%A8%A1%E6%9D%BF/</link>
-      <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
-      <guid>/tags/%E6%A8%A1%E6%9D%BF/</guid>
       <description></description>
     </item>
     
@@ -81,14 +121,6 @@
       <link>/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/</link>
       <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
       <guid>/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>算法</title>
-      <link>/tags/%E7%AE%97%E6%B3%95/</link>
-      <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
-      <guid>/tags/%E7%AE%97%E6%B3%95/</guid>
       <description></description>
     </item>
     

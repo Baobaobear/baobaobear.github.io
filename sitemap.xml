@@ -4,27 +4,67 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2019-12-31T08:26:00+08:00</lastmod>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>/tags/c&#43;&#43;/</loc>
-    <lastmod>2019-12-31T08:26:00+08:00</lastmod>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>/categories/</loc>
-    <lastmod>2019-12-31T08:26:00+08:00</lastmod>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/lcg/</loc>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/pcg/</loc>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>/post/</loc>
-    <lastmod>2019-12-31T08:26:00+08:00</lastmod>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>/tags/</loc>
-    <lastmod>2019-12-31T08:26:00+08:00</lastmod>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/xoshiro/xoroshiro/</loc>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/20200104-xoshiro/</loc>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/%E6%A8%A1%E6%9D%BF/</loc>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/categories/%E7%A0%94%E7%A9%B6/</loc>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/%E7%AE%97%E6%B3%95/</loc>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/%E9%9A%8F%E6%9C%BA%E6%95%B0/</loc>
+    <lastmod>2020-01-04T08:26:00+08:00</lastmod>
   </url>
   
   <url>
@@ -39,16 +79,6 @@
   
   <url>
     <loc>/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</loc>
-    <lastmod>2019-12-31T08:26:00+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/%E6%A8%A1%E6%9D%BF/</loc>
-    <lastmod>2019-12-31T08:26:00+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/categories/%E7%A0%94%E7%A9%B6/</loc>
     <lastmod>2019-12-31T08:26:00+08:00</lastmod>
   </url>
   
@@ -79,11 +109,6 @@
   
   <url>
     <loc>/tags/%E6%A8%A1%E5%BC%8F%E5%8C%B9%E9%85%8D/</loc>
-    <lastmod>2019-12-16T18:23:00+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/%E7%AE%97%E6%B3%95/</loc>
     <lastmod>2019-12-16T18:23:00+08:00</lastmod>
   </url>
   

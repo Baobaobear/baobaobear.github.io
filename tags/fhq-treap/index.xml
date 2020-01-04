@@ -96,9 +96,16 @@ struct FHQ_Treap
     };
     struct node
     {
-        int ch[2], sz, k;
+        int ch[2], sz;
+        unsigned k;
         data d, sum, lz_add;
-        node(int z = 1) :sz(z), k(rand()) { ch[0] = ch[1] = 0; }
+        node(int z = 1) :sz(z), k(rnd()) { ch[0] = ch[1] = 0; }
+        static unsigned rnd()
+        {
+            static unsigned r = 0x123;
+            r = r * 69069 + 1;
+            return r;
+        }
     };
     vector&amp;lt;node&amp;gt; nodes;
     int root;

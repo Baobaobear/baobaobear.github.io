@@ -5,12 +5,1792 @@
     <link>/post/</link>
       <atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Tue, 31 Dec 2019 08:26:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 04 Jan 2020 08:26:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Posts</title>
       <link>/post/</link>
     </image>
+    
+    <item>
+      <title>伪随机数生成算法</title>
+      <link>/post/20200104-xoshiro/</link>
+      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
+      <guid>/post/20200104-xoshiro/</guid>
+      <description>&lt;p&gt;这次主要介绍伪随机数生成算法，顺便介绍一个在2018-2019年的伪随机数研究成果，就是 xoshiro/xoroshiro 随机数生成算法。&lt;/p&gt;
+
+&lt;h2 id=&#34;历史&#34;&gt;历史&lt;/h2&gt;
+
+&lt;p&gt;在较早的时候，甚至到现在，伪随机数的生成元老级别算法“线性同余伪随机数生成算法”可谓无处不在，像现在的C/C++的rand函数就是使用线性同余实现的伪随机数生成。所谓的线性同余法，就是这个迭代方程 $S_n = (aS_{n-1} + c)\mod m$，其中，$S_0$ 称为这个随机序列的种子，a,c,m是三个常数，不过这三个数不能随意选，m的大小决定随机数的周期，最大周期等于m，为了便于在计算机里实现，通常m选取$2^{32}$或$2^{64}$。在m已经确定为这两的时候，为了让周期尽可能大，常数a,c还至少要满足以下条件：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;若 c 非 0，那么 c 与 m 互质；若 c 为 0，那么 a 与 m 互质&lt;/li&gt;
+&lt;li&gt;m 所有的素因子均能整除 a-1&lt;/li&gt;
+&lt;li&gt;若 m 是4的倍数，那么 a-1 也是 4 的倍数&lt;/li&gt;
+&lt;li&gt;a 和 c 都是正整数且小于 m&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;一些典型的常数取值可以参见wiki上的&lt;a href=&#34;https://en.wikipedia.org/wiki/Linear_congruential_generator&#34; target=&#34;_blank&#34;&gt;线性同余&lt;/a&gt;条目。&lt;/p&gt;
+
+&lt;h2 id=&#34;更高的需求&#34;&gt;更高的需求&lt;/h2&gt;
+
+&lt;p&gt;我们之所以使用线性同余，就是因为它实现简单，在对随机数质量要求较低的时候，例如用来作为treap的随机数，那么线性同余完全够用，但建议不要使用rand，因为在windows下不少编译器的最大值太小了，导致效果下降，自己写一个用参数&lt;code&gt;a=69069,c=1,m=2^32&lt;/code&gt;比rand好，我在那篇关于treap的文章就是用了这组参数。线性同余法最大的缺陷是低位随机性特别差，如果使用类似&lt;code&gt;next() % k&lt;/code&gt;的方式来获得区间在$[0,k-1]$的随机数，那么当线性同余迭代方程的m是2的幂且k也是2的幂的时候，灾难就发生了，特别地当k是2的时候，你将得到一个0101的循环序列。为了避免这种情况，通常会取线性同余结果的高位，而且低位去掉得越多，&lt;code&gt;%2&lt;/code&gt;的周期就越长。例如结果是64位，取高32位作为最终结果，那么&lt;code&gt;%2&lt;/code&gt;的周期就是 $2^{33}$ ，但这样会导致有效位减少，而且问题也没有根本地解决。另一种解决办法是选取一个素数作为m，例如2147483647正是一个素数，但如此一来，线性同余的计算速度就会慢不少，周期也没有前一个的长。两种基本实现如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct LCG32 : public RNG_base&amp;lt;uint32_t&amp;gt;
+{
+    uint32_t s;
+    static inline uint16_t rotl(const uint16_t x, int k) {
+        return (x &amp;lt;&amp;lt; k) | (x &amp;gt;&amp;gt; (16 - k));
+    }
+    LCG32() { seed(); }
+    LCG32(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = seed1;
+    }
+    result_type operator()() {
+        s = s * 214013UL + 2531011UL;
+        return s;
+    }
+};
+
+struct MCG : public RNG_base&amp;lt;uint32_t, 0x7FFFFFFEULL&amp;gt;
+{
+    uint64_t s;
+    MCG() { seed(); }
+    MCG(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = seed1;
+    }
+    result_type operator()() {
+        s = s * 48271 % 0x7FFFFFFF;
+        return (result_type)s;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其中基类&lt;code&gt;RNG_base&lt;/code&gt;的定义在下文代码中有。第一个是32位的实现，所以叫做LCG32，如果是64位里面取高32位，那么就叫做&lt;code&gt;LCG64/32&lt;/code&gt;。第二个实现没有加法操作，即c=0，这种特例叫做MCG。&lt;/p&gt;
+
+&lt;h2 id=&#34;随机数的质量和周期&#34;&gt;随机数的质量和周期&lt;/h2&gt;
+
+&lt;p&gt;如果对生成的随机数质量要求高，例如写一个扑克游戏，如果是52张牌，所有的排列就是 $52!$ （约为$2^{225.5}$），那么我们需要周期比排列数多得多的随机数生成算法以期望所有可能的排列都有机会出现，那到底需要多大呢？这里我们假设平均每16位生成一个8位有效的随机数，我们需要d个随机数得到的排列，即16d个位的所有可能性，都要有可能出现，若满周期的随机数生成器的周期是 $2^{n}$，输出长度为m位，那么我们只要知道$n/m$个输出就能唯一确定生成器的状态，同时这$n/m$个输出的所有可能都会一一出现，即长度为$n$的二进制必定在序列中出现。所以在这种情况下只要$n\geq16d$就能保证所需排列必定会出现。而在前面提到的扑克游戏里，d=52，那么需要的最小周期就是$2^{832}$，总之，只要生成器的周期的$2^{n}$中的n，比你需要生成的排列所需要的二进制流长度要大，那就保证能得到任意一个排列。这时候就最佳选择之一就是&lt;a href=&#34;https://en.wikipedia.org/wiki/Mersenne_Twister&#34; target=&#34;_blank&#34;&gt;梅森旋转&lt;/a&gt;，在C++11里的随机数实现默认就是使用它，而且我们一般特指MT19937，即它的周期是 $2^{19937}-1$，如果输出为64位，那么任意长度小于19904位的数据都会在其生成序列中出现（之所以不是19937只是因为它不是输出长度的整数倍），但你要是用这个算法大量生成随机数那是会稍慢一些的，而且这个算法也并没有通过BigCrush的所有测试。我们还存在一种情况，就是需要大量生成随机数，同时质量也有一定要求，速度如果比线性同余还快就更好。&lt;/p&gt;
+
+&lt;h2 id=&#34;线性同余的改进&#34;&gt;线性同余的改进&lt;/h2&gt;
+
+&lt;h3 id=&#34;输出质量&#34;&gt;输出质量&lt;/h3&gt;
+
+&lt;p&gt;线性同余法的均匀性非常好，算法也简单，可惜分布性差，有多差呢，咱们用LCG16(0x43FD,0x9EC3)的输出画黑底白点图，相邻两次输出的高9位作为左半图的坐标，低9位作为右半图的坐标，连续采样524288个点，同一坐标出现次数越多亮度越高，于是得到下图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg16.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;左边与右边的都有明显的斜线模式。与以下专业的PCG32生成器做个比较，关注点是亮度比较平均，基本没有特别亮的点，也没有比较多暗点。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/pcg32.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;于是也就有不少人想方设法去改进。首先的改进，便是前面所提及的截取高位作为输出，那么内部数据为64位，输出是32位的，就叫做&lt;code&gt;LCG64/32&lt;/code&gt;，同理内部数据为32位，输出是16位的，就叫做&lt;code&gt;LCG32/16&lt;/code&gt;，这样一来，随机数质量大幅度提升。基于此实现的版本如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct LCG32_16 : public RNG_base&amp;lt;uint16_t&amp;gt;
+{
+    uint32_t s;
+    LCG32_16() { seed(); }
+    LCG32_16(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = seed1;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        s = s * 214013UL + 2531011UL;
+        return s &amp;gt;&amp;gt; 16;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个代码得到的图形如下&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg32_16.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这样生成的随机数质量就有了一个很大的飞跃。另外，LCG结果的低位，周期性特别短，而LCG结果的高位，对下一个数的影响又特别小，那能不能对这个特性加以利用呢？既然高位对下一个数的影响特别小，我们就创造影响，让高位单独参与计算；既然低位的结果差，那就直接舍弃，同时当高位作为下一个数的位旋转参数，这样避免了最低位的固定 $2^{16}$ 周期的问题。所以可以改写如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct LCG32_16ro : public RNG_base&amp;lt;uint16_t&amp;gt;
+{
+    uint32_t s;
+    LCG32_16ro() { seed(); }
+    LCG32_16ro(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = seed1;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        uint32_t x = s;
+        s = s * 214013UL + 2531011UL;
+        return rotl16((uint16_t)(x &amp;gt;&amp;gt; 16u), x &amp;gt;&amp;gt; 28u);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg32_16ro.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;结果反而明显变差了，原因是作为参数的高4位也是输出的一部分，导致那高4位在最终出现的位置是固定的16种情况，解决方法1是不取那4位，取4到11位，方法2是把高16位与低16位做异或运算后再做旋转，两种方案均可解决这个问题，后面的测试使用的是第二种方案，具体代码就不重复了。&lt;/p&gt;
+
+&lt;h3 id=&#34;输出周期&#34;&gt;输出周期&lt;/h3&gt;
+
+&lt;p&gt;然后再来看周期，单独一个LCG周期只有 $2^{32}$ 或 $2^{64}$ ，那我们有没有可能通过两个或以上的随机数生成器构造出周期是它们周期之积的的生成器呢？也许一时半会不容易想出来，我们先考虑怎么让一个LCG生成器周期变长。&lt;/p&gt;
+
+&lt;p&gt;要注意的是我们不能瞎改，必须是一个满周期的生成器，乱改的话在绝大多数情况下都达不到满周期从而导致返回值的分布不均匀。假如我们手上有一个LCG，周期是p，如果单纯只要周期变长，那我们有一个足够简单的方法，我们增加一个参数x，在原本的LCG输出的结果基础上 xor x 再输出，然后当原来的LCG生成了p次，就让参数x自增1，于是又能生成p个整体与原来不重叠的数，如此循环，于是x的自增周期是p2的话，总周期便是 $p\times{p_2}$ 。可是这明显能感觉到质量可能很糟糕，那解决办法就是，那个x改成另一个LCG来生成即可。这样我们便得到把两个LCG合并得到更大周期的办法。不过，问题是我们为了记录生成次数，似乎还要多定义一个变量来记录生成的次数，这个变量是会影响生成器的状态的，为了避免增加新的变量，在这里我们换个办法，不必生成p次，只要生成结果是某个设定值例如0，就更新第二个LCG，这样就节省了一个变量，于是可以写出以下的代码，为了方便说明，使用的是&lt;code&gt;LCG16&lt;/code&gt;，周期是65536。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct LCG16_1 : public RNG_base&amp;lt;uint16_t&amp;gt;
+{
+    uint16_t s, a;
+    LCG16_1() { seed(); }
+    LCG16_1(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = (uint16_t)seed1;
+        a = (uint16_t)(seed1 &amp;gt;&amp;gt; 16);
+    }
+    result_type operator()() {
+        if (s == 0) a = a * (uint16_t)0x101 + (uint16_t)0x9527;
+        s = s * (uint16_t)0x43FD + (uint16_t)0x9EC3;
+        return a ^ s;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这样把两个 $2^{16}$ 周期的LCG组合起来，确实得到了 $2^{32}$ 周期的LCG，不过之所以用周期这么小的，是为了能发现问题，我们能穷举这个LCG的生成序列，我们能轻易找出多处大段大段的随机数完全相同，有多大段呢，1千到3万个不等，即之前生成的数千个随机数，后面某处又重现了这个序列，而且在 $2^{32}$ 周期内发生。这说明单纯这样组合，结果是糟糕的。具体图形如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg16_1.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;所以我们加上前面的位旋转，以期望减少这种情况的出现：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct LCG16_2 : public RNG_base&amp;lt;uint16_t&amp;gt;
+{
+    uint16_t s, a;
+    LCG16_2() { seed(); }
+    LCG16_2(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = (uint16_t)seed1;
+        a = (uint16_t)(seed1 &amp;gt;&amp;gt; 16);
+    }
+    result_type operator()() {
+        uint16_t x = s;
+        if (s == 0) a = a * (uint16_t)0x101 + (uint16_t)0x9527;
+        s = s * (uint16_t)0x43FD + (uint16_t)0x9EC3;
+        return a ^ rotl16(x, x &amp;gt;&amp;gt; 12);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg16_2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;出现这个情况的原因前面有解释，正是高4位导致的。对此，为了把高4位的模式抹除，改为&lt;code&gt;rotl16(x ^ (x &amp;lt;&amp;lt; k), x &amp;gt;&amp;gt; 12)&lt;/code&gt;，只要k大于等于4，这个模式就迅速消失。取k为7得到代码：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct LCG16_3 : public RNG_base&amp;lt;uint16_t&amp;gt;
+{
+    uint16_t s, a;
+    LCG16_3() { seed(); }
+    LCG16_3(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = (uint16_t)seed1;
+        a = (uint16_t)(seed1 &amp;gt;&amp;gt; 16);
+    }
+    result_type operator()() {
+        uint16_t x = s;
+        if (s == 0) a = a * (uint16_t)0x101 + (uint16_t)0x9527;
+        s = s * (uint16_t)0x43FD + (uint16_t)0x9EC3;
+        return a ^ rotl16(x ^ (x &amp;lt;&amp;lt; 7), x &amp;gt;&amp;gt; 12);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg16_3.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们还可以再考虑一个问题，之前都是用高位的旋转参数对自己旋转，那可不可以错开，改为旋转下一个数呢？答案是可以的，生成的结果仍然是满周期的，也不存在高4位位置固定的问题，得到的代码和图形是&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct LCG16_4 : public RNG_base&amp;lt;uint16_t&amp;gt;
+{
+    uint16_t s, a;
+    LCG16_4() { seed(); }
+    LCG16_4(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = (uint16_t)seed1;
+        a = (uint16_t)(seed1 &amp;gt;&amp;gt; 16);
+    }
+    result_type operator()() {
+        uint16_t x = s;
+        if (s == 0) a = a * (uint16_t)0x101 + (uint16_t)0x9527;
+        s = s * (uint16_t)0x43FD + (uint16_t)0x9EC3;
+        return a ^ rotl16(s, x &amp;gt;&amp;gt; 12);
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg16_4.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;于是我们确实得到了一个看起来更随机的生成器，但3和4的图仔细观察仍然能发现左边的图有规律的线条模式，和专业算法比较还是能看出差距，不过这个问题之后再去解决。那如果我们需要任意加大周期要怎么做呢，如果单纯按这个思路，那么增加了n级，就会导致输出要异或n次，代码也难写。这里要换一个思路，我们把扩展状态做成一个数组，每次只与数组中其中一个元素来异或运算，而选择的方法利用LCG的低位是循环的特性，具体代码如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template &amp;lt;uint16_t ext_bit = 2&amp;gt;
+struct LCG16s : public RNG_base&amp;lt;uint16_t&amp;gt;
+{
+    static const uint16_t ext_size = 1 &amp;lt;&amp;lt; ext_bit, ext_mask = ext_size - 1;
+    uint16_t s, a[ext_size];
+    LCG16s() { seed(); }
+    LCG16s(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = (uint16_t)seed1;
+        a[0] = (uint16_t)(seed1 &amp;gt;&amp;gt; 16);
+        if (ext_size &amp;gt; 1) a[1] = (uint16_t)(seed1 &amp;gt;&amp;gt; 32);
+        if (ext_size &amp;gt; 2) a[2] = (uint16_t)(seed1 &amp;gt;&amp;gt; 48);
+        for (uint16_t i = 3; i &amp;lt; ext_size; ++i) {
+            a[i] = rotl16(a[i - 1] * (uint16_t)0x43FD + (uint16_t)0x9EC3, a[i-3] &amp;amp; 15) ^ a[i - 2];
+        }
+    }
+    result_type operator()() {
+        uint16_t x = s;
+        if (s == 0) {
+            for (uint16_t i = 0; i &amp;lt; ext_size; ++i) {
+                a[i] = (a[i] * (uint16_t)0x101 + (uint16_t)0x9527);
+                if (a[i]) break;
+            }
+        }
+        s = s * (uint16_t)0x43FD + (uint16_t)0x9EC3;
+        return rotl16(s, x &amp;gt;&amp;gt; 12) ^ a[x &amp;amp; ext_mask];
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg16s.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;从图上就能直观看出这东西有问题，问题在哪呢？以上这个生成器的周期在模板参数假设是n，那么其周期为 $ 2^{16 \times (2^n + 1)}$，可以任意加大周期。可是就在这个时候就出现问题了，我们假设参数是8，那么数组大小为256，那当s为0的时候，大多数情况下只有&lt;code&gt;a[0]&lt;/code&gt;发生改变，那导致的结果就是在下一个短周期里，每256个数有255个与前一个短周期完全一样，所以我们要做修改，每次s为0的时候，a数组每一个数都得至少更新一次，且如果&lt;code&gt;a[i]&lt;/code&gt;为0，那&lt;code&gt;a[i+1]&lt;/code&gt;就更新两遍，这样可以改写如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template &amp;lt;uint16_t ext_bit = 2&amp;gt;
+struct LCG16_ext : public RNG_base&amp;lt;uint16_t&amp;gt;
+{
+    static const uint16_t ext_size = 1 &amp;lt;&amp;lt; ext_bit, ext_mask = ext_size - 1;
+    uint16_t s, a[ext_size];
+    LCG16_ext() { seed(); }
+    LCG16_ext(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = (uint16_t)seed1;
+        a[0] = (uint16_t)(seed1 &amp;gt;&amp;gt; 16);
+        if (ext_size &amp;gt; 1) a[1] = (uint16_t)(seed1 &amp;gt;&amp;gt; 32);
+        if (ext_size &amp;gt; 2) a[2] = (uint16_t)(seed1 &amp;gt;&amp;gt; 48);
+        for (uint16_t i = 3; i &amp;lt; ext_size; ++i) {
+            a[i] = rotl16(a[i - 1] * (uint16_t)0x43FD + (uint16_t)0x9EC3, a[i-3] &amp;amp; 15) ^ a[i - 2];
+        }
+    }
+    result_type operator()() {
+        uint16_t x = s;
+        if (s == 0) {
+            for (uint16_t i = 0, carry = 0; i &amp;lt; ext_size; ++i) {
+                if (carry) carry = (a[i] = (a[i] * (uint16_t)0x101 + (uint16_t)0x9527)) == 0;
+                carry |= (a[i] = (a[i] * (uint16_t)0x101 + (uint16_t)0x9527)) == 0;
+            }
+        }
+        s = s * (uint16_t)0x43FD + (uint16_t)0x9EC3;
+        return rotl16(s, x &amp;gt;&amp;gt; 12) ^ a[x &amp;amp; ext_mask];
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg16_ext.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;以上这个版本经过一些简单的测试，符合满周期且概率均等。当然这个uint16有点太小，于是仍然能从图里看出分布有点问题，左边的图存在明暗间隔的竖条和横条，即问题存在于高位。所以本节的最后提供一个&lt;code&gt;LCG64_32_ext&lt;/code&gt;的完整实现，参数ext_bit为n，那么其周期为 $ 2^{32 \times (2^n + 2)}$&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template &amp;lt;uint16_t ext_bit = 2&amp;gt;
+struct LCG64_32_ext : public RNG_base&amp;lt;uint32_t&amp;gt;
+{
+    static const uint64_t ext_size = 1ULL &amp;lt;&amp;lt; ext_bit, ext_mask = ext_size - 1;
+    const int init_iter = 256 * 256;
+    uint64_t s;
+    uint32_t a[ext_size];
+    LCG64_32_ext() { seed(); }
+    LCG64_32_ext(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) {
+        s = seed1;
+        a[0] = (uint32_t)(seed1 &amp;gt;&amp;gt; 32);
+        if (ext_size &amp;gt; 1) a[1] = (uint32_t)seed2;
+        if (ext_size &amp;gt; 2) a[2] = (uint32_t)(seed2 &amp;gt;&amp;gt; 32);
+        for (uint32_t i = 3; i &amp;lt; ext_size; ++i) {
+            a[i] = rotl32((uint32_t)(a[i - 1] * seed_mul + 1), a[i - 2] &amp;amp; 15) ^ a[i - 2];
+        }
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        uint64_t x = s;
+        if (s == 0) {
+            for (uint64_t i = 0, carry = 0; i &amp;lt; ext_size; ++i) {
+                if (carry) carry = (a[i] = (a[i] * 2891336453u + 887987685u)) == 0;
+                carry |= (a[i] = (a[i] * 2891336453u + 887987685u)) == 0;
+            }
+        }
+        s = s * 3935559000370003845ULL + 1442695040888963407ULL;
+        return rotr32((uint32_t)(s &amp;gt;&amp;gt; 32), x &amp;gt;&amp;gt; 59) ^ a[x &amp;amp; ext_mask];
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/rnd/lcg64_32_ext.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这个图已经能与PCG的图看不出明显的差异，而且能通过BigCrash测试。当然，这样的实现还没有经过严格的随机性测试，这里只是给大家思路，以上代码建议不要用于实际使用场景。另外，以上思路参考自&lt;a href=&#34;http://www.pcg-random.org/&#34; target=&#34;_blank&#34;&gt;PCG&lt;/a&gt;算法。&lt;/p&gt;
+
+&lt;h2 id=&#34;lua的修改&#34;&gt;lua的修改&lt;/h2&gt;
+
+&lt;p&gt;通过参阅lua的源代码，最早的时候，它还是直接使用的C语言内置的rand，后来被诟病随机数范围太小、生成的质量太差。所以后来做了一番改进，在2018年之前，使用的是TausWorthe的一个随机数算法，周期为 $2^{223}-1$ ，所以又叫做 TausWorthe 223 或 TW223，代码参见后文的&lt;code&gt;taus_worthe223&lt;/code&gt;。这里要介绍的是lua在2018年之后更换的新随机数算法。&lt;/p&gt;
+
+&lt;h2 id=&#34;xoshiro-xoroshiro&#34;&gt;xoshiro/xoroshiro&lt;/h2&gt;
+
+&lt;p&gt;而在2018年，新出现的&lt;a href=&#34;http://prng.di.unimi.it/&#34; target=&#34;_blank&#34;&gt;xoshiro/xoroshiro&lt;/a&gt;算法以其周期更大、质量更高、速度更快的特性，很快lua的&lt;a href=&#34;http://lua-users.org/lists/lua-l/2018-05/msg00109.html&#34; target=&#34;_blank&#34;&gt;实现&lt;/a&gt;便改用它，而且官方还提供了不同的实现，你可以自行在周期长度、随机数质量、运行速度间自行取舍，这个算法改进自Xorshift，同样属于&lt;a href=&#34;https://en.wikipedia.org/wiki/Linear-feedback_shift_register&#34; target=&#34;_blank&#34;&gt;LFSR&lt;/a&gt;。不过xoshiro/xoroshiro提供的版本实在是太多了，怎么取舍呢？我通过阅读paper，选出了三个建议的版本，分别是&lt;code&gt;xoroshiro128++&lt;/code&gt;，&lt;code&gt;xoshiro256**&lt;/code&gt;，&lt;code&gt;xoroshiro1024**&lt;/code&gt;，名字后面的数字表示周期，例如&lt;code&gt;xoshiro256**&lt;/code&gt;的周期是 $2^{256}-1$，而后面的加号和乘号表示生成时所用的运算符，所对应的类名分别是&lt;code&gt;xoroshiro128pp&lt;/code&gt;，&lt;code&gt;xoshiro256ss&lt;/code&gt;，&lt;code&gt;xoroshiro1024ss&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;其生成速度之快超越线性同余法（限64位平台）。而&lt;code&gt;xoshiro256**&lt;/code&gt;大多数场合足够使用，且lua&lt;a href=&#34;https://github.com/lua/lua/blob/d7bb8df8414f71a290c8a4b1c9f7c6fe839a94df/lmathlib.c#L307&#34; target=&#34;_blank&#34;&gt;所选择的实现&lt;/a&gt;也是它，除非你特别看它不爽非要特别大的周期，那就上&lt;code&gt;xoroshiro1024**&lt;/code&gt;吧。而在需要快速产生大量浮点数的场合，官方建议使用&lt;code&gt;xoroshiro128+&lt;/code&gt;或&lt;code&gt;xoroshiro256+&lt;/code&gt;，但如果生成整数，那请不要选择只有一个&lt;code&gt;+&lt;/code&gt;的版本，要选择&lt;code&gt;++&lt;/code&gt;或&lt;code&gt;**&lt;/code&gt;的版本。&lt;/p&gt;
+
+&lt;p&gt;xoshiro/xoroshiro还有一个非常特别的功能，它有个jump和long jump功能，例如对于&lt;code&gt;xoshiro256**&lt;/code&gt;，一次jump调用相当于迭代了 $2^{128}$ 次，这样生成的新状态与原来的状态距离非常大，然后用于两个线程，这样就能保证生成的序列不产生重叠，而long jump则相当于迭代 $2^{192}$ 次，这样能生成出4个状态用于4线程，这个特色功能是其它随机数生成器所不具备的。不过以下模板并不包含这部分，有需要的话自己上官网那把代码复制过来用就行。&lt;/p&gt;
+
+&lt;h2 id=&#34;模板&#34;&gt;模板&lt;/h2&gt;
+
+&lt;p&gt;这里的实现除了以上所提及的，还包括常见的&lt;code&gt;rand48&lt;/code&gt;，&lt;code&gt;taus88&lt;/code&gt;，&lt;code&gt;PCG32&lt;/code&gt;，&lt;code&gt;well512&lt;/code&gt;等等。编译以下代码需要C++11支持，如果要在不支持的编译器上编译就稍微改改就行。&lt;/p&gt;
+
+&lt;p&gt;&lt;details&gt;
+&lt;summary&gt;
+  &lt;h4&gt; 点击展开 &lt;/h4&gt;
+&lt;/summary&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template &amp;lt;typename _res_type, uint64_t ret_max = 0xFFFFFFFFFFFFFFFFULL&amp;gt;
+struct RNG_base
+{
+    typedef _res_type result_type;
+    static constexpr result_type min() { return 0; }
+    static constexpr result_type max() { return (result_type)ret_max; }
+    const uint64_t seed_mul = 6364136223846793005ULL;
+    const int init_iter = 16;
+    uint64_t new_seed() {
+        std::random_device rd;
+        return ((uint64_t)rd() &amp;lt;&amp;lt; 32) | rd();
+    }
+    uint64_t def_seed() {
+        static uint64_t seed = new_seed();
+        seed *= 3935559000370003845ULL;
+        return ++seed;
+    }
+    static inline uint64_t rotl64(const uint64_t x, int k) {
+        return (x &amp;lt;&amp;lt; k) | (x &amp;gt;&amp;gt; (64 - k));
+    }
+    static inline uint64_t rotr64(const uint64_t x, int k) {
+        return (x &amp;gt;&amp;gt; k) | (x &amp;lt;&amp;lt; (64 - k));
+    }
+    static inline uint32_t rotl32(const uint32_t x, int k) {
+        return (x &amp;lt;&amp;lt; k) | (x &amp;gt;&amp;gt; (32 - k));
+    }
+    static inline uint32_t rotr32(const uint32_t x, int k) {
+        return (x &amp;gt;&amp;gt; k) | (x &amp;lt;&amp;lt; (32 - k));
+    }
+    static inline uint16_t rotl16(const uint16_t x, int k) {
+        return (x &amp;lt;&amp;lt; k) | (x &amp;gt;&amp;gt; (16 - k));
+    }
+    static inline uint16_t rotr16(const uint16_t x, int k) {
+        return (x &amp;gt;&amp;gt; k) | (x &amp;lt;&amp;lt; (16 - k));
+    }
+};
+
+struct PCG32 : public RNG_base&amp;lt;uint32_t&amp;gt; // XSH RR
+{
+    const int init_iter = 1; // min 1
+    uint64_t s;
+    PCG32() { seed(); }
+    PCG32(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = seed1;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        uint64_t x = s;
+        s = s * 6364136223846793005ULL + 1442695040888963407ULL;
+        return rotr32((uint32_t)((x ^ (x &amp;gt;&amp;gt; 18)) &amp;gt;&amp;gt; 27), x &amp;gt;&amp;gt; 59);
+    }
+};
+
+struct rand48 : public RNG_base&amp;lt;uint32_t&amp;gt;
+{
+    uint16_t s[3];
+    static const uint16_t RAND48_A0 = 0xE66D;
+    static const uint16_t RAND48_A1 = 0xDEEC;
+    static const uint16_t RAND48_A2 = 0x0005;
+    static const uint16_t RAND48_C0 = 0x000B;
+    rand48() { seed(); }
+    rand48(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s[0] = (uint16_t)seed1;
+        s[1] = (uint16_t)(seed1 &amp;gt;&amp;gt; 16);
+        s[2] = (uint16_t)(seed1 &amp;gt;&amp;gt; 32);
+    }
+    inline void do_rand48() {
+        const uint32_t x0 = s[0];
+        const uint32_t x1 = s[1];
+        const uint32_t x2 = s[2];
+
+        uint32_t a = RAND48_A0 * x0 + RAND48_C0;
+        s[0] = static_cast&amp;lt;uint16_t&amp;gt;(a &amp;amp; 0xFFFF);
+
+        a &amp;gt;&amp;gt;= 16;
+
+        a += RAND48_A0 * x1 + RAND48_A1 * x0;
+        s[1] = static_cast&amp;lt;uint16_t&amp;gt;(a &amp;amp; 0xFFFF);
+
+        a &amp;gt;&amp;gt;= 16;
+        a += RAND48_A0 * x2 + RAND48_A1 * x1 + RAND48_A2 * x0;
+        s[2] = static_cast&amp;lt;uint16_t&amp;gt;(a &amp;amp; 0xFFFF);
+    }
+    result_type operator()() {
+        do_rand48();
+        return ((uint32_t)s[2] &amp;lt;&amp;lt; 16) + s[1];
+    }
+};
+
+struct taus88 : public RNG_base&amp;lt;uint32_t&amp;gt;
+{
+    uint32_t s[3];
+    const int init_iter = 0;
+    taus88() { seed(); }
+    taus88(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) {
+        s[0] = (uint32_t)seed1;
+        s[1] = (uint32_t)(seed1 &amp;gt;&amp;gt; 32);
+        s[2] = (uint32_t)(seed2 &amp;gt;&amp;gt; 32);
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    inline uint32_t tausworthe(uint32_t arg, uint32_t stage1, uint32_t stage2, uint32_t stage3, uint32_t limit) {
+        return ((arg &amp;amp; limit) &amp;lt;&amp;lt; stage1) ^ (((arg &amp;lt;&amp;lt; stage2) ^ arg) &amp;gt;&amp;gt; stage3);
+    }
+    result_type operator()() {
+        s[0] = tausworthe(s[0], 12, 13, 19, 4294967294UL);
+        s[1] = tausworthe(s[1], 4, 2, 25, 4294967288UL);
+        s[2] = tausworthe(s[2], 17, 3, 11, 4294967280UL);
+        return (s[0] ^ s[1] ^ s[2]);
+    }
+};
+
+struct taus_worthe223 : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 1; // min 1
+    uint64_t gen[4];
+    taus_worthe223() { seed(); }
+    taus_worthe223(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) { seed(seed1, seed2, seed2 * seed_mul + 1, (seed1 ^ seed2) * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2, uint64_t seed3, uint64_t seed4) {
+        gen[0] = seed1;
+        gen[1] = seed2;
+        gen[2] = seed3;
+        gen[3] = seed4;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+#define taus_worthe(i,k,q,s) z = gen[i]; \
+    z = (((z &amp;lt;&amp;lt; q) ^ z) &amp;gt;&amp;gt; (k - s)) ^ ((z&amp;amp;((uint64_t)(int64_t)-1 &amp;lt;&amp;lt; (64 - k))) &amp;lt;&amp;lt; s); \
+    r ^= z; gen[i] = z
+    result_type operator()() {
+        uint64_t r = 0, z;
+        taus_worthe(0, 63, 31, 18);
+        taus_worthe(1, 58, 19, 28);
+        taus_worthe(2, 55, 24, 7);
+        taus_worthe(3, 47, 21, 8);
+        return r;
+    }
+#undef taus_worthe
+};
+
+struct well512 : public RNG_base&amp;lt;uint32_t&amp;gt;
+{
+    // http://lomont.org/papers/2008/Lomont_PRNG_2008.pdf
+    // const int init_iter = 0; // min 0
+    const uint64_t seed_mul = 134775813;
+    uint32_t s[16];
+    uint32_t index;
+    well512() { seed(); }
+    well512(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) { seed(seed1, seed2, seed2 * seed_mul + 1, (seed1 ^ seed2) * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2, uint64_t seed3, uint64_t seed4) {
+        s[0] = (uint32_t)(seed1);
+        s[1] = (uint32_t)(seed1 &amp;gt;&amp;gt; 32);
+        s[2] = (uint32_t)(seed2);
+        s[3] = (uint32_t)(seed2 &amp;gt;&amp;gt; 32);
+        s[4] = (uint32_t)(seed3);
+        s[5] = (uint32_t)(seed3 &amp;gt;&amp;gt; 32);
+        s[6] = (uint32_t)(seed4);
+        s[7] = (uint32_t)(seed4 &amp;gt;&amp;gt; 32);
+        uint8_t* t = (uint8_t*)s;
+        for (int i = 32, j = 0; i &amp;lt; 64; ++i, ++j) {
+            if (i % 4 == 0) {
+                for (int k = i / 8; k &amp;lt; 16; ++k)
+                    s[k] = s[k - 1] * (uint32_t)seed_mul + 1;
+                break;
+            }
+            t[i] = t[j] * (uint8_t)5 + ~t[i - 1];
+        }
+        index = 0;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        uint32_t a, b, c, d;
+        a = s[index];
+        c = s[(index + 13) &amp;amp; 15];
+        b = a ^ c ^ (a &amp;lt;&amp;lt; 16) ^ (c &amp;lt;&amp;lt; 15);
+        c = s[(index + 9) &amp;amp; 15];
+        c ^= (c &amp;gt;&amp;gt; 11);
+        a = s[index] = b ^ c;
+        d = a ^ ((a &amp;lt;&amp;lt; 5) &amp;amp; 0xDA442D24);
+        index = (index + 15) &amp;amp; 15;
+        a = s[index];
+        s[index] = a ^ b ^ d ^ (a &amp;lt;&amp;lt; 2) ^ (b &amp;lt;&amp;lt; 18) ^ (c &amp;lt;&amp;lt; 28);
+        return s[index];
+    }
+};
+
+struct splitmix64 : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 1; // min 1
+    uint64_t s;
+    splitmix64() { seed(); }
+    splitmix64(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s = seed1;
+    }
+    result_type operator()() {
+        uint64_t z = (s += 0x9e3779b97f4a7c15);
+        z = (z ^ (z &amp;gt;&amp;gt; 30)) * 0xbf58476d1ce4e5b9;
+        z = (z ^ (z &amp;gt;&amp;gt; 27)) * 0x94d049bb133111eb;
+        return z ^ (z &amp;gt;&amp;gt; 31);
+    }
+};
+
+struct xoshiro64ss : public RNG_base&amp;lt;uint32_t&amp;gt;
+{
+    //const int init_iter = 1; // min 1
+    uint32_t s[2];
+    xoshiro64ss() { seed(); }
+    xoshiro64ss(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) {
+        s[0] = (uint32_t)seed1;
+        s[1] = (uint32_t)(seed1 &amp;gt;&amp;gt; 32);
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const uint32_t s0 = s[0];
+        uint32_t s1 = s[1];
+        const uint32_t result = rotl32(s0 * 0x9E3779BB, 5) * 5;
+        s1 ^= s0;
+        s[0] = rotl32(s0, 26) ^ s1 ^ (s1 &amp;lt;&amp;lt; 9);
+        s[1] = rotl32(s1, 13);
+        return result;
+    }
+};
+
+struct xoroshiro128p : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 1; // min 1
+    uint64_t s[2];
+    xoroshiro128p() { seed(); }
+    xoroshiro128p(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) {
+        s[0] = seed1;
+        s[1] = seed2;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const uint64_t s0 = s[0];
+        uint64_t s1 = s[1];
+        const uint64_t result = s0 + s1;
+        s1 ^= s0;
+        s[0] = rotl64(s0, 24) ^ s1 ^ (s1 &amp;lt;&amp;lt; 16);
+        s[1] = rotl64(s1, 37);
+        return result;
+    }
+};
+
+struct xoroshiro128pp : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 1; // min 1
+    uint64_t s[2];
+    xoroshiro128pp() { seed(); }
+    xoroshiro128pp(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) {
+        s[0] = seed1;
+        s[1] = seed2;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const uint64_t s0 = s[0];
+        uint64_t s1 = s[1];
+        const uint64_t result = rotl64(s0 + s1, 17) + s0;
+        s1 ^= s0;
+        s[0] = rotl64(s0, 49) ^ s1 ^ (s1 &amp;lt;&amp;lt; 21);
+        s[1] = rotl64(s1, 28);
+        return result;
+    }
+};
+
+struct xoroshiro128ss : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 1; // min 1
+    uint64_t s[2];
+    xoroshiro128ss() { seed(); }
+    xoroshiro128ss(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) {
+        s[0] = seed1;
+        s[1] = seed2;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const uint64_t s0 = s[0];
+        uint64_t s1 = s[1];
+        const uint64_t result = rotl64(s0 * 5, 7) * 9;
+        s1 ^= s0;
+        s[0] = rotl64(s0, 24) ^ s1 ^ (s1 &amp;lt;&amp;lt; 16);
+        s[1] = rotl64(s1, 37);
+        return result;
+    }
+};
+
+struct xoshiro256p : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 0; // min 0
+    uint64_t s[4];
+    xoshiro256p() { seed(); }
+    xoshiro256p(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) { seed(seed1, seed2, seed2 * seed_mul + 1, (seed1 ^ seed2) * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2, uint64_t seed3, uint64_t seed4) {
+        s[0] = seed1;
+        s[1] = seed2;
+        s[2] = seed3;
+        s[3] = seed4;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const uint64_t result = s[0] + s[3];
+        const uint64_t t = s[1] &amp;lt;&amp;lt; 17;
+        s[2] ^= s[0];
+        s[3] ^= s[1];
+        s[1] ^= s[2];
+        s[0] ^= s[3];
+        s[2] ^= t;
+        s[3] = rotl64(s[3], 45);
+        return result;
+    }
+};
+
+struct xoshiro256pp : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 0; // min 0
+    uint64_t s[4];
+    xoshiro256pp() { seed(); }
+    xoshiro256pp(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) { seed(seed1, seed2, seed2 * seed_mul + 1, (seed1 ^ seed2) * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2, uint64_t seed3, uint64_t seed4) {
+        s[0] = seed1;
+        s[1] = seed2;
+        s[2] = seed3;
+        s[3] = seed4;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const uint64_t result = rotl64(s[0] + s[3], 23) + s[0];
+        const uint64_t t = s[1] &amp;lt;&amp;lt; 17;
+        s[2] ^= s[0];
+        s[3] ^= s[1];
+        s[1] ^= s[2];
+        s[0] ^= s[3];
+        s[2] ^= t;
+        s[3] = rotl64(s[3], 45);
+        return result;
+    }
+};
+
+struct xoshiro256ss : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 0; // min 0
+    uint64_t s[4];
+    xoshiro256ss() { seed(); }
+    xoshiro256ss(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) { seed(seed1, seed2, seed2 * seed_mul + 1, (seed1 ^ seed2) * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2, uint64_t seed3, uint64_t seed4) {
+        s[0] = seed1;
+        s[1] = seed2;
+        s[2] = seed3;
+        s[3] = seed4;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const uint64_t result = rotl64(s[1] * 5, 7) * 9;
+        const uint64_t t = s[1] &amp;lt;&amp;lt; 17;
+        s[2] ^= s[0];
+        s[3] ^= s[1];
+        s[1] ^= s[2];
+        s[0] ^= s[3];
+        s[2] ^= t;
+        s[3] = rotl64(s[3], 45);
+        return result;
+    }
+};
+
+struct xoshiro1024ss : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 0; // min 0
+    uint64_t s[16];
+    int p;
+    xoshiro1024ss() { seed(); }
+    xoshiro1024ss(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) { seed(seed1, seed2, seed2 * seed_mul + 1, (seed1 ^ seed2) * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2, uint64_t seed3, uint64_t seed4) {
+        s[0] = seed1;
+        s[1] = seed2;
+        s[2] = seed3;
+        s[3] = seed4;
+        uint8_t* t = (uint8_t*)s;
+        for (int i = 32, j = 0; i &amp;lt; 128; ++i, ++j) {
+            if (i % 8 == 0) {
+                for (int k = i / 8; k &amp;lt; 16; ++k)
+                    s[k] = s[k - 1] * seed_mul + 1;
+                break;
+            }
+            t[i] = t[j] * (uint8_t)5 + ~t[i - 1];
+        }
+        p = 0;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    void seed(uint8_t seed[], int size) {
+        uint8_t* t = (uint8_t*)s;
+        if (size &amp;gt; 128) size = 128;
+        for (int i = 0; i &amp;lt; size; ++i) {
+            t[i] = ((uint8_t*)seed)[i];
+        }
+        if (size == 0) {
+            size = 8; s[0] = 0x931197d8e3177f17ULL;
+        }
+        for (int i = size, j = 0; i &amp;lt; 128; ++i, ++j) {
+            if (i % 8 == 0) {
+                for (int k = i / 8; k &amp;lt; 16; ++k)
+                    s[k] = s[k - 1] * seed_mul + 1;
+                break;
+            }
+            t[i] = t[j] * (uint8_t)5 + ~t[i - 1];
+        }
+        p = 0;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const int q = p;
+        const uint64_t s0 = s[p = (p + 1) &amp;amp; 15];
+        uint64_t s15 = s[q];
+        const uint64_t result = rotl64(s0 * 5, 7) * 9;
+
+        s15 ^= s0;
+        s[q] = rotl64(s0, 25) ^ s15 ^ (s15 &amp;lt;&amp;lt; 27);
+        s[p] = rotl64(s15, 36);
+
+        return result;
+    }
+};
+
+struct xoshiro1024pp : public RNG_base&amp;lt;uint64_t&amp;gt;
+{
+    //const int init_iter = 0; // min 0
+    uint64_t s[16];
+    int p;
+    xoshiro1024pp() { seed(); }
+    xoshiro1024pp(uint64_t seed1) { seed(seed1); }
+    void seed() { seed(def_seed()); }
+    void seed(uint64_t seed1) { seed(seed1, seed1 * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2) { seed(seed1, seed2, seed2 * seed_mul + 1, (seed1 ^ seed2) * seed_mul + 1); }
+    void seed(uint64_t seed1, uint64_t seed2, uint64_t seed3, uint64_t seed4) {
+        s[0] = seed1;
+        s[1] = seed2;
+        s[2] = seed3;
+        s[3] = seed4;
+        uint8_t* t = (uint8_t*)s;
+        for (int i = 32, j = 0; i &amp;lt; 128; ++i, ++j) {
+            if (i % 8 == 0) {
+                for (int k = i / 8; k &amp;lt; 16; ++k)
+                    s[k] = s[k - 1] * seed_mul + 1;
+                break;
+            }
+            t[i] = t[j] * (uint8_t)5 + ~t[i - 1];
+        }
+        p = 0;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    void seed(uint8_t seed[], int size) {
+        uint8_t* t = (uint8_t*)s;
+        if (size &amp;gt; 128) size = 128;
+        for (int i = 0; i &amp;lt; size; ++i) {
+            t[i] = ((uint8_t*)seed)[i];
+        }
+        if (size == 0) {
+            size = 8; s[0] = 0x931197d8e3177f17ULL;
+        }
+        for (int i = size, j = 0; i &amp;lt; 128; ++i, ++j) {
+            if (i % 8 == 0) {
+                for (int k = i / 8; k &amp;lt; 16; ++k)
+                    s[k] = s[k - 1] * seed_mul + 1;
+                break;
+            }
+            t[i] = t[j] * (uint8_t)5 + ~t[i - 1];
+        }
+        p = 0;
+        for (int i = 0; i &amp;lt; init_iter; ++i) (*this)();
+    }
+    result_type operator()() {
+        const int q = p;
+        const uint64_t s0 = s[p = (p + 1) &amp;amp; 15];
+        uint64_t s15 = s[q];
+        const uint64_t result = rotl64(s0 + s15, 23) + s15;
+
+        s15 ^= s0;
+        s[q] = rotl64(s0, 25) ^ s15 ^ (s15 &amp;lt;&amp;lt; 27);
+        s[p] = rotl64(s15, 36);
+
+        return result;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;/details&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;效率测试&#34;&gt;效率测试&lt;/h2&gt;
+
+&lt;p&gt;我们当然不能全信官方的数据，具体表现不同机器不同编译器也可能不相同，所以我们就来测试一下。测试所用的实现均为我个人实现的版本，不代表官方版本的运行效率，PCG32使用的是XSH-RR，PCG64使用的是XSL-RR&lt;/p&gt;
+
+&lt;p&gt;在x86下测试标准是生成2亿个64位随机数的运行时间，如生成器生成的是32位，那么生成4亿个32位整数，即以相同输出位数的时间来做比较&lt;/p&gt;
+
+&lt;h3 id=&#34;x86&#34;&gt;x86&lt;/h3&gt;
+
+&lt;p&gt;在VS2015上以x86编译的运行时间&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;算法实现&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;毫秒&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;LCG32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;394&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1502&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG32_16_ext,4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2034&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32_ext,2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2579&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1819&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;6705&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32_ext,2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2581&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;rand48&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2221&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus88&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1232&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus_worthe223&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1844&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;well512&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1794&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;splitmix64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2118&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;605&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;882&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro64ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;534&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1181&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1194&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1382&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1279&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1856&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1513&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1472&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1585&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::mt19937&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1651&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;在mingw32 gcc5.1.0 以&lt;code&gt;-O2&lt;/code&gt;参数编译的结果&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;算法实现&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;毫秒&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;LCG32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;398&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1219&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG32_16_ext,4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1008&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32_ext,2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;877&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1384&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;3141&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32_ext,2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1439&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;rand48&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1084&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus88&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;705&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus_worthe223&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1757&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;well512&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1173&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;splitmix64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1267&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;663&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;919&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro64ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;462&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;821&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;951&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1036&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;845&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1094&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1205&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1067&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1074&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::mt19937&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1033&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h3 id=&#34;x64&#34;&gt;x64&lt;/h3&gt;
+
+&lt;p&gt;在VS2015上以x64编译的运行时间&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;算法实现&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;毫秒&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;LCG32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;396&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;399&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG32_16_ext,4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1207&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32_ext,2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;609&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;407&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;670&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32_ext,2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;988&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;rand48&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1033&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus88&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1147&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus_worthe223&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;759&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;well512&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1821&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;splitmix64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;212&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;516&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;328&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro64ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;515&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;215&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;267&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;232&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;151&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;182&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;193&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;492&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;462&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::mt19937&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1580&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;在centos7x64 gcc8.3.1 以&lt;code&gt;-O2&lt;/code&gt;参数编译的结果&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;算法实现&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;毫秒&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;LCG32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;426&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;413&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG32_16_ext,4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1115&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32_ext,2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;505&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;434&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;392&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32_ext,2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;511&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;rand48&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;839&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus88&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;707&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus_worthe223&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;448&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;well512&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1009&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;splitmix64&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;186&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;525&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;229&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro64ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;476&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;168&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;217&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;237&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256p&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;181&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;191&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;182&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024pp&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;292&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024ss&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;314&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::mt19937&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;2112&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;从以上数据来看，首先要区分架构，如果是32位的，&lt;code&gt;++&lt;/code&gt;的更快，而在64位上则大多&lt;code&gt;**&lt;/code&gt;稍快，而现在大多数系统都支持64位的情况下，优先考虑&lt;code&gt;**&lt;/code&gt;的版本。而256与128的差距很小，不建议使用128，除非你确实要省这么点内存。综合最佳的是&lt;code&gt;xoshiro256**&lt;/code&gt;，即表格里的xoshiro256ss，64位架构下比线性同余快，而且质量好得多，推荐使用它。而如果你需要同时考虑32位和64位，那选择&lt;code&gt;xoshiro256++&lt;/code&gt;也是不错的。再者，如果你只需要生成浮点随机数，那么xoroshiro128p是速度最快的。不过老实说，大多数场合都没有必要对这么点差别纠结，选择一个合适的就行了，而且VS测试结果很迷，优化得让人猜不透，我认为以gcc的结果优先作为参考。以上数据仅供参考。&lt;/p&gt;
+
+&lt;h2 id=&#34;随机性测试&#34;&gt;随机性测试&lt;/h2&gt;
+
+&lt;p&gt;使用 TestU01 1.2.3 版的 SmallCrash, Crash 和 BigCrash 进行测试（如SmallCrash未通过则不测试Crash，Crash未通过则不测试BigCrash），横线&lt;code&gt;-&lt;/code&gt;表示通过测试，&lt;code&gt;/&lt;/code&gt;表示不进行测试，&lt;code&gt;?&lt;/code&gt;表示未测试&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;算法实现&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;状态空间(bits)&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;状态周期&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;SmallCrash&lt;br/&gt;未通过项&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Crash&lt;br/&gt;未通过项&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;BigCrash&lt;br/&gt;未通过项&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;LCG32&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;32&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{32}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;MaxOft&lt;br/&gt;&amp;hellip;.&lt;sup&gt;[1]&lt;/sup&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;64&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{32}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;CollisionOver&lt;br/&gt;BirthdaySpacings&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG32_16ro&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;32&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{32}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;MaxOft&lt;br/&gt;&amp;hellip;.&lt;sup&gt;[2]&lt;/sup&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG32_16_ext,0&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;48&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{48}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;SerialOver&lt;br/&gt;&amp;hellip;&lt;sup&gt;[3]&lt;/sup&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG32_16_ext,4&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;288&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{288}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;LCG64_32_ext,0&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;96&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{96}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG16&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;32&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{32}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;SerialOver&lt;br/&gt;MaxOft&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;64&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{64}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG64&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;128&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{128}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;PCG32_ext,0&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;96&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{96}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;rand48&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;48&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{48}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;SimpPoker&lt;br/&gt;&amp;hellip;.&lt;sup&gt;[4]&lt;/sup&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus88&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;96&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{88}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;MatrixRank&lt;br/&gt;LinearComp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;taus_worthe223&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;256&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{223}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;MaxOft&lt;br/&gt;MatrixRank&lt;br/&gt;LinearComp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;well512&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;512&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{512}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;MatrixRank&lt;br/&gt;LinearComp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;splitmix64&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;64&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{64}$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift64s&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;64&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{64}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;MatrixRank&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;128&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{128}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;MaxOft&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xorshift128p&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;128&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{128}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;sup&gt;[5]&lt;/sup&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro64ss&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;64&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{64}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;A.S.&lt;sup&gt;[6]&lt;/sup&gt;&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128p&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;128&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{128}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128pp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;128&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{128}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoroshiro128ss&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;128&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{128}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256p&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;256&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{256}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256pp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;256&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{256}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro256ss&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;256&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{256}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024pp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;1056&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{1024}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;xoshiro1024ss&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;1056&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{1024}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;std::mt19937&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;20032&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;$2^{19937}-1$&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;-&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;LinearComp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;/&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;注解：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;LCG32未通过的项：BirthdaySpacings, Collision, Gap, SimpPoker, CouponCollector, MaxOft, WeightDistrib, MatrixRank, HammingIndep, RandomWalk1&lt;/li&gt;
+&lt;li&gt;LCG32_16ro的实现代码并不是本文中描述的有问题的版本，它是列表里唯一一个32位能通过SmallCrash和Crash测试的实现。BigCrash未通过的项：CouponCollector, Gap, MaxOft, WeightDistrib, SumCollector, LongestHeadRun, PeriodsInStrings&lt;/li&gt;
+&lt;li&gt;LCG32_16ext,0在BigCrash未通过的项：SerialOver, CouponCollector, WeightDistrib, PeriodsInStrings&lt;/li&gt;
+&lt;li&gt;rand48未通过的项：BirthdaySpacings, Gap, SimpPoker, WeightDistrib, CouponCollector&lt;/li&gt;
+&lt;li&gt;据wiki，xorshift128p输出reversed的情况下不能通过BigCrash测试&lt;/li&gt;
+&lt;li&gt;xoshiro64ss未通过的项：AppearanceSpacings&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;随机性测试的部分结果也会带有一定的随机性，多次测试的结果可能不同，测试结果仅供参考&lt;/p&gt;
+
+&lt;h2 id=&#34;生成-0-1-0-范围的均匀分布浮点数&#34;&gt;生成 $[0, 1.0)$ 范围的均匀分布浮点数&lt;/h2&gt;
+
+&lt;p&gt;以上模板生成的都是无符号整数，如果要生成浮点数的话，以上的模板里除了&lt;code&gt;MCG&lt;/code&gt;不能直接用以下函数外，其它的都可以直接使用（速度快），用来把生成的整数转换成对应的浮点数。又或者，你可以直接用STL的&lt;code&gt;uniform_real_distribution&lt;/code&gt;（通用性好），以上全部模板支持STL的distribution系列。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;float rand_float(uint32_t rnd)
+{
+    union {
+        float f;
+        uint32_t u;
+    }x;
+    x.u = ((rnd &amp;gt;&amp;gt; 9) | 0x3F800000UL);
+    return x.f - 1.0f;
+}
+
+double rand_float(uint64_t rnd)
+{
+    union {
+        double d;
+        uint64_t u;
+    } x;
+    x.u = ((rnd &amp;gt;&amp;gt; 12) | 0x3FF0000000000000UL);
+    return x.d - 1.0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;生成-0-n-范围的均匀分布随机整数&#34;&gt;生成 $[0, n]$ 范围的均匀分布随机整数&lt;/h2&gt;
+
+&lt;p&gt;很多人第一个方案就是 &lt;code&gt;rnd % (n + 1)&lt;/code&gt; ，其实这是错误的，在你对随机数分布要求不高的时候可以这么用，否则只要n+1不是2的整数次幂，获得的随机数就不是均匀分布的，除了直接使用STL的&lt;code&gt;uniform_int_distribution&lt;/code&gt;，自己写的话，除了&lt;code&gt;MCG&lt;/code&gt;不能直接用以下函数外，其它的大多可以直接使用（条件是参数eg的随机引擎生成的随机数最大值必须大于等于n）&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template&amp;lt;class _Eg&amp;gt;
+static uint64_t i64_distribution(_Eg&amp;amp; eg, uint64_t n)
+{
+    ++n;
+    if ((n &amp;amp; -n) == n)
+        return (int64_t)eg() &amp;amp; (n-1);
+    uint64_t m = n;
+    while (m &amp;amp; (m - 1)) m += m &amp;amp; -m;
+    --m;
+    for (;;)
+    {
+        uint64_t r = (uint64_t)eg() &amp;amp; m;
+        if (r &amp;lt; n)
+            return r;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;不过这样的缺点是如果n比较小，那随机数据的大部分都浪费了，为了能更大地利用随机数据，可以做如下的改进，按n的大小分为1，2，4，8字节，每次从随机数据里取1，2，4，8个字节，多余的部分留下次使用，这样既照顾了速度也照顾了数据利用率。如果你需要能生成任意大小，那么你需要把随机数引擎作为二进制流数据生成，然后再从二进制流读取 $log_2n$ 个bit来做以上操作，这样代码较为复杂，但在n较小的时候能最大限度的利用生成的数据，这里就不具体展开了，有这个需求的话直接使用 &lt;code&gt;uniform_int_distribution&lt;/code&gt; 就足够了。以上全部模板支持直接调用。&lt;/p&gt;
+
+&lt;p&gt;网上还有很多其它的错误生成方法，以下给大家带来一个视频，我觉得讲解得不错&lt;/p&gt;
+
+&lt;iframe src=&#34;https://channel9.msdn.com/Events/GoingNative/2013/rand-Considered-Harmful/player&#34; width=&#34;960&#34; height=&#34;540&#34; allowFullScreen frameBorder=&#34;0&#34; title=&#34;rand() Considered Harmful - Microsoft Channel 9 Video&#34;&gt;&lt;/iframe&gt;
+
+&lt;h2 id=&#34;后记&#34;&gt;后记&lt;/h2&gt;
+
+&lt;p&gt;随机数生成是一个大坑，以上只是做个简单得不能再简单的介绍，我只是碰巧看到lua更新了这个顺便更新一波，写个普及文，要是自己去创造一个随机数算法，我觉得比写别的算法还困难不少，绝大多数的实现都经不起数学推敲。之后有时间再收集收集资料再做介绍。&lt;/p&gt;
+
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Linear_congruential_generator&#34; target=&#34;_blank&#34;&gt;线性同余&lt;/a&gt; LCG&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Lehmer_random_number_generator&#34; target=&#34;_blank&#34;&gt;MCG&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Mersenne_Twister&#34; target=&#34;_blank&#34;&gt;梅森旋转&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Linear-feedback_shift_register&#34; target=&#34;_blank&#34;&gt;LFSR&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://prng.di.unimi.it/&#34; target=&#34;_blank&#34;&gt;xoshiro/xoroshiro&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.pcg-random.org/&#34; target=&#34;_blank&#34;&gt;PCG&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.pcg-random.org/pdf/toms-oneill-pcg-family-v1.02.pdf&#34; target=&#34;_blank&#34;&gt;PCG pdf&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.sprng.org/Version5.0/parameters.html&#34; target=&#34;_blank&#34;&gt;LCG Generator Parameters&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/List_of_random_number_generators&#34; target=&#34;_blank&#34;&gt;List of random number generators&lt;/a&gt;&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>可持久化线段树</title>
@@ -102,7 +1882,7 @@
 3,4&#39;:7--&amp;gt;4,4:2
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;最后，在区间&lt;code&gt;[3,4]&lt;/code&gt;要更新的节点在左儿子那，所以把左儿子复制出来，同时由于这是最后的节点，再从底向上更新sum，得到&lt;/p&gt;
+&lt;p&gt;最后，在区间$[3,4]$要更新的节点在左儿子那，所以把左儿子复制出来，同时由于这是最后的节点，再从底向上更新sum，得到&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
 1,4:8--&amp;gt;1,2:1
@@ -121,11 +1901,11 @@
 
 &lt;h2 id=&#34;静态区间范围查询&#34;&gt;静态区间范围查询&lt;/h2&gt;
 
-&lt;p&gt;现在给出区间[L,R]和范围[a,b]，求数组中在区间[L,R]里有多少个元素在范围[a,b]里。这种查询普通的线段树并不好办，那可持久化线段树有什么方法来解呢，首先我们先构造一棵空线段树，然后对数组元素做离散化，按大小映射到[0,n-1]，然后对离散化后的数组，按下标次序，一个一个加入到可持久化线段树里，例如数字2，那么我们就要在线段树里对2号元素+1，所以这就是可持久化权值线段树，即主席树。如此这般加入后，由于我们是按下标次序加入的，所以我们非常容易地得到表示区间[0,R]的线段树，那么在范围[a,b]里的元素数量，正好就是[a,b]区间和。但如果要求的是区间[L,R]里有多少个元素在范围[a,b]里，那我们除了要求出区间[0,R]，还要求出区间[0,L-1]，然后两者的[a,b]区间和的差，就是我们所要的答案&lt;/p&gt;
+&lt;p&gt;现在给出区间$[L,R]$和范围$[a,b]$，求数组中在区间$[L,R]$里有多少个元素在范围$[a,b]$里。这种查询普通的线段树并不好办，那可持久化线段树有什么方法来解呢，首先我们先构造一棵空线段树，然后对数组元素做离散化，按大小映射到$[0,n-1]$，然后对离散化后的数组，按下标次序，一个一个加入到可持久化线段树里，例如数字2，那么我们就要在线段树里对2号元素+1，所以这就是可持久化权值线段树，即主席树。如此这般加入后，由于我们是按下标次序加入的，所以我们非常容易地得到表示区间$[0,R]$的线段树，那么在范围$[a,b]$里的元素数量，正好就是$[a,b]$区间和。但如果要求的是区间$[L,R]$里有多少个元素在范围$[a,b]$里，那我们除了要求出区间$[0,R]$，还要求出区间$[0,L-1]$，然后两者的$[a,b]$区间和的差，就是我们所要的答案&lt;/p&gt;
 
 &lt;h2 id=&#34;基础模板&#34;&gt;基础模板&lt;/h2&gt;
 
-&lt;p&gt;以下基础模板只支持区间求和，即求区间[0,R]里有多少个元素在范围[a,b]里&lt;/p&gt;
+&lt;p&gt;以下基础模板只支持区间求和，即求区间$[0,R]$里有多少个元素在范围$[a,b]$里&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct persistent_seg_tree
 {
@@ -225,7 +2005,7 @@
 
 &lt;h2 id=&#34;静态区间第k大&#34;&gt;静态区间第k大&lt;/h2&gt;
 
-&lt;p&gt;此问题解法较多，本篇主要介绍使用主席树的解法，同样也是先建立一棵可持久化权值线段树，对于查询区间为[0,R]的第k大，这个问题很简单，就是找出前缀和大于等于k的区间[0,m]所对应的最小的m值，所以只要对[0,R]所对应的线段树做查找，如果左子树的sum小于等于k，那么进入左子树查询k，否则进入右子树查询k-sum即可。但对于查询区间[L,R]，我们需要找出[0,R]和[0,L-1]这两棵线段树，它们的[a,b]区间和表示在[L,R]里有多少个数的值域在[a,b]之间，所以我们就同时对这两棵线段树做查找，设 [0,R]左子树的sum 减去 [0,L-1]左子树的sum 为S，那么如果S小于等于k，那么进入左子树查询k，否则进入右子树查询k-S，实现代码如下&lt;/p&gt;
+&lt;p&gt;此问题解法较多，本篇主要介绍使用主席树的解法，同样也是先建立一棵可持久化权值线段树，对于查询区间为$[0,R]$的第k大，这个问题很简单，就是找出前缀和大于等于k的区间$[0,m]$所对应的最小的m值，所以只要对$[0,R]$所对应的线段树做查找，如果左子树的sum小于等于k，那么进入左子树查询k，否则进入右子树查询k-sum即可。但对于查询区间$[L,R]$，我们需要找出$[0,R]$和$[0,L-1]$这两棵线段树，它们的$[a,b]$区间和表示在$[L,R]$里有多少个数的值域在$[a,b]$之间，所以我们就同时对这两棵线段树做查找，设 $[0,R]$左子树的sum 减去 $[0,L-1]$左子树的sum 为S，那么如果S小于等于k，那么进入左子树查询k，否则进入右子树查询k-S，实现代码如下&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int kth(int tpl, int tpr, int tl, int tr, int k)
 {
@@ -1072,9 +2852,16 @@ struct FHQ_Treap
     };
     struct node
     {
-        int ch[2], sz, k;
+        int ch[2], sz;
+        unsigned k;
         data d, sum, lz_add;
-        node(int z = 1) :sz(z), k(rand()) { ch[0] = ch[1] = 0; }
+        node(int z = 1) :sz(z), k(rnd()) { ch[0] = ch[1] = 0; }
+        static unsigned rnd()
+        {
+            static unsigned r = 0x123;
+            r = r * 69069 + 1;
+            return r;
+        }
     };
     vector&amp;lt;node&amp;gt; nodes;
     int root;
