@@ -222,7 +222,7 @@ void split(int tp, int k, int &amp;x, int &amp;y)
       "url": "/img/icon-512.png"
     }
   },
-  "description": "\u003cp\u003e讲完了\u003ca href=\"../20191211-treap-sbt/\"\u003etreap\u003c/a\u003e和\u003ca href=\"../20191213-tree-sequence/\"\u003esplaytree\u003c/a\u003e，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。\u003c/p\u003e\n\n\u003cp\u003esplay其实还有两个操作split和merge没有介绍，我打算把这两放在这里一并介绍\u003c/p\u003e\n\n\u003ch2 id=\"split和merge\"\u003eSplit和Merge\u003c/h2\u003e\n\n\u003cp\u003eSplit就是把树按某个条件划分成两棵子树，如果是查找树，就按某个值划分为小于它的以及大于等于它的（等于号取哪边怎么好写怎么来就是），如果是序列维护，那就按照rank来划分。而merge操作则正好相反，把两棵子树合并成为一棵。所以，如果我们需要对某个区间做操作，那么我们就把那个区间Split出来，操作好了后（打懒惰标记，或取出结果）再Merge回去就行了，与splay操作的思路是差不多的。不过为了在split再merge后能间接对树的平衡性优化，我们不能简单地merge，要套用Treap的随机数法，我们先来看怎么split。\u003c/p\u003e\n\n\u003cp\u003e先定义好接口\u003ccode\u003evoid split(int tp, int k, int \u0026amp;x, int \u0026amp;y)\u003c/code\u003e，x是返回的左子树，y是返回的右子树，接着我们需要递归split，如果划分点在左子树，那么y一定是根，反之划分点在右子树，那么x一定是根。确定了其中一个，在递归调用的时候，假如y确定了，于是还没确定的，就是x以及根节点的左子树的指向，所以把这两传参就行了，时间复杂度 $O(logn)$ ，具体代码如下：\u003c/p\u003e\n\n\u003cpre\u003e\u003ccode class=\"language-cpp\"\u003e// 维护序列的实现\nvoid split(int tp, int k, int \u0026amp;x, int \u0026amp;y)\n{\n    if (!tp) { x = y = 0; return; }\n    pushdown(tp);\n    if (k \u0026lt;= nodes[ch(tp, 0)].sz)\n    {\n        y = tp;\n        split(ch(tp, 0), k, x, ch(tp, 0));\n        update(y);\n    }\n    else\n    {\n        x = tp;\n        split(ch(tp, 1), k - nodes[ch(tp, 0)].sz - 1, ch(tp, 1), y);\n        update(x);\n    }\n}\n\u003c/code\u003e\u003c/pre\u003e"
+  "description": "\u003cp\u003e讲完了\u003ca href=\"/post/20191211-treap-sbt/\"\u003etreap\u003c/a\u003e和\u003ca href=\"/post/20191213-tree-sequence/\"\u003esplaytree\u003c/a\u003e，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。\u003c/p\u003e\n\n\u003cp\u003esplay其实还有两个操作split和merge没有介绍，我打算把这两放在这里一并介绍\u003c/p\u003e\n\n\u003ch2 id=\"split和merge\"\u003eSplit和Merge\u003c/h2\u003e\n\n\u003cp\u003eSplit就是把树按某个条件划分成两棵子树，如果是查找树，就按某个值划分为小于它的以及大于等于它的（等于号取哪边怎么好写怎么来就是），如果是序列维护，那就按照rank来划分。而merge操作则正好相反，把两棵子树合并成为一棵。所以，如果我们需要对某个区间做操作，那么我们就把那个区间Split出来，操作好了后（打懒惰标记，或取出结果）再Merge回去就行了，与splay操作的思路是差不多的。不过为了在split再merge后能间接对树的平衡性优化，我们不能简单地merge，要套用Treap的随机数法，我们先来看怎么split。\u003c/p\u003e\n\n\u003cp\u003e先定义好接口\u003ccode\u003evoid split(int tp, int k, int \u0026amp;x, int \u0026amp;y)\u003c/code\u003e，x是返回的左子树，y是返回的右子树，接着我们需要递归split，如果划分点在左子树，那么y一定是根，反之划分点在右子树，那么x一定是根。确定了其中一个，在递归调用的时候，假如y确定了，于是还没确定的，就是x以及根节点的左子树的指向，所以把这两传参就行了，时间复杂度 $O(logn)$ ，具体代码如下：\u003c/p\u003e\n\n\u003cpre\u003e\u003ccode class=\"language-cpp\"\u003e// 维护序列的实现\nvoid split(int tp, int k, int \u0026amp;x, int \u0026amp;y)\n{\n    if (!tp) { x = y = 0; return; }\n    pushdown(tp);\n    if (k \u0026lt;= nodes[ch(tp, 0)].sz)\n    {\n        y = tp;\n        split(ch(tp, 0), k, x, ch(tp, 0));\n        update(y);\n    }\n    else\n    {\n        x = tp;\n        split(ch(tp, 1), k - nodes[ch(tp, 0)].sz - 1, ch(tp, 1), y);\n        update(x);\n    }\n}\n\u003c/code\u003e\u003c/pre\u003e"
 }
 </script>
 
@@ -611,7 +611,7 @@ void split(int tp, int k, int &amp;x, int &amp;y)
   <div class="article-container">
 
     <div class="article-style">
-      <p>讲完了<a href="../20191211-treap-sbt/">treap</a>和<a href="../20191213-tree-sequence/">splaytree</a>，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。</p>
+      <p>讲完了<a href="/post/20191211-treap-sbt/">treap</a>和<a href="/post/20191213-tree-sequence/">splaytree</a>，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。</p>
 
 <p>splay其实还有两个操作split和merge没有介绍，我打算把这两放在这里一并介绍</p>
 

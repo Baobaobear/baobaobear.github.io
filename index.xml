@@ -5,12 +5,960 @@
     <link>/</link>
       <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <description>Baobaobear</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 04 Jan 2020 08:26:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 16 Apr 2020 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Baobaobear</title>
       <link>/</link>
     </image>
+    
+    <item>
+      <title>回文树</title>
+      <link>/post/20200416-pam/</link>
+      <pubDate>Thu, 16 Apr 2020 00:00:00 +0800</pubDate>
+      <guid>/post/20200416-pam/</guid>
+      <description>&lt;p&gt;回文树（EER Tree，Palindromic Tree），有点类似Trie，但它并不是匹配字符串的，很多人称之为回文自动机，但它一点也不像自动机，不过我还是按习惯的来，使用PAM为简称。为了表示一个回文，我们只表示一边的一个单链即可，这时就类似Trie。但不同之处是，回文区分奇数长度和偶数长度，所以这里我们使用两个根，分别来表示奇数长度和偶数长度。所以，在奇数根里，链ba表示aba，而在偶数根里的ba表示abba。&lt;/p&gt;
+
+&lt;p&gt;首先我们来直观地看看PAM的图形化，以下是字符串&lt;code&gt;abcbbc&lt;/code&gt;的PAM&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&amp;gt;1[-1]
+end
+subgraph node0
+0--&amp;gt;6((bb))
+6--&amp;gt;7((cbbc))
+end
+subgraph node1
+1--&amp;gt;2((a))
+1--&amp;gt;3((b))
+1--&amp;gt;4((c))
+4--&amp;gt;5((bcb))
+end
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;0
+6-.-&amp;gt;3
+5-.-&amp;gt;3
+7-.-&amp;gt;4
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;实线方向就是子节点方向，虚线是fail指针，指向这个节点最长的回文后缀节点。图有点乱，但又不希望画得过于简单导致说不清楚，将就一下吧。&lt;/p&gt;
+
+&lt;p&gt;为了能顺利构造，每个节点上面要存储以下必要数据：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;next: 类似Trie，表示子结点的指针，即图上实线&lt;/li&gt;
+&lt;li&gt;fail: fail指针，即图上虚线&lt;/li&gt;
+&lt;li&gt;len: 这个节点所表示的回文串的长度&lt;/li&gt;
+&lt;li&gt;cnt: 这个节点所表示的回文串在原串中出现的次数&lt;/li&gt;
+&lt;li&gt;num: 这个节点所表示的回文串中，有多少个后缀也是回文&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;构造方法有点类似AC自动机或SAM，它用增量式构造，假设前k个字符已经构造好，最后构造的节点假设是&lt;code&gt;aba&lt;/code&gt;，新加的字符是&lt;code&gt;c&lt;/code&gt;，那么我们通过那个节点，获取长度是3，于是判断一下原字符串在&lt;code&gt;aba&lt;/code&gt;的前面的字符看是不是和新字符一样，如果是，就在它下面新加入节点，否则，就跳到它的fail节点再做相同的判断，其实这个比SAM简单多了。&lt;/p&gt;
+
+&lt;h2 id=&#34;pam构造过程模拟&#34;&gt;PAM构造过程模拟&lt;/h2&gt;
+
+&lt;p&gt;我们使用字符串&lt;code&gt;abcbbc&lt;/code&gt;作为开始，首先先把abc都插入&lt;/p&gt;
+
+&lt;h3 id=&#34;1-插入abc&#34;&gt;1 插入abc&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&amp;gt;1[-1]
+end
+subgraph node1
+1--&amp;gt;2((a))
+1--&amp;gt;3((b))
+1--&amp;gt;4((c))
+end
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;0
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-再插入b&#34;&gt;2 再插入b&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&amp;gt;1[-1]
+end
+subgraph node1
+1--&amp;gt;2((a))
+1--&amp;gt;3((b))
+1--&amp;gt;4((c))
+4--&amp;gt;5((bcb))
+end
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;0
+5-.-&amp;gt;3
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;新增加的b构成bcb回文，于是加在c后面，而fail指针的查找，就是从c的fail节点开始，判断那个节点对称的位置是不是新增加的字符b，是的话连上，不是的话再向上一层的fail节点继续找。&lt;/p&gt;
+
+&lt;h3 id=&#34;3-再插入b&#34;&gt;3 再插入b&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&amp;gt;1[-1]
+end
+subgraph node0
+0--&amp;gt;6((bb))
+end
+subgraph node1
+1--&amp;gt;2((a))
+1--&amp;gt;3((b))
+1--&amp;gt;4((c))
+4--&amp;gt;5((bcb))
+end
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;0
+6-.-&amp;gt;3
+5-.-&amp;gt;3
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;而最后插入a后的结果和开头的图是相同的，这里不重复了&lt;/p&gt;
+
+&lt;h2 id=&#34;关于节点计数&#34;&gt;关于节点计数&lt;/h2&gt;
+
+&lt;p&gt;这个节点计数，就是前面所说的cnt，即此节点所表示的回文在整个串中出现次数，但这个并不是一次性统计好的，要分两步。首先，在创建回文树过程中的节点计数，然后就是从叶子开始，把自己的cnt数值加到它的fail节点上，为什么是做加法呢，例如节点&lt;code&gt;ababa&lt;/code&gt;，它的fail节点表示的必然是&lt;code&gt;aba&lt;/code&gt;，那么在构建的过程中，每次遇到&lt;code&gt;ababa&lt;/code&gt;的左侧三个字母的时候，就会把cnt加到&lt;code&gt;aba&lt;/code&gt;节点上，而缺少的另一半，正是节点&lt;code&gt;ababa&lt;/code&gt;的出现次数。另外有的博客说cnt是本质不同的回文字符串数量，这是不正确的。&lt;/p&gt;
+
+&lt;h2 id=&#34;模板&#34;&gt;模板&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct PAM
+{
+    struct node
+    {
+        map&amp;lt;char, int&amp;gt; next;
+        int fail, len, cnt, num;
+        node(int l = 0) : len(l), fail(0), cnt(0), num(0) {}
+    };
+    vector&amp;lt;char&amp;gt; s;
+    vector&amp;lt;node&amp;gt; nodes;
+    int match_p;
+    void init(int size)
+    {
+        s.clear();
+        s.reserve(size + 1);
+        s.push_back(&#39;\200&#39;);
+        nodes.push_back(node());
+        nodes.push_back(node(-1));
+        nodes[0].fail = 1;
+        match_p = 0;
+    }
+    int getfail(int x)
+    {
+        while (s[s.size() - nodes[x].len - 2] != s.back())
+            x = nodes[x].fail;
+        return x;
+    }
+    void extend(char c)
+    {
+        s.push_back(c);
+        int p = getfail(match_p);
+        if (!nodes[p].next.count(c))
+        {
+            int ch = nodes.size();
+            nodes.push_back(node(nodes[p].len + 2));
+            nodes[ch].fail = nodes[getfail(nodes[p].fail)].next[c];
+            nodes[p].next[c] = ch;
+            nodes[ch].num = nodes[nodes[ch].fail].num + 1;
+        }
+        match_p = nodes[p].next[c];
+        nodes[match_p].cnt++;
+    }
+    void done()
+    {
+        for (int i = nodes.size() - 1; i &amp;gt; 0; i--)
+            nodes[nodes[i].fail].cnt += nodes[i].cnt;
+    }
+    void build(const char* s)
+    {
+        init(strlen(s));
+        for (;*s;++s) extend(*s);
+        done();
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;直接调用build即可，得到的nodes就是回文树&lt;/p&gt;
+
+&lt;h2 id=&#34;pam应用&#34;&gt;PAM应用&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-求字符串中所有本质不同的回文子串的数量&#34;&gt;1 求字符串中所有本质不同的回文子串的数量&lt;/h3&gt;
+
+&lt;p&gt;生成PAM统计非根的节点数量即可&lt;/p&gt;
+
+&lt;h3 id=&#34;2-求字符串中所有回文子串的数量&#34;&gt;2 求字符串中所有回文子串的数量&lt;/h3&gt;
+
+&lt;p&gt;生成PAM后，对除了根外的所有节点的cnt累加就行了&lt;/p&gt;
+
+&lt;h3 id=&#34;3-求公共回文子串数量&#34;&gt;3 求公共回文子串数量&lt;/h3&gt;
+
+&lt;p&gt;对两个字符串都生成PAM后，同时dfs遍历其相同的节点，累加两边节点的cnt的乘积即可&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>后缀自动机SAM</title>
+      <link>/post/20200220-sam/</link>
+      <pubDate>Thu, 20 Feb 2020 20:00:00 +0800</pubDate>
+      <guid>/post/20200220-sam/</guid>
+      <description>&lt;p&gt;后缀自动机（SAM），可以结合前文的AC自动机一起理解，所谓后缀自动机，就是把一个字符串的所有后缀构造AC自动机，即只匹配其后缀的自动机。但是作为一个字符串的所有后缀，与一般的AC自动机有些不一样的性质，直接构造AC自动机，节点数是 $O(n^2)$，而SAM则对重复的节点合并了，可以让节点数大幅下降到 $O(n)$。&lt;/p&gt;
+
+&lt;p&gt;首先我们来直观地看看SAM的图形化，以下是字符串&lt;code&gt;abcac&lt;/code&gt;的SAM&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4
+4--c--&amp;gt;5((5))
+0--c--&amp;gt;6(1)
+
+0--b--&amp;gt;2
+1--c--&amp;gt;5
+6--a--&amp;gt;4
+
+4-.-&amp;gt;1
+5-.-&amp;gt;6
+3-.-&amp;gt;6
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+6-.-&amp;gt;0
+style 0 fill:#f9f
+style 5 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;实线方向就是匹配方向，虚线与AC自动机中的失败指针非常像，在SAM里称为link指针。&lt;/p&gt;
+
+&lt;p&gt;咱们这里就不从理论上做解释，把构造过程简单模拟一遍，如果你需要证明，那么可以在oiwiki上找到。&lt;/p&gt;
+
+&lt;h2 id=&#34;sam构造过程模拟&#34;&gt;SAM构造过程模拟&lt;/h2&gt;
+
+&lt;p&gt;我们使用字符串&lt;code&gt;abcac&lt;/code&gt;作为开始，SAM的构造是一个在线算法，可以一个个字符添加构造。另一点说明，节点编号等于与从根开始出发到该节点的最大深度。&lt;/p&gt;
+
+&lt;h3 id=&#34;1-插入a&#34;&gt;1 插入a&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1((1))
+
+1-.-&amp;gt;0
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-插入b&#34;&gt;2 插入b&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2((2))
+
+0--b--&amp;gt;2
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+style 0 fill:#f9f
+style 2 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在b添加到主链后，要找2的父节点1的link指针指的节点，命名为p，1. 如果它的下一个不存在字符&lt;code&gt;b&lt;/code&gt;，那么再令&lt;code&gt;p = p-&amp;gt;link&lt;/code&gt;，并再次判断本情况，2. 如果某个p的next存在当前的字符，那就让节点2的link指向&lt;code&gt;p-&amp;gt;next[char]&lt;/code&gt;节点，3. 如果p已经到达根，那么从根连接一条实边到节点2，同时节点2的link指向根。这里就属于情况3。&lt;/p&gt;
+
+&lt;h3 id=&#34;3-插入c&#34;&gt;3 插入c&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+
+0--b--&amp;gt;2
+0--c--&amp;gt;3((3))
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+style 0 fill:#f9f
+style 3 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-插入a&#34;&gt;4 插入a&lt;/h3&gt;
+
+&lt;p&gt;这个步骤稍微多一点，先添加到主链，即在&lt;code&gt;1-&amp;gt;2-&amp;gt;3-&amp;gt;4&lt;/code&gt;上，得到：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4((4))
+
+0--b--&amp;gt;2
+0--c--&amp;gt;3
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+style 0 fill:#f9f
+style 4 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后找4的父节点3的link指针指的节点，它的下一个存在字符&lt;code&gt;a&lt;/code&gt;，那么指向它，属于前面说的情况2&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4((4))
+
+0--b--&amp;gt;2
+0--c--&amp;gt;3
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;1
+style 0 fill:#f9f
+style 4 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;5-插入c&#34;&gt;5 插入c&lt;/h3&gt;
+
+&lt;p&gt;此步更为复杂 ，首先还是先加入主链&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4
+4--c--&amp;gt;5((5))
+
+0--b--&amp;gt;2
+0--c--&amp;gt;3
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;1
+style 0 fill:#f9f
+style 5 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从节点4开始找到节点1，它的next没有当前字符，再找到节点0，节点0的next存在当前字符，即找到节点3，但我们不能直接让节点5的link连接到节点3，因为连接到3的父节点0，它们的的深度不是连续的关系，这时候我们需要做拆点，把原来的节点3复制一个，即next是一样的，link也是一样，然后再让节点0直接连向它（如果不是节点0，那除了它之外，还有它的link节点的next有包含当前字符的，都要指向复制节点），节点3和新插入的节点5的link都指向这个复制节点。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4
+4--c--&amp;gt;5((5))
+0--c--&amp;gt;6(1)
+
+0--b--&amp;gt;2
+1--c--&amp;gt;5
+6--a--&amp;gt;4
+
+4-.-&amp;gt;1
+5-.-&amp;gt;6
+3-.-&amp;gt;6
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+6-.-&amp;gt;0
+style 0 fill:#f9f
+style 5 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;构造步骤总结&#34;&gt;构造步骤总结&lt;/h2&gt;
+
+&lt;p&gt;一些说明，节点p有数据&lt;code&gt;next&lt;/code&gt;、&lt;code&gt;link&lt;/code&gt;、&lt;code&gt;maxlen&lt;/code&gt;，&lt;code&gt;next&lt;/code&gt;就是匹配的转移表，&lt;code&gt;link&lt;/code&gt;连接到p所表示的字符串的最长后缀，可以当成fail指针理解，而&lt;code&gt;maxlen&lt;/code&gt;表示从根到节点p的最大深度&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;上一次插入主链的节点命名为&lt;code&gt;last&lt;/code&gt;，新插入节点到主链，命名为&lt;code&gt;cur&lt;/code&gt;，当前要插入的字符命名为&lt;code&gt;c&lt;/code&gt;，进入步骤2&lt;/li&gt;
+&lt;li&gt;令&lt;code&gt;p = last&lt;/code&gt;看看&lt;code&gt;p-&amp;gt;link-&amp;gt;next&lt;/code&gt;有没有&lt;code&gt;c&lt;/code&gt;，没有的话再令&lt;code&gt;p = p-&amp;gt;link&lt;/code&gt;直到&lt;code&gt;p-&amp;gt;link-&amp;gt;next&lt;/code&gt;有&lt;code&gt;c&lt;/code&gt;跳到步骤3。如果p到根仍然找不到，那么令&lt;code&gt;cur-&amp;gt;link = root&lt;/code&gt;结束&lt;/li&gt;
+&lt;li&gt;令节点&lt;code&gt;p-&amp;gt;next[c]&lt;/code&gt;为&lt;code&gt;ch&lt;/code&gt;，判断&lt;code&gt;ch-&amp;gt;maxlen&lt;/code&gt;和&lt;code&gt;p-&amp;gt;maxlen+1&lt;/code&gt;是不是相等，如果是，令&lt;code&gt;cur-&amp;gt;link = p-&amp;gt;next[c]&lt;/code&gt;，结束。如果不是，到第4步&lt;/li&gt;
+&lt;li&gt;对节点&lt;code&gt;ch&lt;/code&gt;进行分拆操作，先复制，复制节点命名为&lt;code&gt;p2&lt;/code&gt;，更新&lt;code&gt;p2&lt;/code&gt;的最大深度，再判断如果满足&lt;code&gt;p-&amp;gt;next[c] == ch&lt;/code&gt;，则令&lt;code&gt;p-&amp;gt;next[c] = p2&lt;/code&gt;，再令&lt;code&gt;p = p-&amp;gt;link&lt;/code&gt;重复前一步&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;对于节点p的&lt;code&gt;minlen&lt;/code&gt;，可以通过 &lt;code&gt;p-&amp;gt;link-&amp;gt;maxlen + 1&lt;/code&gt; 得到&lt;/p&gt;
+
+&lt;h2 id=&#34;模板&#34;&gt;模板&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct SAM
+{
+    struct node
+    {
+        map&amp;lt;char, int&amp;gt; next;
+        int link;
+        int len_max;
+        node() : link(0), len_max(0) { }
+    };
+    vector&amp;lt;node&amp;gt; nodes;
+    int last;
+    void init(int size = 1024)
+    {
+        nodes.clear();
+        nodes.reserve(size);
+        nodes.push_back(node());
+        last = 0;
+        nodes[0].link = -1;
+    }
+    int size() const
+    {
+        return (int)nodes.size();
+    }
+    int len_max(int p)
+    {
+        return nodes[p].len_max;
+    }
+    int len_min(int p)
+    {
+        if (p == 0) return 0;
+        return nodes[nodes[p].link].len_max + 1;
+    }
+    void extend(char c)
+    {
+        int cur = (int)nodes.size();
+        nodes.push_back(node());
+        nodes[cur].len_max = nodes[last].len_max + 1;
+        int p = last; last = cur;
+
+        while (p != -1 &amp;amp;&amp;amp; !nodes[p].next.count(c))
+        {
+            nodes[p].next[c] = cur;
+            p = nodes[p].link;
+        }
+
+        if (p == -1)
+        {
+            nodes[cur].link = 0;
+        }
+        else
+        {
+            int ch = nodes[p].next[c];
+            if (nodes[p].len_max + 1 == nodes[ch].len_max)
+            {
+                nodes[cur].link = ch;
+            }
+            else // split ch
+            {
+                int p2 = (int)nodes.size();
+                nodes.push_back(nodes[ch]);
+                nodes[p2].len_max = nodes[p].len_max + 1;
+                while (p != -1 &amp;amp;&amp;amp; nodes[p].next[c] == ch)
+                {
+                    nodes[p].next[c] = p2;
+                    p = nodes[p].link;
+                }
+                nodes[ch].link = nodes[cur].link = p2;
+            }
+        }
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;sam应用&#34;&gt;SAM应用&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-多模式匹配&#34;&gt;1 多模式匹配&lt;/h3&gt;
+
+&lt;p&gt;给你一个字符串集S以及字符串T，判断T有哪些子串属于S&lt;/p&gt;
+
+&lt;p&gt;先对T求SAM，然后对S的每一个字符串走一遍，如果能走到底，那么这个串在T中出现了&lt;/p&gt;
+
+&lt;h3 id=&#34;2-不同的子串数量&#34;&gt;2 不同的子串数量&lt;/h3&gt;
+
+&lt;p&gt;因为对于SAM任何一个节点u，从根到这个节点的路线有 $maxlen(u) - minlen(u) + 1$ 条，而这条路线则表示原字符串的一个子串，且各不相同，所以对所有的节点求和，即 $\sum{(maxlen(u) - minlen(u) + 1)}$&lt;/p&gt;
+
+&lt;h3 id=&#34;3-字符串的最小表示&#34;&gt;3 字符串的最小表示&lt;/h3&gt;
+
+&lt;p&gt;这个很简单，对于原串s，长度为k，生成关于&lt;code&gt;s+s&lt;/code&gt;串的SAM后，找最小的next节点走k步即可&lt;/p&gt;
+
+&lt;h3 id=&#34;4-最长公共子串&#34;&gt;4 最长公共子串&lt;/h3&gt;
+
+&lt;p&gt;给出串A和B，对B求SAM，然后把这个SAM仿照KMP给A做匹配，令&lt;code&gt;l&lt;/code&gt;表示最大匹配长度，如果next有对应字符就转移，且&lt;code&gt;l++&lt;/code&gt;，如果没有则跳转到link所指的节点u，令&lt;code&gt;l = maxlen(u)&lt;/code&gt;并再次匹配，l的最大值就是答案。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>AC自动机</title>
+      <link>/post/20200210-ac/</link>
+      <pubDate>Mon, 10 Feb 2020 22:00:00 +0800</pubDate>
+      <guid>/post/20200210-ac/</guid>
+      <description>&lt;p&gt;听到AC自动机很多人第一次听到的反应往往是很兴奋的。但其实并不是你们想的那种东西。它的全称是Aho-Corasick algorithm，另外，自动机的英文是Automaton，所以AC自动机即 AC Automaton。为了解释这个算法，首先我们来回顾KMP，你需要很理解KMP的原理，不然看后面的内容就会变得&lt;del&gt;妙不可读&lt;/del&gt;。&lt;/p&gt;
+
+&lt;h2 id=&#34;kmp自动机&#34;&gt;KMP自动机&lt;/h2&gt;
+
+&lt;p&gt;本质上KMP其实就是一种自动机。这次我们改用自动机的形式来理解。所谓自动机，一般指的是确定有限状态自动机，你可以看作一个黑箱，每次输入一个数据，它就会改变它的内部状态，并有相应的输出。如果你知道Trie，那么它其实就是一个典型的自动机。我们还是拿字符串&lt;code&gt;abacabab&lt;/code&gt;作为例子，如果是生成next数组，结果如下：&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;string&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;c&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;a&lt;/th&gt;
+&lt;th&gt;b&lt;/th&gt;
+&lt;th&gt;\0&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;next&lt;/td&gt;
+&lt;td&gt;-1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;3&lt;/td&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;为了方便变成自动机的方式理解，我们把这个改成有向图&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&amp;gt;00[1]
+00--b--&amp;gt;1[2]
+1--a--&amp;gt;2[3]
+2--c--&amp;gt;3[4]
+3--a--&amp;gt;4[5]
+4--b--&amp;gt;5[6]
+5--a--&amp;gt;6[7]
+6--b--&amp;gt;7[8]
+00-.-&amp;gt;0
+1-.-&amp;gt;0
+2-.-&amp;gt;00
+3-.-&amp;gt;0
+4-.-&amp;gt;00
+5-.-&amp;gt;1
+6-.-&amp;gt;2
+%%7[b]-.-&amp;gt;3[c]
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;上图中，实箭头表示匹配，虚箭头表示不匹配要返回的前面的节点，紫色节点表示起止节点。首先我们的状态只要一个指针，先指向start，在匹配的时候，如果与它的下一个字符匹配，那么指针就沿实箭头移动；如果与下一个字符不匹配，在有虚线的情况下，那就沿虚线走一步，然后再尝试一次匹配。以下我们模拟一下匹配&amp;rdquo;ababa&amp;rdquo;的过程。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;初始化指向start，start的下一个是&lt;code&gt;a&lt;/code&gt;，匹配第1个字符，指针移动到节点1&lt;/li&gt;
+&lt;li&gt;节点1的下一个是&lt;code&gt;b&lt;/code&gt;，匹配第2个字符，指针移动到节点2&lt;/li&gt;
+&lt;li&gt;节点2的下一个是&lt;code&gt;a&lt;/code&gt;，匹配第3个字符，指针移动到节点3&lt;/li&gt;
+&lt;li&gt;节点3的下一个是&lt;code&gt;c&lt;/code&gt;，不匹配第4个字符，回退到节点1，这时候匹配，指针移动到节点2&lt;/li&gt;
+&lt;li&gt;节点2的下一个是&lt;code&gt;a&lt;/code&gt;，匹配第5个字符，指针移动到节点3&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;以上的虚线箭头就是fail指针的指向&lt;/p&gt;
+
+&lt;h2 id=&#34;kmp自动机的生成&#34;&gt;KMP自动机的生成&lt;/h2&gt;
+
+&lt;p&gt;这个的生成规则其实非常简单，首先建立start，然后向右添加字符，用实箭头连接，第一个节点就虚箭头直接指回start&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&amp;gt;00[1]
+00-.-&amp;gt;0
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后插入第二个字符，第二个字符的虚箭头看它的父节点的虚箭头所指向的节点的子节点是不是与第二个字符相等，这个描述有点绕，假设当前节点是c，父节点是p，其虚箭头所指节点是&lt;code&gt;fail[x]&lt;/code&gt;，那么看的是&lt;code&gt;fail[p]&lt;/code&gt;的子节点是否等于c的值，如果等于，那么&lt;code&gt;fail[c] = fail[p]-&amp;gt;next&lt;/code&gt;，如果不等于，那么令&lt;code&gt;p=fail[p]&lt;/code&gt;再次判断其子节点，直到&lt;code&gt;p=start&lt;/code&gt;，于是加入第二节点时，它的fail指针指向start&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&amp;gt;00[1]
+00--b--&amp;gt;1[2]
+00-.-&amp;gt;0
+1-.-&amp;gt;0
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;到第3个字符a的时候，它的父节点的fail指向start，而start的子节点也是a，所以它的a就指向第1个字符&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&amp;gt;00[1]
+00--b--&amp;gt;1[2]
+1--a--&amp;gt;2[3]
+00-.-&amp;gt;0
+1-.-&amp;gt;0
+2-.-&amp;gt;00
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最后讲一下插入最后的字符b的时候，首先它的父节点的fail指向第3个节点a，但那个节点的下一个字符并不是b，所以用它的父节点的fail替代，然后再看第3个节点的fail，指向第1个节点，而第1个节点的下一个字符是b，所以要指向第2个节点，得到下图&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&amp;gt;00[1]
+00--b--&amp;gt;1[2]
+1--a--&amp;gt;2[3]
+2--c--&amp;gt;3[4]
+3--a--&amp;gt;4[5]
+4--b--&amp;gt;5[6]
+5--a--&amp;gt;6[7]
+6--b--&amp;gt;7[8]
+00-.-&amp;gt;0
+1-.-&amp;gt;0
+2-.-&amp;gt;00
+3-.-&amp;gt;0
+4-.-&amp;gt;00
+5-.-&amp;gt;1
+6-.-&amp;gt;2
+7-.-&amp;gt;1
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在弄懂以上过程后，我们来正式介绍AC自动机&lt;/p&gt;
+
+&lt;h2 id=&#34;ac自动机与trie&#34;&gt;AC自动机与Trie&lt;/h2&gt;
+
+&lt;p&gt;AC自动机的本质，就是在Trie上套KMP，就这一句话。我们怎么理解呢，其实Trie能匹配字符串的前缀，但如果我们需要匹配任意位置，又不希望回溯，那就依照KMP的方法，在匹配失败的时候，跳转到&lt;strong&gt;假如回溯能匹配到的Trie的位置&lt;/strong&gt;。为了更好说明，这里我们使用&lt;code&gt;he&lt;/code&gt;,&lt;code&gt;she&lt;/code&gt;,&lt;code&gt;the&lt;/code&gt;,&lt;code&gt;there&lt;/code&gt;,&lt;code&gt;here&lt;/code&gt;来演示生成过程。&lt;/p&gt;
+
+&lt;p&gt;先生成Trie&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--h--&amp;gt;1
+1--e--&amp;gt;2((2))
+2--r--&amp;gt;3
+3--e--&amp;gt;4((4))
+0--s--&amp;gt;5
+5--h--&amp;gt;6
+6--e--&amp;gt;7((7))
+0--t--&amp;gt;8
+8--h--&amp;gt;9
+9--e--&amp;gt;10((10))
+10--r--&amp;gt;11
+11--e--&amp;gt;12((12))
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后做BFS，第一层的fail都指向0&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--h--&amp;gt;1
+1--e--&amp;gt;2((2))
+2--r--&amp;gt;3
+3--e--&amp;gt;4((4))
+0--s--&amp;gt;5
+5--h--&amp;gt;6
+6--e--&amp;gt;7((7))
+0--t--&amp;gt;8
+8--h--&amp;gt;9
+9--e--&amp;gt;10((10))
+10--r--&amp;gt;11
+11--e--&amp;gt;12((12))
+1-.-&amp;gt;0
+5-.-&amp;gt;0
+8-.-&amp;gt;0
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后，第二层，与KMP自动机的建立规则相同，另外为了让图形上的线不那么乱，虚线指向start的省略&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--h--&amp;gt;1
+subgraph here
+1--e--&amp;gt;2((2))
+2--r--&amp;gt;3
+3--e--&amp;gt;4((4))
+end
+0--s--&amp;gt;5
+subgraph she
+5--h--&amp;gt;6
+6--e--&amp;gt;7((7))
+end
+0--t--&amp;gt;8
+subgraph there
+8--h--&amp;gt;9
+9--e--&amp;gt;10((10))
+10--r--&amp;gt;11
+11--e--&amp;gt;12((12))
+end
+6-.-&amp;gt;1
+9-.-&amp;gt;1
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接着，第三层&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--h--&amp;gt;1
+subgraph here
+1--e--&amp;gt;2((2))
+2--r--&amp;gt;3
+3--e--&amp;gt;4((4))
+end
+0--s--&amp;gt;5
+subgraph she
+5--h--&amp;gt;6
+6--e--&amp;gt;7((7))
+end
+0--t--&amp;gt;8
+subgraph there
+8--h--&amp;gt;9
+9--e--&amp;gt;10((10))
+10--r--&amp;gt;11
+11--e--&amp;gt;12((12))
+end
+6-.-&amp;gt;1
+9-.-&amp;gt;1
+7-.-&amp;gt;2
+10-.-&amp;gt;2
+
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;构建完毕的图&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--h--&amp;gt;1
+subgraph here
+1--e--&amp;gt;2((2))
+2--r--&amp;gt;3
+3--e--&amp;gt;4((4))
+end
+0--s--&amp;gt;5
+subgraph she
+5--h--&amp;gt;6
+6--e--&amp;gt;7((7))
+end
+0--t--&amp;gt;8
+subgraph there
+8--h--&amp;gt;9
+9--e--&amp;gt;10((10))
+10--r--&amp;gt;11
+11--e--&amp;gt;12((12))
+end
+6-.-&amp;gt;1
+9-.-&amp;gt;1
+7-.-&amp;gt;2
+10-.-&amp;gt;2
+11-.-&amp;gt;3
+12-.-&amp;gt;4
+
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;以上就是一个最简单的AC自动机，由于只能通过fail指针在失配时做转移，所以遇到匹配失败的时候不能一步到位，需要一个循环来找下一个位置，但在不少场合已足够使用。习题：&lt;a href=&#34;https://vjudge.net/problem/HDU-2896&#34; target=&#34;_blank&#34;&gt;HDU-2896&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;字典图&#34;&gt;字典图&lt;/h2&gt;
+
+&lt;p&gt;前面刚说过，由于fail指针只有一个，所以遇到匹配失败的时候不能一步到位，那我们如果想一步到位呢？那事实上就成为了一个有向图，我们在跳转时不使用fail指针，而直接用next指针替代，每遇到一个字符就按next来跳转，这样状态转移时间非常稳定且速度更快，而且成为有向图有一个额外的好处，就是能变成图论问题来解，这个后面再来讨论。&lt;/p&gt;
+
+&lt;p&gt;要实现字典图，fail指针还是需要的，但在构建的时候代码写起来反而更简单，因为fail的指向不再需要写循环，可以利用前面的结果一步到位，假设当前节点是c，要更新的字符是i，那分两种情况：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;如果c的&lt;code&gt;next[i]&lt;/code&gt;非空，那么c的&lt;code&gt;next[i]&lt;/code&gt;节点的fail指针就指向 c的fail指针节点的&lt;code&gt;next[i]&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;如果c的&lt;code&gt;next[i]&lt;/code&gt;为空，那么c的&lt;code&gt;next[i]&lt;/code&gt;节点就指向 c的fail指针节点的&lt;code&gt;next[i]&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;也就是说，不管哪种，都是指向c的fail的&lt;code&gt;next[i]&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;模板&#34;&gt;模板&lt;/h2&gt;
+
+&lt;p&gt;应用以下模板时，你很可能需要做的调整包括&lt;code&gt;charset&lt;/code&gt;的大小，以及&lt;code&gt;getindex&lt;/code&gt;函数的实现，这两部分你也可以通过template改写&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;const int charset = 26;
+struct TrieGraph
+{
+    struct trie_node
+    {
+        int next[charset];
+        int fail;
+        int cnt;
+        int end;
+        trie_node() : end(0), fail(0), cnt(0) {}
+        void init() { memset(next, 0, sizeof(next)); }
+    };
+    vector&amp;lt;trie_node&amp;gt; nodes;
+    vector&amp;lt;int&amp;gt; bfs_q;
+    vector&amp;lt;int&amp;gt; match_cnt;
+    map&amp;lt;int, int&amp;gt; id2node;
+    map&amp;lt;int, int&amp;gt; str_size;
+    int match_p;
+    void init(int size)
+    {
+        nodes.clear();
+        nodes.reserve(size);
+        nodes.push_back(trie_node());
+        nodes.back().init();
+        match_p = 0;
+    }
+    static inline int getindex(char c) { return c - &#39;a&#39;; }
+    void insert(const char* s, int id)
+    {
+        const char* s0 = s;
+        int p = 0;
+        for (;*s; ++s)
+        {
+            if (nodes[p].next[getindex(*s)])
+            {
+                p = nodes[p].next[getindex(*s)];
+            }
+            else
+            {
+                int np = nodes.size();
+                nodes[p].next[getindex(*s)] = np;
+                nodes.push_back(trie_node());
+                nodes.back().init();
+                p = np;
+            }
+        }
+        ++nodes[p].cnt;
+        id2node[id] = p;
+        str_size[id] = s - s0;
+    }
+    void build()
+    {
+        bfs_q.clear();
+        bfs_q.reserve(nodes.size());
+        queue&amp;lt;int&amp;gt; q;
+        for (int i = 0; i &amp;lt; charset; ++i)
+            if (nodes[0].next[i]) q.push(nodes[0].next[i]);
+        while (!q.empty())
+        {
+            int p = q.front();
+            q.pop();
+            bfs_q.push_back(p);
+            for (int i = 0; i &amp;lt; charset; ++i)
+            {
+                if (nodes[p].next[i])
+                {
+                    nodes[nodes[p].next[i]].fail = nodes[nodes[p].fail].next[i];
+                    q.push(nodes[p].next[i]);
+                }
+                else nodes[p].next[i] = nodes[nodes[p].fail].next[i];
+            }
+        }
+    }
+    int match(char c)
+    {
+        match_p = nodes[match_p].next[getindex(c)];
+        return match_p;
+    }
+    int query(const char* s) // 有多少个出现
+    {
+        int ret = 0;
+        match_cnt.resize(nodes.size());
+        for (int i = match_cnt.size() - 1; i &amp;gt;= 0; --i)
+        {
+            match_cnt[i] = nodes[i].cnt;
+        }
+        for (const char* ps = s; *ps; ps++)
+        {
+            for (int p = match(*ps); p &amp;amp;&amp;amp; ~match_cnt[p]; p = nodes[p].fail)
+                ret += match_cnt[p], match_cnt[p] = -1;
+        }
+        return ret;
+    }
+    ll query_sum(const char* s, int wc[]) // 每个分别出现多少
+    {
+        vector&amp;lt;int&amp;gt; sum;
+        sum.resize(nodes.size());
+        match_p = 0;
+        for (const char* ps = s; *ps; ps++)
+        {
+            for (int p = match(*ps); p; p = nodes[p].fail)
+            {
+                sum[p] += nodes[p].cnt;
+            }
+        }
+        ll ret = 0;
+        for (map&amp;lt;int, int&amp;gt;::iterator it = id2node.begin(); it != id2node.end(); ++it)
+        {
+            wc[it-&amp;gt;first] = sum[it-&amp;gt;second];
+            ret += sum[it-&amp;gt;second];
+        }
+        return ret;
+    }
+    const char* find(const char* s, int&amp;amp; match_id)
+    {
+        match_p = 0;
+        for (const char* ps = s; *ps; ps++)
+        {
+            for (int p = match(*ps); p; p = nodes[p].fail)
+            {
+                if (nodes[p].cnt == 0) continue;
+                for (map&amp;lt;int, int&amp;gt;::iterator it = id2node.begin(); it != id2node.end(); ++it)
+                {
+                    if (it-&amp;gt;second == p)
+                    {
+                        match_id = it-&amp;gt;first;
+                        break;
+                    }
+                }
+                return ps - str_size[match_id] + 1;
+            }
+        }
+        return 0;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;使用方式，先调用&lt;code&gt;init&lt;/code&gt;预分配空间，然后调用&lt;code&gt;insert&lt;/code&gt;插入所有用到的字符串，注意字符串的id必须从1开始，再调用&lt;code&gt;build&lt;/code&gt;生成字典树，最后调用&lt;code&gt;query&lt;/code&gt;匹配目标字符串，如果只需要知道有多少个串在目标中出现，那么调用单个参数的，如果需要知道每个分别出现多少次，那么使用有wc参数的版本，通过参数wc返回的是原始字符串每一个的匹配数量，而如果只需要找最初匹配的位置，那用find函数。习题 &lt;a href=&#34;https://vjudge.net/problem/HYSBZ-3172&#34; target=&#34;_blank&#34;&gt;HYSBZ-3172&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;扩展-字符串生成的可能数量&#34;&gt;扩展：字符串生成的可能数量&lt;/h2&gt;
+
+&lt;p&gt;典型题目为&lt;a href=&#34;https://vjudge.net/problem/POJ-2778&#34; target=&#34;_blank&#34;&gt;POJ-2778&lt;/a&gt;，即生成长度为n的字符串，且不包含给定的m个子串。这时候就要用上前面所构造的字典图，我们要先转成邻接矩阵，例如&lt;code&gt;m[i][j][c]&lt;/code&gt;如果为1，表示节点i能通过字符c连接到节点j，为0则不通。不过实际计算的时候，我们并不关心i和j之间通过什么连接，只关心连接数量，那累加&lt;code&gt;m[i][j][c]&lt;/code&gt;，c取字符集的范围，累加值写到矩阵&lt;code&gt;M = matrix[i][j]&lt;/code&gt;，然后我们只要计算$M&amp;rsquo; = M ^ n$，在矩阵&lt;code&gt;M&#39;&lt;/code&gt;中，&lt;code&gt;M&#39;[i][j]&lt;/code&gt;的值就表示从i到j恰好n步共有多少种走法。回到上面的题目，因为部分节点不能走，所以我们只要在生成矩阵的时候删除那些不能走的节点，求出&lt;code&gt;M&#39;&lt;/code&gt;后，累加&lt;code&gt;M&#39;[0][j]&lt;/code&gt;的结果就是答案，所以算法复杂度是 $O(Mlogn)$ ，其中M是一次矩阵乘法的时间复杂度，这个也是有向图里面求k步到达指定节点的路线数量所用的算法。&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>伪随机数生成算法</title>
@@ -1797,7 +2745,7 @@ static uint64_t i64_distribution(_Eg&amp;amp; eg, uint64_t n)
       <link>/post/20191231-persistent_segtree/</link>
       <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
       <guid>/post/20191231-persistent_segtree/</guid>
-      <description>&lt;p&gt;可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解&lt;a href=&#34;../20191208-segtree/&#34;&gt;线段树&lt;/a&gt;&lt;/p&gt;
+      <description>&lt;p&gt;可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解&lt;a href=&#34;/post/20191208-segtree/&#34;&gt;线段树&lt;/a&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;概念&#34;&gt;概念&lt;/h2&gt;
 
@@ -2114,7 +3062,7 @@ static uint64_t i64_distribution(_Eg&amp;amp; eg, uint64_t n)
       <link>/post/20191216-kmp-manacher/</link>
       <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
       <guid>/post/20191216-kmp-manacher/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;../20191028-kmp/&#34;&gt;KMP&lt;/a&gt;已经介绍过了，这次主要介绍的是Manacher&lt;/p&gt;
+      <description>&lt;p&gt;&lt;a href=&#34;/post/20191028-kmp/&#34;&gt;KMP&lt;/a&gt;已经介绍过了，这次主要介绍的是Manacher&lt;/p&gt;
 
 &lt;h2 id=&#34;最长回文子串&#34;&gt;最长回文子串&lt;/h2&gt;
 
@@ -2765,7 +3713,7 @@ int main()
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;注：后缀数组模板请从&lt;a href=&#34;../20191113-suffixarray/&#34;&gt;之前的文章&lt;/a&gt;里复制；函数st_query是左闭右开区间，即求的是&lt;code&gt;[l, r-1]&lt;/code&gt;的最小值，采用半开半闭区间目的是为了能直接swap&lt;/p&gt;</description>
+&lt;p&gt;注：后缀数组模板请从&lt;a href=&#34;/post/20191113-suffixarray/&#34;&gt;之前的文章&lt;/a&gt;里复制；函数st_query是左闭右开区间，即求的是&lt;code&gt;[l, r-1]&lt;/code&gt;的最小值，采用半开半闭区间目的是为了能直接swap&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -2773,7 +3721,7 @@ int main()
       <link>/post/20191215-fhq-treap/</link>
       <pubDate>Sun, 15 Dec 2019 13:10:00 +0800</pubDate>
       <guid>/post/20191215-fhq-treap/</guid>
-      <description>&lt;p&gt;讲完了&lt;a href=&#34;../20191211-treap-sbt/&#34;&gt;treap&lt;/a&gt;和&lt;a href=&#34;../20191213-tree-sequence/&#34;&gt;splaytree&lt;/a&gt;，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。&lt;/p&gt;
+      <description>&lt;p&gt;讲完了&lt;a href=&#34;/post/20191211-treap-sbt/&#34;&gt;treap&lt;/a&gt;和&lt;a href=&#34;/post/20191213-tree-sequence/&#34;&gt;splaytree&lt;/a&gt;，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。&lt;/p&gt;
 
 &lt;p&gt;splay其实还有两个操作split和merge没有介绍，我打算把这两放在这里一并介绍&lt;/p&gt;
 
@@ -3016,7 +3964,7 @@ struct FHQ_Treap
       <link>/post/20191213-tree-sequence/</link>
       <pubDate>Fri, 13 Dec 2019 13:10:00 +0800</pubDate>
       <guid>/post/20191213-tree-sequence/</guid>
-      <description>&lt;p&gt;平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于&lt;a href=&#34;../20191211-treap-sbt/&#34;&gt;treap&lt;/a&gt;的文章。&lt;/p&gt;
+      <description>&lt;p&gt;平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于&lt;a href=&#34;/post/20191211-treap-sbt/&#34;&gt;treap&lt;/a&gt;的文章。&lt;/p&gt;
 
 &lt;h2 id=&#34;序列维护&#34;&gt;序列维护&lt;/h2&gt;
 
@@ -4241,7 +5189,7 @@ int rank(data v, int upper = 0) { return rank(root, v, upper); }
 
 &lt;h2 id=&#34;基础模板&#34;&gt;基础模板&lt;/h2&gt;
 
-&lt;p&gt;以下基础模板只支持区间求和，以及区间整体加上一个数的操作，和&lt;a href=&#34;../20191111-fenwicktree/&#34;&gt;树状数组&lt;/a&gt;后面提供的模板实现了相同的功能&lt;/p&gt;
+&lt;p&gt;以下基础模板只支持区间求和，以及区间整体加上一个数的操作，和&lt;a href=&#34;/post/20191111-fenwicktree/&#34;&gt;树状数组&lt;/a&gt;后面提供的模板实现了相同的功能&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct seg_tree_add
 {
@@ -4909,7 +5857,7 @@ public:
 
 &lt;h2 id=&#34;应用1-可重叠最长重复子串&#34;&gt;应用1 可重叠最长重复子串&lt;/h2&gt;
 
-&lt;p&gt;这个题目在本博客讲&lt;a href=&#34;../20191028-kmp/&#34;&gt;kmp&lt;/a&gt;部分已经有介绍，例如&lt;code&gt;eabcaefabcabc&lt;/code&gt;，最长重复子串是&lt;code&gt;abca&lt;/code&gt;，长度是4，这里介绍用后缀数组的解法。其实所谓的最长重复子串，就是找到两个后缀，让它们的公共前缀最长，那这就简单了，我们只要在height数组里找最大值就可以了，查找时间 $O(n)$ 。&lt;/p&gt;
+&lt;p&gt;这个题目在本博客讲&lt;a href=&#34;/post/20191028-kmp/&#34;&gt;kmp&lt;/a&gt;部分已经有介绍，例如&lt;code&gt;eabcaefabcabc&lt;/code&gt;，最长重复子串是&lt;code&gt;abca&lt;/code&gt;，长度是4，这里介绍用后缀数组的解法。其实所谓的最长重复子串，就是找到两个后缀，让它们的公共前缀最长，那这就简单了，我们只要在height数组里找最大值就可以了，查找时间 $O(n)$ 。&lt;/p&gt;
 
 &lt;h2 id=&#34;应用2-不同子串的个数&#34;&gt;应用2 不同子串的个数&lt;/h2&gt;
 
@@ -5434,7 +6382,7 @@ public:
 16,10000--&amp;gt;15,1111
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是&lt;code&gt;x + (x &amp;amp; -x)&lt;/code&gt;，其中，&lt;code&gt;x &amp;amp; -x&lt;/code&gt;是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是&lt;code&gt;6+2=8&lt;/code&gt;，更多的可以参考这篇&lt;a href=&#34;../post/20191012-binary-skill/&#34;&gt;二进制技巧&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是&lt;code&gt;x + (x &amp;amp; -x)&lt;/code&gt;，其中，&lt;code&gt;x &amp;amp; -x&lt;/code&gt;是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是&lt;code&gt;6+2=8&lt;/code&gt;，更多的可以参考这篇&lt;a href=&#34;/post/20191012-binary-skill/&#34;&gt;二进制技巧&lt;/a&gt;。&lt;/p&gt;
 
 &lt;h2 id=&#34;前缀和&#34;&gt;前缀和&lt;/h2&gt;
 
@@ -7055,7 +8003,7 @@ void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
       <link>/post/20191019-qsort-talk-3/</link>
       <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
       <guid>/post/20191019-qsort-talk-3/</guid>
-      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
+      <description>&lt;p&gt;在&lt;a href=&#34;/post/20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
 
 &lt;h2 id=&#34;gcc的实现&#34;&gt;GCC的实现&lt;/h2&gt;
 
@@ -7360,7 +8308,7 @@ void anti_qsort_gen_gcc(sort_element_t arr[], size_t len)
       <link>/post/20191019-qsort-talk-2/</link>
       <pubDate>Sat, 19 Oct 2019 00:57:00 +0800</pubDate>
       <guid>/post/20191019-qsort-talk-2/</guid>
-      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-1/&#34;&gt;上一篇&lt;/a&gt;我们介绍了四种不同的划分算法，现在我们来针对&lt;a href=&#34;../20191007-qsort-talk-1/#3-hoare-partition-scheme&#34;&gt;Hoare partition scheme&lt;/a&gt;来讲解一些优化和注意的问题。&lt;/p&gt;
+      <description>&lt;p&gt;在&lt;a href=&#34;/post/20191007-qsort-talk-1/&#34;&gt;上一篇&lt;/a&gt;我们介绍了四种不同的划分算法，现在我们来针对&lt;a href=&#34;/post/20191007-qsort-talk-1/#3-hoare-partition-scheme&#34;&gt;Hoare partition scheme&lt;/a&gt;来讲解一些优化和注意的问题。&lt;/p&gt;
 
 &lt;h2 id=&#34;最坏时间复杂度的优化&#34;&gt;最坏时间复杂度的优化&lt;/h2&gt;
 
@@ -9572,7 +10520,7 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 
 &lt;h3 id=&#34;优化2-数据结构&#34;&gt;优化2，数据结构&lt;/h3&gt;
 
-&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是$O(n)$，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成$O(1)$，而维护这个数据结构的代价是$O(logn)$的话，总体时间复杂度将变为$O(nlogn)$，这比起选择排序的$O(n^2)$就是一个巨大的变化，具体内容在之后的 &lt;a href=&#34;../20191015-sorting-3/&#34;&gt;堆排序&lt;/a&gt; 篇具体讲解。&lt;/p&gt;
+&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是$O(n)$，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成$O(1)$，而维护这个数据结构的代价是$O(logn)$的话，总体时间复杂度将变为$O(nlogn)$，这比起选择排序的$O(n^2)$就是一个巨大的变化，具体内容在之后的 &lt;a href=&#34;/post/20191015-sorting-3/&#34;&gt;堆排序&lt;/a&gt; 篇具体讲解。&lt;/p&gt;
 
 &lt;h2 id=&#34;冒泡排序&#34;&gt;冒泡排序&lt;/h2&gt;
 

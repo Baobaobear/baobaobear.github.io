@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="听到AC自动机很多人第一次听到的反应往往是很兴奋的。但其实并不是你们想的那种东西。它的全称是Aho-Corasick algorithm，另外，自动机的英文是Automaton，所以AC自动机即 AC Automaton。为了解释这个算法，首先我们来回顾KMP，你需要很理解KMP的原理，不然看后面的内容就会变得妙不可读。
+
+KMP自动机
+
+本质上KMP其实就是一种自动机。这次我们改用自动机的形式来理解。所谓自动机，一般指的是确定有限状态自动机，你可以看作一个黑箱，每次输入一个数据，它就会改变它的内部状态，并有相应的输出。如果你知道Trie，那么它其实就是一个典型的自动机。我们还是拿字符串abacabab作为例子，如果是生成next数组，结果如下：
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+\0
+
+
+
+
+
+next
+-1
+0
+0
+1
+0
+1
+2
+3
+2
+
+
+
+
+为了方便变成自动机的方式理解，我们把这个改成有向图
+
+graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00--b--&gt;1[2]
+1--a--&gt;2[3]
+2--c--&gt;3[4]
+3--a--&gt;4[5]
+4--b--&gt;5[6]
+5--a--&gt;6[7]
+6--b--&gt;7[8]
+00-.-&gt;0
+1-.-&gt;0
+2-.-&gt;00
+3-.-&gt;0
+4-.-&gt;00
+5-.-&gt;1
+6-.-&gt;2
+%%7[b]-.-&gt;3[c]
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20200210-ac/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20200210-ac/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20200210-ac/">
+  <meta property="og:title" content="AC自动机 | Baobaobear">
+  <meta property="og:description" content="听到AC自动机很多人第一次听到的反应往往是很兴奋的。但其实并不是你们想的那种东西。它的全称是Aho-Corasick algorithm，另外，自动机的英文是Automaton，所以AC自动机即 AC Automaton。为了解释这个算法，首先我们来回顾KMP，你需要很理解KMP的原理，不然看后面的内容就会变得妙不可读。
+
+KMP自动机
+
+本质上KMP其实就是一种自动机。这次我们改用自动机的形式来理解。所谓自动机，一般指的是确定有限状态自动机，你可以看作一个黑箱，每次输入一个数据，它就会改变它的内部状态，并有相应的输出。如果你知道Trie，那么它其实就是一个典型的自动机。我们还是拿字符串abacabab作为例子，如果是生成next数组，结果如下：
+
+
+
+
+string
+a
+b
+a
+c
+a
+b
+a
+b
+\0
+
+
+
+
+
+next
+-1
+0
+0
+1
+0
+1
+2
+3
+2
+
+
+
+
+为了方便变成自动机的方式理解，我们把这个改成有向图
+
+graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00--b--&gt;1[2]
+1--a--&gt;2[3]
+2--c--&gt;3[4]
+3--a--&gt;4[5]
+4--b--&gt;5[6]
+5--a--&gt;6[7]
+6--b--&gt;7[8]
+00-.-&gt;0
+1-.-&gt;0
+2-.-&gt;00
+3-.-&gt;0
+4-.-&gt;00
+5-.-&gt;1
+6-.-&gt;2
+%%7[b]-.-&gt;3[c]
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2020-02-10T22:00:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2020-02-10T22:00:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20200210-ac/"
+  },
+  "headline": "AC自动机",
+  
+  "datePublished": "2020-02-10T22:00:00+08:00",
+  "dateModified": "2020-02-10T22:00:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e听到AC自动机很多人第一次听到的反应往往是很兴奋的。但其实并不是你们想的那种东西。它的全称是Aho-Corasick algorithm，另外，自动机的英文是Automaton，所以AC自动机即 AC Automaton。为了解释这个算法，首先我们来回顾KMP，你需要很理解KMP的原理，不然看后面的内容就会变得\u003cdel\u003e妙不可读\u003c/del\u003e。\u003c/p\u003e\n\n\u003ch2 id=\"kmp自动机\"\u003eKMP自动机\u003c/h2\u003e\n\n\u003cp\u003e本质上KMP其实就是一种自动机。这次我们改用自动机的形式来理解。所谓自动机，一般指的是确定有限状态自动机，你可以看作一个黑箱，每次输入一个数据，它就会改变它的内部状态，并有相应的输出。如果你知道Trie，那么它其实就是一个典型的自动机。我们还是拿字符串\u003ccode\u003eabacabab\u003c/code\u003e作为例子，如果是生成next数组，结果如下：\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003estring\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003ec\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003ea\u003c/th\u003e\n\u003cth\u003eb\u003c/th\u003e\n\u003cth\u003e\\0\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003enext\u003c/td\u003e\n\u003ctd\u003e-1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003ctd\u003e3\u003c/td\u003e\n\u003ctd\u003e2\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e为了方便变成自动机的方式理解，我们把这个改成有向图\u003c/p\u003e\n\n\u003cpre\u003e\u003ccode class=\"language-mermaid\"\u003egraph LR;\nlinkStyle default interpolate basis\n0[Start]--a--\u0026gt;00[1]\n00--b--\u0026gt;1[2]\n1--a--\u0026gt;2[3]\n2--c--\u0026gt;3[4]\n3--a--\u0026gt;4[5]\n4--b--\u0026gt;5[6]\n5--a--\u0026gt;6[7]\n6--b--\u0026gt;7[8]\n00-.-\u0026gt;0\n1-.-\u0026gt;0\n2-.-\u0026gt;00\n3-.-\u0026gt;0\n4-.-\u0026gt;00\n5-.-\u0026gt;1\n6-.-\u0026gt;2\n%%7[b]-.-\u0026gt;3[c]\nstyle 0 fill:#f9f,stroke-dasharray: 5, 5\nstyle 7 fill:#f9f,stroke-dasharray: 5, 5\n\u003c/code\u003e\u003c/pre\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>AC自动机 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>AC自动机</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Feb 10, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20200210-ac/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20200210-ac/&amp;text=AC%e8%87%aa%e5%8a%a8%e6%9c%ba" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20200210-ac/&amp;t=AC%e8%87%aa%e5%8a%a8%e6%9c%ba" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=AC%e8%87%aa%e5%8a%a8%e6%9c%ba&amp;body=/post/20200210-ac/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20200210-ac/&amp;title=AC%e8%87%aa%e5%8a%a8%e6%9c%ba" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=AC%e8%87%aa%e5%8a%a8%e6%9c%ba%20/post/20200210-ac/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20200210-ac/&amp;title=AC%e8%87%aa%e5%8a%a8%e6%9c%ba" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>听到AC自动机很多人第一次听到的反应往往是很兴奋的。但其实并不是你们想的那种东西。它的全称是Aho-Corasick algorithm，另外，自动机的英文是Automaton，所以AC自动机即 AC Automaton。为了解释这个算法，首先我们来回顾KMP，你需要很理解KMP的原理，不然看后面的内容就会变得<del>妙不可读</del>。</p>
+
+<h2 id="kmp自动机">KMP自动机</h2>
+
+<p>本质上KMP其实就是一种自动机。这次我们改用自动机的形式来理解。所谓自动机，一般指的是确定有限状态自动机，你可以看作一个黑箱，每次输入一个数据，它就会改变它的内部状态，并有相应的输出。如果你知道Trie，那么它其实就是一个典型的自动机。我们还是拿字符串<code>abacabab</code>作为例子，如果是生成next数组，结果如下：</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>next</td>
+<td>-1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>为了方便变成自动机的方式理解，我们把这个改成有向图</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00--b--&gt;1[2]
+1--a--&gt;2[3]
+2--c--&gt;3[4]
+3--a--&gt;4[5]
+4--b--&gt;5[6]
+5--a--&gt;6[7]
+6--b--&gt;7[8]
+00-.-&gt;0
+1-.-&gt;0
+2-.-&gt;00
+3-.-&gt;0
+4-.-&gt;00
+5-.-&gt;1
+6-.-&gt;2
+%%7[b]-.-&gt;3[c]
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>上图中，实箭头表示匹配，虚箭头表示不匹配要返回的前面的节点，紫色节点表示起止节点。首先我们的状态只要一个指针，先指向start，在匹配的时候，如果与它的下一个字符匹配，那么指针就沿实箭头移动；如果与下一个字符不匹配，在有虚线的情况下，那就沿虚线走一步，然后再尝试一次匹配。以下我们模拟一下匹配&rdquo;ababa&rdquo;的过程。</p>
+
+<ol>
+<li>初始化指向start，start的下一个是<code>a</code>，匹配第1个字符，指针移动到节点1</li>
+<li>节点1的下一个是<code>b</code>，匹配第2个字符，指针移动到节点2</li>
+<li>节点2的下一个是<code>a</code>，匹配第3个字符，指针移动到节点3</li>
+<li>节点3的下一个是<code>c</code>，不匹配第4个字符，回退到节点1，这时候匹配，指针移动到节点2</li>
+<li>节点2的下一个是<code>a</code>，匹配第5个字符，指针移动到节点3</li>
+</ol>
+
+<p>以上的虚线箭头就是fail指针的指向</p>
+
+<h2 id="kmp自动机的生成">KMP自动机的生成</h2>
+
+<p>这个的生成规则其实非常简单，首先建立start，然后向右添加字符，用实箭头连接，第一个节点就虚箭头直接指回start</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00-.-&gt;0
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>然后插入第二个字符，第二个字符的虚箭头看它的父节点的虚箭头所指向的节点的子节点是不是与第二个字符相等，这个描述有点绕，假设当前节点是c，父节点是p，其虚箭头所指节点是<code>fail[x]</code>，那么看的是<code>fail[p]</code>的子节点是否等于c的值，如果等于，那么<code>fail[c] = fail[p]-&gt;next</code>，如果不等于，那么令<code>p=fail[p]</code>再次判断其子节点，直到<code>p=start</code>，于是加入第二节点时，它的fail指针指向start</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00--b--&gt;1[2]
+00-.-&gt;0
+1-.-&gt;0
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>到第3个字符a的时候，它的父节点的fail指向start，而start的子节点也是a，所以它的a就指向第1个字符</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00--b--&gt;1[2]
+1--a--&gt;2[3]
+00-.-&gt;0
+1-.-&gt;0
+2-.-&gt;00
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>最后讲一下插入最后的字符b的时候，首先它的父节点的fail指向第3个节点a，但那个节点的下一个字符并不是b，所以用它的父节点的fail替代，然后再看第3个节点的fail，指向第1个节点，而第1个节点的下一个字符是b，所以要指向第2个节点，得到下图</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00--b--&gt;1[2]
+1--a--&gt;2[3]
+2--c--&gt;3[4]
+3--a--&gt;4[5]
+4--b--&gt;5[6]
+5--a--&gt;6[7]
+6--b--&gt;7[8]
+00-.-&gt;0
+1-.-&gt;0
+2-.-&gt;00
+3-.-&gt;0
+4-.-&gt;00
+5-.-&gt;1
+6-.-&gt;2
+7-.-&gt;1
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>在弄懂以上过程后，我们来正式介绍AC自动机</p>
+
+<h2 id="ac自动机与trie">AC自动机与Trie</h2>
+
+<p>AC自动机的本质，就是在Trie上套KMP，就这一句话。我们怎么理解呢，其实Trie能匹配字符串的前缀，但如果我们需要匹配任意位置，又不希望回溯，那就依照KMP的方法，在匹配失败的时候，跳转到<strong>假如回溯能匹配到的Trie的位置</strong>。为了更好说明，这里我们使用<code>he</code>,<code>she</code>,<code>the</code>,<code>there</code>,<code>here</code>来演示生成过程。</p>
+
+<p>先生成Trie</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0((0))--h--&gt;1
+1--e--&gt;2((2))
+2--r--&gt;3
+3--e--&gt;4((4))
+0--s--&gt;5
+5--h--&gt;6
+6--e--&gt;7((7))
+0--t--&gt;8
+8--h--&gt;9
+9--e--&gt;10((10))
+10--r--&gt;11
+11--e--&gt;12((12))
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>然后做BFS，第一层的fail都指向0</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0((0))--h--&gt;1
+1--e--&gt;2((2))
+2--r--&gt;3
+3--e--&gt;4((4))
+0--s--&gt;5
+5--h--&gt;6
+6--e--&gt;7((7))
+0--t--&gt;8
+8--h--&gt;9
+9--e--&gt;10((10))
+10--r--&gt;11
+11--e--&gt;12((12))
+1-.-&gt;0
+5-.-&gt;0
+8-.-&gt;0
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>然后，第二层，与KMP自动机的建立规则相同，另外为了让图形上的线不那么乱，虚线指向start的省略</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0((0))--h--&gt;1
+subgraph here
+1--e--&gt;2((2))
+2--r--&gt;3
+3--e--&gt;4((4))
+end
+0--s--&gt;5
+subgraph she
+5--h--&gt;6
+6--e--&gt;7((7))
+end
+0--t--&gt;8
+subgraph there
+8--h--&gt;9
+9--e--&gt;10((10))
+10--r--&gt;11
+11--e--&gt;12((12))
+end
+6-.-&gt;1
+9-.-&gt;1
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>接着，第三层</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0((0))--h--&gt;1
+subgraph here
+1--e--&gt;2((2))
+2--r--&gt;3
+3--e--&gt;4((4))
+end
+0--s--&gt;5
+subgraph she
+5--h--&gt;6
+6--e--&gt;7((7))
+end
+0--t--&gt;8
+subgraph there
+8--h--&gt;9
+9--e--&gt;10((10))
+10--r--&gt;11
+11--e--&gt;12((12))
+end
+6-.-&gt;1
+9-.-&gt;1
+7-.-&gt;2
+10-.-&gt;2
+
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>构建完毕的图</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0((0))--h--&gt;1
+subgraph here
+1--e--&gt;2((2))
+2--r--&gt;3
+3--e--&gt;4((4))
+end
+0--s--&gt;5
+subgraph she
+5--h--&gt;6
+6--e--&gt;7((7))
+end
+0--t--&gt;8
+subgraph there
+8--h--&gt;9
+9--e--&gt;10((10))
+10--r--&gt;11
+11--e--&gt;12((12))
+end
+6-.-&gt;1
+9-.-&gt;1
+7-.-&gt;2
+10-.-&gt;2
+11-.-&gt;3
+12-.-&gt;4
+
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 2 fill:#f9f,stroke-dasharray: 5, 5
+style 4 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+style 10 fill:#f9f,stroke-dasharray: 5, 5
+style 12 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre>
+
+<p>以上就是一个最简单的AC自动机，由于只能通过fail指针在失配时做转移，所以遇到匹配失败的时候不能一步到位，需要一个循环来找下一个位置，但在不少场合已足够使用。习题：<a href="https://vjudge.net/problem/HDU-2896" target="_blank">HDU-2896</a></p>
+
+<h2 id="字典图">字典图</h2>
+
+<p>前面刚说过，由于fail指针只有一个，所以遇到匹配失败的时候不能一步到位，那我们如果想一步到位呢？那事实上就成为了一个有向图，我们在跳转时不使用fail指针，而直接用next指针替代，每遇到一个字符就按next来跳转，这样状态转移时间非常稳定且速度更快，而且成为有向图有一个额外的好处，就是能变成图论问题来解，这个后面再来讨论。</p>
+
+<p>要实现字典图，fail指针还是需要的，但在构建的时候代码写起来反而更简单，因为fail的指向不再需要写循环，可以利用前面的结果一步到位，假设当前节点是c，要更新的字符是i，那分两种情况：</p>
+
+<ol>
+<li>如果c的<code>next[i]</code>非空，那么c的<code>next[i]</code>节点的fail指针就指向 c的fail指针节点的<code>next[i]</code></li>
+<li>如果c的<code>next[i]</code>为空，那么c的<code>next[i]</code>节点就指向 c的fail指针节点的<code>next[i]</code></li>
+</ol>
+
+<p>也就是说，不管哪种，都是指向c的fail的<code>next[i]</code></p>
+
+<h2 id="模板">模板</h2>
+
+<p>应用以下模板时，你很可能需要做的调整包括<code>charset</code>的大小，以及<code>getindex</code>函数的实现，这两部分你也可以通过template改写</p>
+
+<pre><code class="language-cpp">const int charset = 26;
+struct TrieGraph
+{
+    struct trie_node
+    {
+        int next[charset];
+        int fail;
+        int cnt;
+        int end;
+        trie_node() : end(0), fail(0), cnt(0) {}
+        void init() { memset(next, 0, sizeof(next)); }
+    };
+    vector&lt;trie_node&gt; nodes;
+    vector&lt;int&gt; bfs_q;
+    vector&lt;int&gt; match_cnt;
+    map&lt;int, int&gt; id2node;
+    map&lt;int, int&gt; str_size;
+    int match_p;
+    void init(int size)
+    {
+        nodes.clear();
+        nodes.reserve(size);
+        nodes.push_back(trie_node());
+        nodes.back().init();
+        match_p = 0;
+    }
+    static inline int getindex(char c) { return c - 'a'; }
+    void insert(const char* s, int id)
+    {
+        const char* s0 = s;
+        int p = 0;
+        for (;*s; ++s)
+        {
+            if (nodes[p].next[getindex(*s)])
+            {
+                p = nodes[p].next[getindex(*s)];
+            }
+            else
+            {
+                int np = nodes.size();
+                nodes[p].next[getindex(*s)] = np;
+                nodes.push_back(trie_node());
+                nodes.back().init();
+                p = np;
+            }
+        }
+        ++nodes[p].cnt;
+        id2node[id] = p;
+        str_size[id] = s - s0;
+    }
+    void build()
+    {
+        bfs_q.clear();
+        bfs_q.reserve(nodes.size());
+        queue&lt;int&gt; q;
+        for (int i = 0; i &lt; charset; ++i)
+            if (nodes[0].next[i]) q.push(nodes[0].next[i]);
+        while (!q.empty())
+        {
+            int p = q.front();
+            q.pop();
+            bfs_q.push_back(p);
+            for (int i = 0; i &lt; charset; ++i)
+            {
+                if (nodes[p].next[i])
+                {
+                    nodes[nodes[p].next[i]].fail = nodes[nodes[p].fail].next[i];
+                    q.push(nodes[p].next[i]);
+                }
+                else nodes[p].next[i] = nodes[nodes[p].fail].next[i];
+            }
+        }
+    }
+    int match(char c)
+    {
+        match_p = nodes[match_p].next[getindex(c)];
+        return match_p;
+    }
+    int query(const char* s) // 有多少个出现
+    {
+        int ret = 0;
+        match_cnt.resize(nodes.size());
+        for (int i = match_cnt.size() - 1; i &gt;= 0; --i)
+        {
+            match_cnt[i] = nodes[i].cnt;
+        }
+        for (const char* ps = s; *ps; ps++)
+        {
+            for (int p = match(*ps); p &amp;&amp; ~match_cnt[p]; p = nodes[p].fail)
+                ret += match_cnt[p], match_cnt[p] = -1;
+        }
+        return ret;
+    }
+    ll query_sum(const char* s, int wc[]) // 每个分别出现多少
+    {
+        vector&lt;int&gt; sum;
+        sum.resize(nodes.size());
+        match_p = 0;
+        for (const char* ps = s; *ps; ps++)
+        {
+            for (int p = match(*ps); p; p = nodes[p].fail)
+            {
+                sum[p] += nodes[p].cnt;
+            }
+        }
+        ll ret = 0;
+        for (map&lt;int, int&gt;::iterator it = id2node.begin(); it != id2node.end(); ++it)
+        {
+            wc[it-&gt;first] = sum[it-&gt;second];
+            ret += sum[it-&gt;second];
+        }
+        return ret;
+    }
+    const char* find(const char* s, int&amp; match_id)
+    {
+        match_p = 0;
+        for (const char* ps = s; *ps; ps++)
+        {
+            for (int p = match(*ps); p; p = nodes[p].fail)
+            {
+                if (nodes[p].cnt == 0) continue;
+                for (map&lt;int, int&gt;::iterator it = id2node.begin(); it != id2node.end(); ++it)
+                {
+                    if (it-&gt;second == p)
+                    {
+                        match_id = it-&gt;first;
+                        break;
+                    }
+                }
+                return ps - str_size[match_id] + 1;
+            }
+        }
+        return 0;
+    }
+};
+</code></pre>
+
+<p>使用方式，先调用<code>init</code>预分配空间，然后调用<code>insert</code>插入所有用到的字符串，注意字符串的id必须从1开始，再调用<code>build</code>生成字典树，最后调用<code>query</code>匹配目标字符串，如果只需要知道有多少个串在目标中出现，那么调用单个参数的，如果需要知道每个分别出现多少次，那么使用有wc参数的版本，通过参数wc返回的是原始字符串每一个的匹配数量，而如果只需要找最初匹配的位置，那用find函数。习题 <a href="https://vjudge.net/problem/HYSBZ-3172" target="_blank">HYSBZ-3172</a></p>
+
+<h2 id="扩展-字符串生成的可能数量">扩展：字符串生成的可能数量</h2>
+
+<p>典型题目为<a href="https://vjudge.net/problem/POJ-2778" target="_blank">POJ-2778</a>，即生成长度为n的字符串，且不包含给定的m个子串。这时候就要用上前面所构造的字典图，我们要先转成邻接矩阵，例如<code>m[i][j][c]</code>如果为1，表示节点i能通过字符c连接到节点j，为0则不通。不过实际计算的时候，我们并不关心i和j之间通过什么连接，只关心连接数量，那累加<code>m[i][j][c]</code>，c取字符集的范围，累加值写到矩阵<code>M = matrix[i][j]</code>，然后我们只要计算$M&rsquo; = M ^ n$，在矩阵<code>M'</code>中，<code>M'[i][j]</code>的值就表示从i到j恰好n步共有多少种走法。回到上面的题目，因为部分节点不能走，所以我们只要在生成矩阵的时候删除那些不能走的节点，求出<code>M'</code>后，累加<code>M'[0][j]</code>的结果就是答案，所以算法复杂度是 $O(Mlogn)$ ，其中M是一次矩阵乘法的时间复杂度，这个也是有向图里面求k步到达指定节点的路线数量所用的算法。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">数据结构</a>
+  
+  <a class="badge badge-light" href="/tags/ac/">AC</a>
+  
+  <a class="badge badge-light" href="">自动机</a>
+  
+  <a class="badge badge-light" href="/tags/automaton/">automaton</a>
+  
+  <a class="badge badge-light" href="/tags/kmp/">KMP</a>
+  
+  <a class="badge badge-light" href="">模板</a>
+  
+  <a class="badge badge-light" href="/tags/c&#43;&#43;/">c&#43;&#43;</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20191231-persistent_segtree/">可持久化线段树</a></li>
+          
+          <li><a href="/post/20191215-fhq-treap/">FHQ Treap</a></li>
+          
+          <li><a href="/post/20191213-tree-sequence/">平衡树与序列维护</a></li>
+          
+          <li><a href="/post/20191211-treap-sbt/">Treap与SBT</a></li>
+          
+          <li><a href="/post/20191208-segtree/">线段树</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

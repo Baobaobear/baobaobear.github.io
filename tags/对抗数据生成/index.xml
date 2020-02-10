@@ -17,7 +17,7 @@
       <link>/post/20191019-qsort-talk-3/</link>
       <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
       <guid>/post/20191019-qsort-talk-3/</guid>
-      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
+      <description>&lt;p&gt;在&lt;a href=&#34;/post/20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
 
 &lt;h2 id=&#34;gcc的实现&#34;&gt;GCC的实现&lt;/h2&gt;
 

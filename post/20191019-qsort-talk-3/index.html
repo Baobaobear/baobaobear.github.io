@@ -174,7 +174,7 @@ GCC的实现
       "url": "/img/icon-512.png"
     }
   },
-  "description": "\u003cp\u003e在\u003ca href=\"../20191007-qsort-talk-2/\"\u003e上一篇\u003c/a\u003e我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。\u003c/p\u003e\n\n\u003ch2 id=\"gcc的实现\"\u003eGCC的实现\u003c/h2\u003e\n\n\u003cp\u003e这个我直接给个\u003ca href=\"https://github.com/gcc-mirror/gcc/blob/gcc-8-branch/libstdc++-v3/include/bits/stl_algo.h#L1896\" target=\"_blank\"\u003egithub来源\u003c/a\u003e，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是\u003ccode\u003e__unguarded_partition\u003c/code\u003e函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。\u003c/p\u003e"
+  "description": "\u003cp\u003e在\u003ca href=\"/post/20191007-qsort-talk-2/\"\u003e上一篇\u003c/a\u003e我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。\u003c/p\u003e\n\n\u003ch2 id=\"gcc的实现\"\u003eGCC的实现\u003c/h2\u003e\n\n\u003cp\u003e这个我直接给个\u003ca href=\"https://github.com/gcc-mirror/gcc/blob/gcc-8-branch/libstdc++-v3/include/bits/stl_algo.h#L1896\" target=\"_blank\"\u003egithub来源\u003c/a\u003e，链接里是gcc8分支的实现源码，我已经通过链接标记出第1896行，那里就是\u003ccode\u003e__unguarded_partition\u003c/code\u003e函数的实现，就是快排的划分函数，而在后面几个函数就是快排的本体了。为了避免它代码更新导致位置变化，我把相关代码复制过来。\u003c/p\u003e"
 }
 </script>
 
@@ -563,7 +563,7 @@ GCC的实现
   <div class="article-container">
 
     <div class="article-style">
-      <p>在<a href="../20191007-qsort-talk-2/">上一篇</a>我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。</p>
+      <p>在<a href="/post/20191007-qsort-talk-2/">上一篇</a>我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。</p>
 
 <h2 id="gcc的实现">GCC的实现</h2>
 

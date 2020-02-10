@@ -17,7 +17,7 @@
       <link>/post/20191216-kmp-manacher/</link>
       <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
       <guid>/post/20191216-kmp-manacher/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;../20191028-kmp/&#34;&gt;KMP&lt;/a&gt;已经介绍过了，这次主要介绍的是Manacher&lt;/p&gt;
+      <description>&lt;p&gt;&lt;a href=&#34;/post/20191028-kmp/&#34;&gt;KMP&lt;/a&gt;已经介绍过了，这次主要介绍的是Manacher&lt;/p&gt;
 
 &lt;h2 id=&#34;最长回文子串&#34;&gt;最长回文子串&lt;/h2&gt;
 
@@ -668,7 +668,7 @@ int main()
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;注：后缀数组模板请从&lt;a href=&#34;../20191113-suffixarray/&#34;&gt;之前的文章&lt;/a&gt;里复制；函数st_query是左闭右开区间，即求的是&lt;code&gt;[l, r-1]&lt;/code&gt;的最小值，采用半开半闭区间目的是为了能直接swap&lt;/p&gt;</description>
+&lt;p&gt;注：后缀数组模板请从&lt;a href=&#34;/post/20191113-suffixarray/&#34;&gt;之前的文章&lt;/a&gt;里复制；函数st_query是左闭右开区间，即求的是&lt;code&gt;[l, r-1]&lt;/code&gt;的最小值，采用半开半闭区间目的是为了能直接swap&lt;/p&gt;</description>
     </item>
     
   </channel>

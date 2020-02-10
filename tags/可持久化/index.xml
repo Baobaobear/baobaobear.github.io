@@ -17,7 +17,7 @@
       <link>/post/20191231-persistent_segtree/</link>
       <pubDate>Tue, 31 Dec 2019 08:26:00 +0800</pubDate>
       <guid>/post/20191231-persistent_segtree/</guid>
-      <description>&lt;p&gt;可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解&lt;a href=&#34;../20191208-segtree/&#34;&gt;线段树&lt;/a&gt;&lt;/p&gt;
+      <description>&lt;p&gt;可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解&lt;a href=&#34;/post/20191208-segtree/&#34;&gt;线段树&lt;/a&gt;&lt;/p&gt;
 
 &lt;h2 id=&#34;概念&#34;&gt;概念&lt;/h2&gt;
 

@@ -17,7 +17,7 @@
       <link>/post/20191019-qsort-talk-3/</link>
       <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
       <guid>/post/20191019-qsort-talk-3/</guid>
-      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
+      <description>&lt;p&gt;在&lt;a href=&#34;/post/20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
 
 &lt;h2 id=&#34;gcc的实现&#34;&gt;GCC的实现&lt;/h2&gt;
 
@@ -322,7 +322,7 @@ void anti_qsort_gen_gcc(sort_element_t arr[], size_t len)
       <link>/post/20191019-qsort-talk-2/</link>
       <pubDate>Sat, 19 Oct 2019 00:57:00 +0800</pubDate>
       <guid>/post/20191019-qsort-talk-2/</guid>
-      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-1/&#34;&gt;上一篇&lt;/a&gt;我们介绍了四种不同的划分算法，现在我们来针对&lt;a href=&#34;../20191007-qsort-talk-1/#3-hoare-partition-scheme&#34;&gt;Hoare partition scheme&lt;/a&gt;来讲解一些优化和注意的问题。&lt;/p&gt;
+      <description>&lt;p&gt;在&lt;a href=&#34;/post/20191007-qsort-talk-1/&#34;&gt;上一篇&lt;/a&gt;我们介绍了四种不同的划分算法，现在我们来针对&lt;a href=&#34;/post/20191007-qsort-talk-1/#3-hoare-partition-scheme&#34;&gt;Hoare partition scheme&lt;/a&gt;来讲解一些优化和注意的问题。&lt;/p&gt;
 
 &lt;h2 id=&#34;最坏时间复杂度的优化&#34;&gt;最坏时间复杂度的优化&lt;/h2&gt;
 

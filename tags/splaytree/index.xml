@@ -17,7 +17,7 @@
       <link>/post/20191213-tree-sequence/</link>
       <pubDate>Fri, 13 Dec 2019 13:10:00 +0800</pubDate>
       <guid>/post/20191213-tree-sequence/</guid>
-      <description>&lt;p&gt;平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于&lt;a href=&#34;../20191211-treap-sbt/&#34;&gt;treap&lt;/a&gt;的文章。&lt;/p&gt;
+      <description>&lt;p&gt;平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于&lt;a href=&#34;/post/20191211-treap-sbt/&#34;&gt;treap&lt;/a&gt;的文章。&lt;/p&gt;
 
 &lt;h2 id=&#34;序列维护&#34;&gt;序列维护&lt;/h2&gt;
 

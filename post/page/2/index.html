@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2020-01-04T08:26:00&#43;08:00">
+    <meta property="og:updated_time" content="2020-04-16T00:00:00&#43;08:00">
   
 
   
@@ -393,6 +393,656 @@
     
       
     
+    Nov 13, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    6 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191113-suffixarray/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191113-suffixarray/">后缀数组</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>后缀数组其实概念很好理解，就是给出一个字符串，长度是n，对它所有的n个后缀编号从1到n进行排序，排序后，最小的那个后缀的编号假设是m1，那么<code>sa[1] = m1</code>，类似地，第二小的是m2的话，<code>sa[2] = m2</code>，sa这个数组就是我们所需要的后缀数组。根据这个，我们可以直接用sort算出sa，以下为最简单的实现</p>
+
+<pre><code class="language-cpp">struct SA_simple
+{
+    vector&lt;int&gt; sa;
+    int s_size;
+    const char* p_s;
+    int size() const
+    {
+        return s_size;
+    }
+    static bool cmp(const char* x, const char* y)
+    {
+        return strcmp(x, y) &lt; 0;
+    }
+    void init(char * str)
+    {
+        int n = strlen(str);
+        s_size = n;
+        p_s = str - 1;
+
+        sa.resize(n + 1);
+        vector&lt; const char* &gt; rp;
+        rp.resize(n + 1);
+
+        for (int i = 1; i &lt;= n; ++i)
+        {
+            rp[i] = p_s + i;
+        }
+        sort(rp.begin() + 1, rp.end(), cmp);
+        for (int i = 1; i &lt;= n; ++i)
+        {
+            sa[i] = rp[i] - p_s;
+        }
+    }
+};
+</code></pre>
+
+<p>这个实现的时间复杂度 $O(n^2logn)$</p>
+
+<p>要注意的一点是下标从1开始。有了这个，可以做点什么呢？例如给你一个串p，求出p在主串s中出现了多少次。那么在有了sa的情况下，因为sa是有序的，问题就变成了二分搜索，分别用<code>lower_bound</code>和<code>upper_bound</code>通过sa搜索p，两个相减便得出现次数。</p></p>
+    <a href="/post/20191113-suffixarray/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Nov 11, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    3 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191111-fenwicktree/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191111-fenwicktree/">树状数组</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>树状数组，是一个用于在近似 $O(logn)$ 时间内动态修改以及查询前缀和的数据结构，以下我们先来看以下树关系表格</p>
+
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+<th>13</th>
+<th>14</th>
+<th>15</th>
+<th>16</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>16</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>8</td>
+<td></td>
+<td></td>
+<td></td>
+<td>12</td>
+<td></td>
+<td>14</td>
+<td>15</td>
+<td></td>
+</tr>
+
+<tr>
+<td>3</td>
+<td></td>
+<td></td>
+<td></td>
+<td>4</td>
+<td></td>
+<td>6</td>
+<td>7</td>
+<td></td>
+<td></td>
+<td>10</td>
+<td>11</td>
+<td></td>
+<td>13</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>4</td>
+<td></td>
+<td>2</td>
+<td>3</td>
+<td></td>
+<td>5</td>
+<td></td>
+<td></td>
+<td></td>
+<td>9</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>这里表达的是，16的子节点有8, 12, 14, 15</p>
+
+<p>8的子节点有4, 6, 7</p>
+
+<p>12的子节点有10, 11，即夹在12与它的同级节点8之间</p>
+
+<p>我们把数值与它的二进制一起形象化画出下图</p>
+
+<pre><code class="language-mermaid">graph TD;
+2,0010--&gt;1,0001
+4,0100--&gt;3,0011
+4,0100--&gt;2,0010
+6,0110--&gt;5,0101
+8,1000--&gt;7,0111
+8,1000--&gt;6,0110
+8,1000--&gt;4,0100
+10,1010--&gt;9,1001
+12,1100--&gt;11,1011
+12,1100--&gt;10,1010
+14,1110--&gt;13,1101
+16,10000--&gt;8,1000
+16,10000--&gt;12,1100
+16,10000--&gt;14,1110
+16,10000--&gt;15,1111
+</code></pre>
+
+<p>这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是<code>x + (x &amp; -x)</code>，其中，<code>x &amp; -x</code>是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是<code>6+2=8</code>，更多的可以参考这篇<a href="/post/20191012-binary-skill/">二进制技巧</a>。</p></p>
+    <a href="/post/20191111-fenwicktree/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Oct 28, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191028-kmp/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191028-kmp/">KMP及扩展KMP</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀</p>
+
+<h2 id="最长公共前缀">最长公共前缀</h2>
+
+<p>我们拿字符串<code>ababcab</code>作为例子</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>这里所表达的是，例如取第3、4个字符&rdquo;ab&rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&rdquo;abc&rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>?</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>然后两个a匹配，<code>arr[6] = pointer1 - arr</code> 得到3，然后两指针一起移动</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>?</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+</tbody>
+</table>
+
+<p>这时候，不匹配，那么前一个指针上一次指向的是<code>arr[2]</code>的位置，即图上<code>*</code>的地方，值是1，这个值如果是p，那就移动到<code>arr[p]</code>的地方，所以就移动到<code>arr[1]</code>的地方，本质上就是找到前一个匹配此后缀的位置，即</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+</tbody>
+</table>
+
+<p>然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2</p></p>
+    <a href="/post/20191028-kmp/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
     Oct 21, 2019
   </span>
   
@@ -436,7 +1086,7 @@
 
   
   <div class="article-style">
-    <p><p>在<a href="../20191007-qsort-talk-2/">上一篇</a>我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。</p>
+    <p><p>在<a href="/post/20191007-qsort-talk-2/">上一篇</a>我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。</p>
 
 <h2 id="gcc的实现">GCC的实现</h2>
 
@@ -526,7 +1176,7 @@
 
   
   <div class="article-style">
-    <p><p>在<a href="../20191007-qsort-talk-1/">上一篇</a>我们介绍了四种不同的划分算法，现在我们来针对<a href="../20191007-qsort-talk-1/#3-hoare-partition-scheme">Hoare partition scheme</a>来讲解一些优化和注意的问题。</p>
+    <p><p>在<a href="/post/20191007-qsort-talk-1/">上一篇</a>我们介绍了四种不同的划分算法，现在我们来针对<a href="/post/20191007-qsort-talk-1/#3-hoare-partition-scheme">Hoare partition scheme</a>来讲解一些优化和注意的问题。</p>
 
 <h2 id="最坏时间复杂度的优化">最坏时间复杂度的优化</h2>
 
@@ -1047,303 +1697,6 @@
 </tbody>
 </table></p>
     <a href="/post/20191012-binary-skill/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 10, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    4 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191009-sorting-2/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191009-sorting-2/">插入排序与希尔排序优化思路</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>本篇针对插入排序和希尔排序来讲优化思路，有部分内容因为前一篇文章已经有交代，这里不重复，如果你还没有看，请先看<a href="../20191008-sorting-1">前一篇</a>。我们来看插入排序的动图演示</p>
-
-<p><a href="https://en.wikipedia.org/wiki/Insertion_sort" target="_blank"><img src="https://github.com/heray1990/AlgorithmVisualization/blob/master/images/insertion_sort_50samples_fps30_dpi50.gif?raw=true" alt="" /></a></p>
-
-<p>插入排序保证前面一块是有序的情况下，新增的一个元素通过向前交换到合适的位置，所以叫做插入排序。</p>
-
-<h2 id="插入排序基本实现">插入排序基本实现</h2>
-
-<p>我们先来看插入排序的基本实现</p>
-
-<pre><code class="language-cpp">void insert_sort(sort_element_t * beg, sort_element_t * end)
-{
-    for (sort_element_t* i = beg + 1; i &lt; end; ++i)
-    {
-        sort_element_t val = *i;
-        sort_element_t* j = i;
-        for (; j &gt; beg &amp;&amp; val &lt; j[-1]; --j)
-        {
-            *j = j[-1];
-        }
-        *j = val;
-    }
-}
-</code></pre>
-
-<p>插入排序即使不做任何优化，效率也明显高于上篇所说的冒泡排序和选择排序。那么按照惯例，先上双向看看效果</p></p>
-    <a href="/post/20191009-sorting-2/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 8, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    6 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191008-sorting-1/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191008-sorting-1/">选择和冒泡排序优化思路</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有<br />
-<code>void sort(type arr[], int len)</code><br />
-也许你也见过<br />
-<code>void sort(iter beg, iter end)</code><br />
-这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 <code>sort(arr, arr + len)</code> ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 <code>sort(arr, arr + len - 1)</code> 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以<br />
-<code>void sort(iter beg, iter end)</code><br />
-这种方式写的，至于这样写有什么好处，接下来我们就看示例。</p>
-
-<h2 id="选择排序">选择排序</h2>
-
-<p><img src="https://raw.githubusercontent.com/heray1990/AlgorithmVisualization/master/images/selection_sort_50samples_fps30_dpi50.gif" alt="" /></p></p>
-    <a href="/post/20191008-sorting-1/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 7, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    2 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191007-qsort-talk-1/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191007-qsort-talk-1/">Quick sort(快速排序)杂谈 1</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>我们现在使用的排序，很大比例在使用quick sort，因为它是平均速度最快的排序，但与此同时它可能也是坑最深的排序，现在我们就来讨论讨论它，因为内容较多，我计划写多篇，本篇是第一篇。</p>
-
-<h2 id="快排的思路">快排的思路</h2>
-
-<p>我们先来介绍一下快排的思路。快排的思路其实很简单，在数组中选一个元素，我们就称呼这个元素为pivot，通过与这个元素的比较，把数组划分成不比pivot大的在一边，不比pivot小的在另一边，于是就分成了两个更小的数据，对它们分别再排序就行了。但是，这个描述特别的含糊，首先是怎么选中间元素，这里面有很多不同的做法。然后就是划分了，这个划分方法非常的多，水也特别深，这里主要介绍最为常见的划分方法。</p></p>
-    <a href="/post/20191007-qsort-talk-1/">Read more...</a>
   </div>
   
 

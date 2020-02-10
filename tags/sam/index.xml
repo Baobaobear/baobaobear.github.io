@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>SAM | Baobaobear</title>
+    <link>/tags/sam/</link>
+      <atom:link href="/tags/sam/index.xml" rel="self" type="application/rss+xml" />
+    <description>SAM</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 20 Feb 2020 20:00:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>SAM</title>
+      <link>/tags/sam/</link>
+    </image>
+    
+    <item>
+      <title>后缀自动机SAM</title>
+      <link>/post/20200220-sam/</link>
+      <pubDate>Thu, 20 Feb 2020 20:00:00 +0800</pubDate>
+      <guid>/post/20200220-sam/</guid>
+      <description>&lt;p&gt;后缀自动机（SAM），可以结合前文的AC自动机一起理解，所谓后缀自动机，就是把一个字符串的所有后缀构造AC自动机，即只匹配其后缀的自动机。但是作为一个字符串的所有后缀，与一般的AC自动机有些不一样的性质，直接构造AC自动机，节点数是 $O(n^2)$，而SAM则对重复的节点合并了，可以让节点数大幅下降到 $O(n)$。&lt;/p&gt;
+
+&lt;p&gt;首先我们来直观地看看SAM的图形化，以下是字符串&lt;code&gt;abcac&lt;/code&gt;的SAM&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4
+4--c--&amp;gt;5((5))
+0--c--&amp;gt;6(1)
+
+0--b--&amp;gt;2
+1--c--&amp;gt;5
+6--a--&amp;gt;4
+
+4-.-&amp;gt;1
+5-.-&amp;gt;6
+3-.-&amp;gt;6
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+6-.-&amp;gt;0
+style 0 fill:#f9f
+style 5 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;实线方向就是匹配方向，虚线与AC自动机中的失败指针非常像，在SAM里称为link指针。&lt;/p&gt;
+
+&lt;p&gt;咱们这里就不从理论上做解释，把构造过程简单模拟一遍，如果你需要证明，那么可以在oiwiki上找到。&lt;/p&gt;
+
+&lt;h2 id=&#34;sam构造过程模拟&#34;&gt;SAM构造过程模拟&lt;/h2&gt;
+
+&lt;p&gt;我们使用字符串&lt;code&gt;abcac&lt;/code&gt;作为开始，SAM的构造是一个在线算法，可以一个个字符添加构造。另一点说明，节点编号等于与从根开始出发到该节点的最大深度。&lt;/p&gt;
+
+&lt;h3 id=&#34;1-插入a&#34;&gt;1 插入a&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1((1))
+
+1-.-&amp;gt;0
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-插入b&#34;&gt;2 插入b&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2((2))
+
+0--b--&amp;gt;2
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+style 0 fill:#f9f
+style 2 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在b添加到主链后，要找2的父节点1的link指针指的节点，命名为p，1. 如果它的下一个不存在字符&lt;code&gt;b&lt;/code&gt;，那么再令&lt;code&gt;p = p-&amp;gt;link&lt;/code&gt;，并再次判断本情况，2. 如果某个p的next存在当前的字符，那就让节点2的link指向&lt;code&gt;p-&amp;gt;next[char]&lt;/code&gt;节点，3. 如果p已经到达根，那么从根连接一条实边到节点2，同时节点2的link指向根。这里就属于情况3。&lt;/p&gt;
+
+&lt;h3 id=&#34;3-插入c&#34;&gt;3 插入c&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+
+0--b--&amp;gt;2
+0--c--&amp;gt;3((3))
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+style 0 fill:#f9f
+style 3 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-插入a&#34;&gt;4 插入a&lt;/h3&gt;
+
+&lt;p&gt;这个步骤稍微多一点，先添加到主链，即在&lt;code&gt;1-&amp;gt;2-&amp;gt;3-&amp;gt;4&lt;/code&gt;上，得到：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4((4))
+
+0--b--&amp;gt;2
+0--c--&amp;gt;3
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+style 0 fill:#f9f
+style 4 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后找4的父节点3的link指针指的节点，它的下一个存在字符&lt;code&gt;a&lt;/code&gt;，那么指向它，属于前面说的情况2&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4((4))
+
+0--b--&amp;gt;2
+0--c--&amp;gt;3
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;1
+style 0 fill:#f9f
+style 4 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;5-插入c&#34;&gt;5 插入c&lt;/h3&gt;
+
+&lt;p&gt;此步更为复杂 ，首先还是先加入主链&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4
+4--c--&amp;gt;5((5))
+
+0--b--&amp;gt;2
+0--c--&amp;gt;3
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;1
+style 0 fill:#f9f
+style 5 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从节点4开始找到节点1，它的next没有当前字符，再找到节点0，节点0的next存在当前字符，即找到节点3，但我们不能直接让节点5的link连接到节点3，因为连接到3的父节点0，它们的的深度不是连续的关系，这时候我们需要做拆点，把原来的节点3复制一个，即next是一样的，link也是一样，然后再让节点0直接连向它（如果不是节点0，那除了它之外，还有它的link节点的next有包含当前字符的，都要指向复制节点），节点3和新插入的节点5的link都指向这个复制节点。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph LR;
+linkStyle default interpolate basis
+0((0))--a--&amp;gt;1
+1--b--&amp;gt;2
+2--c--&amp;gt;3
+3--a--&amp;gt;4
+4--c--&amp;gt;5((5))
+0--c--&amp;gt;6(1)
+
+0--b--&amp;gt;2
+1--c--&amp;gt;5
+6--a--&amp;gt;4
+
+4-.-&amp;gt;1
+5-.-&amp;gt;6
+3-.-&amp;gt;6
+
+1-.-&amp;gt;0
+2-.-&amp;gt;0
+6-.-&amp;gt;0
+style 0 fill:#f9f
+style 5 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;构造步骤总结&#34;&gt;构造步骤总结&lt;/h2&gt;
+
+&lt;p&gt;一些说明，节点p有数据&lt;code&gt;next&lt;/code&gt;、&lt;code&gt;link&lt;/code&gt;、&lt;code&gt;maxlen&lt;/code&gt;，&lt;code&gt;next&lt;/code&gt;就是匹配的转移表，&lt;code&gt;link&lt;/code&gt;连接到p所表示的字符串的最长后缀，可以当成fail指针理解，而&lt;code&gt;maxlen&lt;/code&gt;表示从根到节点p的最大深度&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;上一次插入主链的节点命名为&lt;code&gt;last&lt;/code&gt;，新插入节点到主链，命名为&lt;code&gt;cur&lt;/code&gt;，当前要插入的字符命名为&lt;code&gt;c&lt;/code&gt;，进入步骤2&lt;/li&gt;
+&lt;li&gt;令&lt;code&gt;p = last&lt;/code&gt;看看&lt;code&gt;p-&amp;gt;link-&amp;gt;next&lt;/code&gt;有没有&lt;code&gt;c&lt;/code&gt;，没有的话再令&lt;code&gt;p = p-&amp;gt;link&lt;/code&gt;直到&lt;code&gt;p-&amp;gt;link-&amp;gt;next&lt;/code&gt;有&lt;code&gt;c&lt;/code&gt;跳到步骤3。如果p到根仍然找不到，那么令&lt;code&gt;cur-&amp;gt;link = root&lt;/code&gt;结束&lt;/li&gt;
+&lt;li&gt;令节点&lt;code&gt;p-&amp;gt;next[c]&lt;/code&gt;为&lt;code&gt;ch&lt;/code&gt;，判断&lt;code&gt;ch-&amp;gt;maxlen&lt;/code&gt;和&lt;code&gt;p-&amp;gt;maxlen+1&lt;/code&gt;是不是相等，如果是，令&lt;code&gt;cur-&amp;gt;link = p-&amp;gt;next[c]&lt;/code&gt;，结束。如果不是，到第4步&lt;/li&gt;
+&lt;li&gt;对节点&lt;code&gt;ch&lt;/code&gt;进行分拆操作，先复制，复制节点命名为&lt;code&gt;p2&lt;/code&gt;，更新&lt;code&gt;p2&lt;/code&gt;的最大深度，再判断如果满足&lt;code&gt;p-&amp;gt;next[c] == ch&lt;/code&gt;，则令&lt;code&gt;p-&amp;gt;next[c] = p2&lt;/code&gt;，再令&lt;code&gt;p = p-&amp;gt;link&lt;/code&gt;重复前一步&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;对于节点p的&lt;code&gt;minlen&lt;/code&gt;，可以通过 &lt;code&gt;p-&amp;gt;link-&amp;gt;maxlen + 1&lt;/code&gt; 得到&lt;/p&gt;
+
+&lt;h2 id=&#34;模板&#34;&gt;模板&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct SAM
+{
+    struct node
+    {
+        map&amp;lt;char, int&amp;gt; next;
+        int link;
+        int len_max;
+        node() : link(0), len_max(0) { }
+    };
+    vector&amp;lt;node&amp;gt; nodes;
+    int last;
+    void init(int size = 1024)
+    {
+        nodes.clear();
+        nodes.reserve(size);
+        nodes.push_back(node());
+        last = 0;
+        nodes[0].link = -1;
+    }
+    int size() const
+    {
+        return (int)nodes.size();
+    }
+    int len_max(int p)
+    {
+        return nodes[p].len_max;
+    }
+    int len_min(int p)
+    {
+        if (p == 0) return 0;
+        return nodes[nodes[p].link].len_max + 1;
+    }
+    void extend(char c)
+    {
+        int cur = (int)nodes.size();
+        nodes.push_back(node());
+        nodes[cur].len_max = nodes[last].len_max + 1;
+        int p = last; last = cur;
+
+        while (p != -1 &amp;amp;&amp;amp; !nodes[p].next.count(c))
+        {
+            nodes[p].next[c] = cur;
+            p = nodes[p].link;
+        }
+
+        if (p == -1)
+        {
+            nodes[cur].link = 0;
+        }
+        else
+        {
+            int ch = nodes[p].next[c];
+            if (nodes[p].len_max + 1 == nodes[ch].len_max)
+            {
+                nodes[cur].link = ch;
+            }
+            else // split ch
+            {
+                int p2 = (int)nodes.size();
+                nodes.push_back(nodes[ch]);
+                nodes[p2].len_max = nodes[p].len_max + 1;
+                while (p != -1 &amp;amp;&amp;amp; nodes[p].next[c] == ch)
+                {
+                    nodes[p].next[c] = p2;
+                    p = nodes[p].link;
+                }
+                nodes[ch].link = nodes[cur].link = p2;
+            }
+        }
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;sam应用&#34;&gt;SAM应用&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-多模式匹配&#34;&gt;1 多模式匹配&lt;/h3&gt;
+
+&lt;p&gt;给你一个字符串集S以及字符串T，判断T有哪些子串属于S&lt;/p&gt;
+
+&lt;p&gt;先对T求SAM，然后对S的每一个字符串走一遍，如果能走到底，那么这个串在T中出现了&lt;/p&gt;
+
+&lt;h3 id=&#34;2-不同的子串数量&#34;&gt;2 不同的子串数量&lt;/h3&gt;
+
+&lt;p&gt;因为对于SAM任何一个节点u，从根到这个节点的路线有 $maxlen(u) - minlen(u) + 1$ 条，而这条路线则表示原字符串的一个子串，且各不相同，所以对所有的节点求和，即 $\sum{(maxlen(u) - minlen(u) + 1)}$&lt;/p&gt;
+
+&lt;h3 id=&#34;3-字符串的最小表示&#34;&gt;3 字符串的最小表示&lt;/h3&gt;
+
+&lt;p&gt;这个很简单，对于原串s，长度为k，生成关于&lt;code&gt;s+s&lt;/code&gt;串的SAM后，找最小的next节点走k步即可&lt;/p&gt;
+
+&lt;h3 id=&#34;4-最长公共子串&#34;&gt;4 最长公共子串&lt;/h3&gt;
+
+&lt;p&gt;给出串A和B，对B求SAM，然后把这个SAM仿照KMP给A做匹配，令&lt;code&gt;l&lt;/code&gt;表示最大匹配长度，如果next有对应字符就转移，且&lt;code&gt;l++&lt;/code&gt;，如果没有则跳转到link所指的节点u，令&lt;code&gt;l = maxlen(u)&lt;/code&gt;并再次匹配，l的最大值就是答案。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

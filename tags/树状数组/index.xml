@@ -171,7 +171,7 @@
 16,10000--&amp;gt;15,1111
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是&lt;code&gt;x + (x &amp;amp; -x)&lt;/code&gt;，其中，&lt;code&gt;x &amp;amp; -x&lt;/code&gt;是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是&lt;code&gt;6+2=8&lt;/code&gt;，更多的可以参考这篇&lt;a href=&#34;../post/20191012-binary-skill/&#34;&gt;二进制技巧&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是&lt;code&gt;x + (x &amp;amp; -x)&lt;/code&gt;，其中，&lt;code&gt;x &amp;amp; -x&lt;/code&gt;是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是&lt;code&gt;6+2=8&lt;/code&gt;，更多的可以参考这篇&lt;a href=&#34;/post/20191012-binary-skill/&#34;&gt;二进制技巧&lt;/a&gt;。&lt;/p&gt;
 
 &lt;h2 id=&#34;前缀和&#34;&gt;前缀和&lt;/h2&gt;
 

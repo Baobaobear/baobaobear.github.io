@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>回文 | Baobaobear</title>
+    <link>/tags/%E5%9B%9E%E6%96%87/</link>
+      <atom:link href="/tags/%E5%9B%9E%E6%96%87/index.xml" rel="self" type="application/rss+xml" />
+    <description>回文</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 16 Apr 2020 00:00:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>回文</title>
+      <link>/tags/%E5%9B%9E%E6%96%87/</link>
+    </image>
+    
+    <item>
+      <title>回文树</title>
+      <link>/post/20200416-pam/</link>
+      <pubDate>Thu, 16 Apr 2020 00:00:00 +0800</pubDate>
+      <guid>/post/20200416-pam/</guid>
+      <description>&lt;p&gt;回文树（EER Tree，Palindromic Tree），有点类似Trie，但它并不是匹配字符串的，很多人称之为回文自动机，但它一点也不像自动机，不过我还是按习惯的来，使用PAM为简称。为了表示一个回文，我们只表示一边的一个单链即可，这时就类似Trie。但不同之处是，回文区分奇数长度和偶数长度，所以这里我们使用两个根，分别来表示奇数长度和偶数长度。所以，在奇数根里，链ba表示aba，而在偶数根里的ba表示abba。&lt;/p&gt;
+
+&lt;p&gt;首先我们来直观地看看PAM的图形化，以下是字符串&lt;code&gt;abcbbc&lt;/code&gt;的PAM&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&amp;gt;1[-1]
+end
+subgraph node0
+0--&amp;gt;6((bb))
+6--&amp;gt;7((cbbc))
+end
+subgraph node1
+1--&amp;gt;2((a))
+1--&amp;gt;3((b))
+1--&amp;gt;4((c))
+4--&amp;gt;5((bcb))
+end
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;0
+6-.-&amp;gt;3
+5-.-&amp;gt;3
+7-.-&amp;gt;4
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;实线方向就是子节点方向，虚线是fail指针，指向这个节点最长的回文后缀节点。图有点乱，但又不希望画得过于简单导致说不清楚，将就一下吧。&lt;/p&gt;
+
+&lt;p&gt;为了能顺利构造，每个节点上面要存储以下必要数据：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;next: 类似Trie，表示子结点的指针，即图上实线&lt;/li&gt;
+&lt;li&gt;fail: fail指针，即图上虚线&lt;/li&gt;
+&lt;li&gt;len: 这个节点所表示的回文串的长度&lt;/li&gt;
+&lt;li&gt;cnt: 这个节点所表示的回文串在原串中出现的次数&lt;/li&gt;
+&lt;li&gt;num: 这个节点所表示的回文串中，有多少个后缀也是回文&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;构造方法有点类似AC自动机或SAM，它用增量式构造，假设前k个字符已经构造好，最后构造的节点假设是&lt;code&gt;aba&lt;/code&gt;，新加的字符是&lt;code&gt;c&lt;/code&gt;，那么我们通过那个节点，获取长度是3，于是判断一下原字符串在&lt;code&gt;aba&lt;/code&gt;的前面的字符看是不是和新字符一样，如果是，就在它下面新加入节点，否则，就跳到它的fail节点再做相同的判断，其实这个比SAM简单多了。&lt;/p&gt;
+
+&lt;h2 id=&#34;pam构造过程模拟&#34;&gt;PAM构造过程模拟&lt;/h2&gt;
+
+&lt;p&gt;我们使用字符串&lt;code&gt;abcbbc&lt;/code&gt;作为开始，首先先把abc都插入&lt;/p&gt;
+
+&lt;h3 id=&#34;1-插入abc&#34;&gt;1 插入abc&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&amp;gt;1[-1]
+end
+subgraph node1
+1--&amp;gt;2((a))
+1--&amp;gt;3((b))
+1--&amp;gt;4((c))
+end
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;0
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-再插入b&#34;&gt;2 再插入b&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&amp;gt;1[-1]
+end
+subgraph node1
+1--&amp;gt;2((a))
+1--&amp;gt;3((b))
+1--&amp;gt;4((c))
+4--&amp;gt;5((bcb))
+end
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;0
+5-.-&amp;gt;3
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;新增加的b构成bcb回文，于是加在c后面，而fail指针的查找，就是从c的fail节点开始，判断那个节点对称的位置是不是新增加的字符b，是的话连上，不是的话再向上一层的fail节点继续找。&lt;/p&gt;
+
+&lt;h3 id=&#34;3-再插入b&#34;&gt;3 再插入b&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&amp;gt;1[-1]
+end
+subgraph node0
+0--&amp;gt;6((bb))
+end
+subgraph node1
+1--&amp;gt;2((a))
+1--&amp;gt;3((b))
+1--&amp;gt;4((c))
+4--&amp;gt;5((bcb))
+end
+2-.-&amp;gt;0
+3-.-&amp;gt;0
+4-.-&amp;gt;0
+6-.-&amp;gt;3
+5-.-&amp;gt;3
+style 0 fill:#f9f
+style 1 fill:#f9f
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;而最后插入a后的结果和开头的图是相同的，这里不重复了&lt;/p&gt;
+
+&lt;h2 id=&#34;关于节点计数&#34;&gt;关于节点计数&lt;/h2&gt;
+
+&lt;p&gt;这个节点计数，就是前面所说的cnt，即此节点所表示的回文在整个串中出现次数，但这个并不是一次性统计好的，要分两步。首先，在创建回文树过程中的节点计数，然后就是从叶子开始，把自己的cnt数值加到它的fail节点上，为什么是做加法呢，例如节点&lt;code&gt;ababa&lt;/code&gt;，它的fail节点表示的必然是&lt;code&gt;aba&lt;/code&gt;，那么在构建的过程中，每次遇到&lt;code&gt;ababa&lt;/code&gt;的左侧三个字母的时候，就会把cnt加到&lt;code&gt;aba&lt;/code&gt;节点上，而缺少的另一半，正是节点&lt;code&gt;ababa&lt;/code&gt;的出现次数。另外有的博客说cnt是本质不同的回文字符串数量，这是不正确的。&lt;/p&gt;
+
+&lt;h2 id=&#34;模板&#34;&gt;模板&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct PAM
+{
+    struct node
+    {
+        map&amp;lt;char, int&amp;gt; next;
+        int fail, len, cnt, num;
+        node(int l = 0) : len(l), fail(0), cnt(0), num(0) {}
+    };
+    vector&amp;lt;char&amp;gt; s;
+    vector&amp;lt;node&amp;gt; nodes;
+    int match_p;
+    void init(int size)
+    {
+        s.clear();
+        s.reserve(size + 1);
+        s.push_back(&#39;\200&#39;);
+        nodes.push_back(node());
+        nodes.push_back(node(-1));
+        nodes[0].fail = 1;
+        match_p = 0;
+    }
+    int getfail(int x)
+    {
+        while (s[s.size() - nodes[x].len - 2] != s.back())
+            x = nodes[x].fail;
+        return x;
+    }
+    void extend(char c)
+    {
+        s.push_back(c);
+        int p = getfail(match_p);
+        if (!nodes[p].next.count(c))
+        {
+            int ch = nodes.size();
+            nodes.push_back(node(nodes[p].len + 2));
+            nodes[ch].fail = nodes[getfail(nodes[p].fail)].next[c];
+            nodes[p].next[c] = ch;
+            nodes[ch].num = nodes[nodes[ch].fail].num + 1;
+        }
+        match_p = nodes[p].next[c];
+        nodes[match_p].cnt++;
+    }
+    void done()
+    {
+        for (int i = nodes.size() - 1; i &amp;gt; 0; i--)
+            nodes[nodes[i].fail].cnt += nodes[i].cnt;
+    }
+    void build(const char* s)
+    {
+        init(strlen(s));
+        for (;*s;++s) extend(*s);
+        done();
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;直接调用build即可，得到的nodes就是回文树&lt;/p&gt;
+
+&lt;h2 id=&#34;pam应用&#34;&gt;PAM应用&lt;/h2&gt;
+
+&lt;h3 id=&#34;1-求字符串中所有本质不同的回文子串的数量&#34;&gt;1 求字符串中所有本质不同的回文子串的数量&lt;/h3&gt;
+
+&lt;p&gt;生成PAM统计非根的节点数量即可&lt;/p&gt;
+
+&lt;h3 id=&#34;2-求字符串中所有回文子串的数量&#34;&gt;2 求字符串中所有回文子串的数量&lt;/h3&gt;
+
+&lt;p&gt;生成PAM后，对除了根外的所有节点的cnt累加就行了&lt;/p&gt;
+
+&lt;h3 id=&#34;3-求公共回文子串数量&#34;&gt;3 求公共回文子串数量&lt;/h3&gt;
+
+&lt;p&gt;对两个字符串都生成PAM后，同时dfs遍历其相同的节点，累加两边节点的cnt的乘积即可&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

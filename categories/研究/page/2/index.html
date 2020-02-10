@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2020-01-04T08:26:00&#43;08:00">
+    <meta property="og:updated_time" content="2020-04-16T00:00:00&#43;08:00">
   
 
   
@@ -359,6 +359,49 @@
   
 
   
+  
+  <div>
+    <h2><a href="/post/20191113-suffixarray/">后缀数组</a></h2>
+    <div class="article-style">
+      
+      后缀数组其实概念很好理解，就是给出一个字符串，长度是n，对它所有的n个后缀编号从1到n进行排序，排序后，最小的那个后缀的编号假设是m1，那么sa[1] = m1，类似地，第二小的是m2的话，sa[2] = m2，sa这个数组就是我们所需要的后缀数组。根据这个，我们可以直接用sort算出sa，以下为最简单的实现
+struct SA_simple { vector&lt;int&gt; sa; int s_size; const char* p_s; int size() const { return s_size; } static bool cmp(const char* x, const char* y) { return strcmp(x, y) &lt; 0; } void init(char * str) { int n = strlen(str); s_size = n; p_s = str - 1; sa.resize(n + 1); vector&lt; const char* &gt; rp; rp.resize(n + 1); for (int i = 1; i &lt;= n; ++i) { rp[i] = p_s + i; } sort(rp.begin() + 1, rp.end(), cmp); for (int i = 1; i &lt;= n; ++i) { sa[i] = rp[i] - p_s; } } };  这个实现的时间复杂度 $O(n^2logn)$
+要注意的一点是下标从1开始。有了这个，可以做点什么呢？例如给你一个串p，求出p在主串s中出现了多少次。那么在有了sa的情况下，因为sa是有序的，问题就变成了二分搜索，分别用lower_bound和upper_bound通过sa搜索p，两个相减便得出现次数。
+
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="/post/20191111-fenwicktree/">树状数组</a></h2>
+    <div class="article-style">
+      
+      树状数组，是一个用于在近似 $O(logn)$ 时间内动态修改以及查询前缀和的数据结构，以下我们先来看以下树关系表格
+   层 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16     1                16   2        8    12  14 15    3    4  6 7   10 11  13      4  2 3  5    9          5 1                   这里表达的是，16的子节点有8, 12, 14, 15
+8的子节点有4, 6, 7
+12的子节点有10, 11，即夹在12与它的同级节点8之间
+我们把数值与它的二进制一起形象化画出下图
+graph TD; 2,0010--&gt;1,0001 4,0100--&gt;3,0011 4,0100--&gt;2,0010 6,0110--&gt;5,0101 8,1000--&gt;7,0111 8,1000--&gt;6,0110 8,1000--&gt;4,0100 10,1010--&gt;9,1001 12,1100--&gt;11,1011 12,1100--&gt;10,1010 14,1110--&gt;13,1101 16,10000--&gt;8,1000 16,10000--&gt;12,1100 16,10000--&gt;14,1110 16,10000--&gt;15,1111  这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是x + (x &amp; -x)，其中，x &amp; -x是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是6+2=8，更多的可以参考这篇二进制技巧。
+
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="/post/20191028-kmp/">KMP及扩展KMP</a></h2>
+    <div class="article-style">
+      
+      KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀
+最长公共前缀 我们拿字符串ababcab作为例子
+   string a b a b c a b     len 0 0 1 2 0 1 2    这里所表达的是，例如取第3、4个字符&rdquo;ab&rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&rdquo;abc&rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子
+   string a b a c a b a b     len 0 0 1 0 1 2 3 2    最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样
+   string a b a c a b a b     len 0 0 1 0 1 2 3 ?   pointer   ^    ^     然后两个a匹配，arr[6] = pointer1 - arr 得到3，然后两指针一起移动
+   string a b a c a b a b     len 0 0 1 0 1 2 3 ?   pointer   * ^    ^    这时候，不匹配，那么前一个指针上一次指向的是arr[2]的位置，即图上*的地方，值是1，这个值如果是p，那就移动到arr[p]的地方，所以就移动到arr[1]的地方，本质上就是找到前一个匹配此后缀的位置，即
+   string a b a c a b a b     len 0 0 1 0 1 2 3 2   pointer  ^      ^    然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2
+
+      
+    </div>
+  </div>
   
   <div>
     <h2><a href="/post/20191019-qsort-talk-3/">Quick sort(快速排序)杂谈 3</a></h2>

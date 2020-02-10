@@ -17,7 +17,7 @@
       <link>/post/20191215-fhq-treap/</link>
       <pubDate>Sun, 15 Dec 2019 13:10:00 +0800</pubDate>
       <guid>/post/20191215-fhq-treap/</guid>
-      <description>&lt;p&gt;讲完了&lt;a href=&#34;../20191211-treap-sbt/&#34;&gt;treap&lt;/a&gt;和&lt;a href=&#34;../20191213-tree-sequence/&#34;&gt;splaytree&lt;/a&gt;，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。&lt;/p&gt;
+      <description>&lt;p&gt;讲完了&lt;a href=&#34;/post/20191211-treap-sbt/&#34;&gt;treap&lt;/a&gt;和&lt;a href=&#34;/post/20191213-tree-sequence/&#34;&gt;splaytree&lt;/a&gt;，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。&lt;/p&gt;
 
 &lt;p&gt;splay其实还有两个操作split和merge没有介绍，我打算把这两放在这里一并介绍&lt;/p&gt;
 

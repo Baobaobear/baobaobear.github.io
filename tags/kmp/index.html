@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2019-12-16T18:23:00&#43;08:00">
+    <meta property="og:updated_time" content="2020-02-10T22:00:00&#43;08:00">
   
 
   
@@ -359,6 +359,18 @@
   
 
   
+  
+  <div>
+    <h2><a href="/post/20200210-ac/">AC自动机</a></h2>
+    <div class="article-style">
+      
+      听到AC自动机很多人第一次听到的反应往往是很兴奋的。但其实并不是你们想的那种东西。它的全称是Aho-Corasick algorithm，另外，自动机的英文是Automaton，所以AC自动机即 AC Automaton。为了解释这个算法，首先我们来回顾KMP，你需要很理解KMP的原理，不然看后面的内容就会变得妙不可读。
+KMP自动机 本质上KMP其实就是一种自动机。这次我们改用自动机的形式来理解。所谓自动机，一般指的是确定有限状态自动机，你可以看作一个黑箱，每次输入一个数据，它就会改变它的内部状态，并有相应的输出。如果你知道Trie，那么它其实就是一个典型的自动机。我们还是拿字符串abacabab作为例子，如果是生成next数组，结果如下：
+   string a b a c a b a b \0     next -1 0 0 1 0 1 2 3 2    为了方便变成自动机的方式理解，我们把这个改成有向图
+graph LR; linkStyle default interpolate basis 0[Start]--a--&gt;00[1] 00--b--&gt;1[2] 1--a--&gt;2[3] 2--c--&gt;3[4] 3--a--&gt;4[5] 4--b--&gt;5[6] 5--a--&gt;6[7] 6--b--&gt;7[8] 00-.-&gt;0 1-.-&gt;0 2-.-&gt;00 3-.-&gt;0 4-.-&gt;00 5-.-&gt;1 6-.-&gt;2 %%7[b]-.-&gt;3[c] style 0 fill:#f9f,stroke-dasharray: 5, 5 style 7 fill:#f9f,stroke-dasharray: 5, 5 
+      
+    </div>
+  </div>
   
   <div>
     <h2><a href="/post/20191216-kmp-manacher/">扩展KMP与Manacher</a></h2>

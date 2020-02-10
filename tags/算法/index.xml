@@ -1797,7 +1797,7 @@ static uint64_t i64_distribution(_Eg&amp;amp; eg, uint64_t n)
       <link>/post/20191216-kmp-manacher/</link>
       <pubDate>Mon, 16 Dec 2019 18:23:00 +0800</pubDate>
       <guid>/post/20191216-kmp-manacher/</guid>
-      <description>&lt;p&gt;&lt;a href=&#34;../20191028-kmp/&#34;&gt;KMP&lt;/a&gt;已经介绍过了，这次主要介绍的是Manacher&lt;/p&gt;
+      <description>&lt;p&gt;&lt;a href=&#34;/post/20191028-kmp/&#34;&gt;KMP&lt;/a&gt;已经介绍过了，这次主要介绍的是Manacher&lt;/p&gt;
 
 &lt;h2 id=&#34;最长回文子串&#34;&gt;最长回文子串&lt;/h2&gt;
 
@@ -2448,7 +2448,7 @@ int main()
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;注：后缀数组模板请从&lt;a href=&#34;../20191113-suffixarray/&#34;&gt;之前的文章&lt;/a&gt;里复制；函数st_query是左闭右开区间，即求的是&lt;code&gt;[l, r-1]&lt;/code&gt;的最小值，采用半开半闭区间目的是为了能直接swap&lt;/p&gt;</description>
+&lt;p&gt;注：后缀数组模板请从&lt;a href=&#34;/post/20191113-suffixarray/&#34;&gt;之前的文章&lt;/a&gt;里复制；函数st_query是左闭右开区间，即求的是&lt;code&gt;[l, r-1]&lt;/code&gt;的最小值，采用半开半闭区间目的是为了能直接swap&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -3624,7 +3624,7 @@ void extkmp_ext(const char* str, int ext[], const char* pattern, int z[])
       <link>/post/20191019-qsort-talk-3/</link>
       <pubDate>Mon, 21 Oct 2019 17:32:00 +0800</pubDate>
       <guid>/post/20191019-qsort-talk-3/</guid>
-      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
+      <description>&lt;p&gt;在&lt;a href=&#34;/post/20191007-qsort-talk-2/&#34;&gt;上一篇&lt;/a&gt;我们介绍了快排的各种优化，最后得到了一个超越VS的STL std::sort实现的版本，这回我们来讲讲怎么折磨gcc的std::sort。&lt;/p&gt;
 
 &lt;h2 id=&#34;gcc的实现&#34;&gt;GCC的实现&lt;/h2&gt;
 
@@ -3929,7 +3929,7 @@ void anti_qsort_gen_gcc(sort_element_t arr[], size_t len)
       <link>/post/20191019-qsort-talk-2/</link>
       <pubDate>Sat, 19 Oct 2019 00:57:00 +0800</pubDate>
       <guid>/post/20191019-qsort-talk-2/</guid>
-      <description>&lt;p&gt;在&lt;a href=&#34;../20191007-qsort-talk-1/&#34;&gt;上一篇&lt;/a&gt;我们介绍了四种不同的划分算法，现在我们来针对&lt;a href=&#34;../20191007-qsort-talk-1/#3-hoare-partition-scheme&#34;&gt;Hoare partition scheme&lt;/a&gt;来讲解一些优化和注意的问题。&lt;/p&gt;
+      <description>&lt;p&gt;在&lt;a href=&#34;/post/20191007-qsort-talk-1/&#34;&gt;上一篇&lt;/a&gt;我们介绍了四种不同的划分算法，现在我们来针对&lt;a href=&#34;/post/20191007-qsort-talk-1/#3-hoare-partition-scheme&#34;&gt;Hoare partition scheme&lt;/a&gt;来讲解一些优化和注意的问题。&lt;/p&gt;
 
 &lt;h2 id=&#34;最坏时间复杂度的优化&#34;&gt;最坏时间复杂度的优化&lt;/h2&gt;
 
@@ -6095,7 +6095,7 @@ void double_select_sort(sort_element_t * beg, sort_element_t * end)
 
 &lt;h3 id=&#34;优化2-数据结构&#34;&gt;优化2，数据结构&lt;/h3&gt;
 
-&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是$O(n)$，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成$O(1)$，而维护这个数据结构的代价是$O(logn)$的话，总体时间复杂度将变为$O(nlogn)$，这比起选择排序的$O(n^2)$就是一个巨大的变化，具体内容在之后的 &lt;a href=&#34;../20191015-sorting-3/&#34;&gt;堆排序&lt;/a&gt; 篇具体讲解。&lt;/p&gt;
+&lt;p&gt;选择排序的优化主要是在find_min上面，find_min的时间复杂度是$O(n)$，那如果我们通过一些数据结构的组织，例如二叉堆，那么找最大或最小值时间将变成$O(1)$，而维护这个数据结构的代价是$O(logn)$的话，总体时间复杂度将变为$O(nlogn)$，这比起选择排序的$O(n^2)$就是一个巨大的变化，具体内容在之后的 &lt;a href=&#34;/post/20191015-sorting-3/&#34;&gt;堆排序&lt;/a&gt; 篇具体讲解。&lt;/p&gt;
 
 &lt;h2 id=&#34;冒泡排序&#34;&gt;冒泡排序&lt;/h2&gt;
 

@@ -129,7 +129,7 @@ public:
 
 &lt;h2 id=&#34;应用1-可重叠最长重复子串&#34;&gt;应用1 可重叠最长重复子串&lt;/h2&gt;
 
-&lt;p&gt;这个题目在本博客讲&lt;a href=&#34;../20191028-kmp/&#34;&gt;kmp&lt;/a&gt;部分已经有介绍，例如&lt;code&gt;eabcaefabcabc&lt;/code&gt;，最长重复子串是&lt;code&gt;abca&lt;/code&gt;，长度是4，这里介绍用后缀数组的解法。其实所谓的最长重复子串，就是找到两个后缀，让它们的公共前缀最长，那这就简单了，我们只要在height数组里找最大值就可以了，查找时间 $O(n)$ 。&lt;/p&gt;
+&lt;p&gt;这个题目在本博客讲&lt;a href=&#34;/post/20191028-kmp/&#34;&gt;kmp&lt;/a&gt;部分已经有介绍，例如&lt;code&gt;eabcaefabcabc&lt;/code&gt;，最长重复子串是&lt;code&gt;abca&lt;/code&gt;，长度是4，这里介绍用后缀数组的解法。其实所谓的最长重复子串，就是找到两个后缀，让它们的公共前缀最长，那这就简单了，我们只要在height数组里找最大值就可以了，查找时间 $O(n)$ 。&lt;/p&gt;
 
 &lt;h2 id=&#34;应用2-不同子串的个数&#34;&gt;应用2 不同子串的个数&lt;/h2&gt;
 

@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2020-01-04T08:26:00&#43;08:00">
+    <meta property="og:updated_time" content="2020-04-16T00:00:00&#43;08:00">
   
 
   
@@ -611,6 +611,381 @@
     
       
     
+    Apr 16, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    2 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20200416-pam/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20200416-pam/">回文树</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>回文树（EER Tree，Palindromic Tree），有点类似Trie，但它并不是匹配字符串的，很多人称之为回文自动机，但它一点也不像自动机，不过我还是按习惯的来，使用PAM为简称。为了表示一个回文，我们只表示一边的一个单链即可，这时就类似Trie。但不同之处是，回文区分奇数长度和偶数长度，所以这里我们使用两个根，分别来表示奇数长度和偶数长度。所以，在奇数根里，链ba表示aba，而在偶数根里的ba表示abba。</p>
+
+<p>首先我们来直观地看看PAM的图形化，以下是字符串<code>abcbbc</code>的PAM</p>
+
+<pre><code class="language-mermaid">graph TD;
+linkStyle default interpolate basis
+subgraph root
+0-.-&gt;1[-1]
+end
+subgraph node0
+0--&gt;6((bb))
+6--&gt;7((cbbc))
+end
+subgraph node1
+1--&gt;2((a))
+1--&gt;3((b))
+1--&gt;4((c))
+4--&gt;5((bcb))
+end
+2-.-&gt;0
+3-.-&gt;0
+4-.-&gt;0
+6-.-&gt;3
+5-.-&gt;3
+7-.-&gt;4
+style 0 fill:#f9f
+style 1 fill:#f9f
+</code></pre>
+
+<p>实线方向就是子节点方向，虚线是fail指针，指向这个节点最长的回文后缀节点。图有点乱，但又不希望画得过于简单导致说不清楚，将就一下吧。</p></p>
+    <a href="/post/20200416-pam/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+      
+    
+      
+        
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Feb 20, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    2 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20200220-sam/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20200220-sam/">后缀自动机SAM</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>后缀自动机（SAM），可以结合前文的AC自动机一起理解，所谓后缀自动机，就是把一个字符串的所有后缀构造AC自动机，即只匹配其后缀的自动机。但是作为一个字符串的所有后缀，与一般的AC自动机有些不一样的性质，直接构造AC自动机，节点数是 $O(n^2)$，而SAM则对重复的节点合并了，可以让节点数大幅下降到 $O(n)$。</p>
+
+<p>首先我们来直观地看看SAM的图形化，以下是字符串<code>abcac</code>的SAM</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0((0))--a--&gt;1
+1--b--&gt;2
+2--c--&gt;3
+3--a--&gt;4
+4--c--&gt;5((5))
+0--c--&gt;6(1)
+
+0--b--&gt;2
+1--c--&gt;5
+6--a--&gt;4
+
+4-.-&gt;1
+5-.-&gt;6
+3-.-&gt;6
+
+1-.-&gt;0
+2-.-&gt;0
+6-.-&gt;0
+style 0 fill:#f9f
+style 5 fill:#f9f
+</code></pre>
+
+<p>实线方向就是匹配方向，虚线与AC自动机中的失败指针非常像，在SAM里称为link指针。</p></p>
+    <a href="/post/20200220-sam/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+      
+    
+      
+        
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Feb 10, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20200210-ac/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20200210-ac/">AC自动机</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>听到AC自动机很多人第一次听到的反应往往是很兴奋的。但其实并不是你们想的那种东西。它的全称是Aho-Corasick algorithm，另外，自动机的英文是Automaton，所以AC自动机即 AC Automaton。为了解释这个算法，首先我们来回顾KMP，你需要很理解KMP的原理，不然看后面的内容就会变得<del>妙不可读</del>。</p>
+
+<h2 id="kmp自动机">KMP自动机</h2>
+
+<p>本质上KMP其实就是一种自动机。这次我们改用自动机的形式来理解。所谓自动机，一般指的是确定有限状态自动机，你可以看作一个黑箱，每次输入一个数据，它就会改变它的内部状态，并有相应的输出。如果你知道Trie，那么它其实就是一个典型的自动机。我们还是拿字符串<code>abacabab</code>作为例子，如果是生成next数组，结果如下：</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>next</td>
+<td>-1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>为了方便变成自动机的方式理解，我们把这个改成有向图</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00--b--&gt;1[2]
+1--a--&gt;2[3]
+2--c--&gt;3[4]
+3--a--&gt;4[5]
+4--b--&gt;5[6]
+5--a--&gt;6[7]
+6--b--&gt;7[8]
+00-.-&gt;0
+1-.-&gt;0
+2-.-&gt;00
+3-.-&gt;0
+4-.-&gt;00
+5-.-&gt;1
+6-.-&gt;2
+%%7[b]-.-&gt;3[c]
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre></p>
+    <a href="/post/20200210-ac/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+      
+    
+      
+        
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
     Jan 4, 2020
   </span>
   
@@ -757,7 +1132,7 @@
 
   
   <div class="article-style">
-    <p><p>可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解<a href="../20191208-segtree/">线段树</a></p>
+    <p><p>可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解<a href="/post/20191208-segtree/">线段树</a></p>
 
 <h2 id="概念">概念</h2>
 
@@ -827,476 +1202,6 @@
 1,4':8--&gt;3,4:7
 </code></pre></p>
     <a href="/post/20191231-persistent_segtree/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-      
-    
-      
-        
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Dec 16, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    5 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191216-kmp-manacher/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191216-kmp-manacher/">扩展KMP与Manacher</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p><a href="../20191028-kmp/">KMP</a>已经介绍过了，这次主要介绍的是Manacher</p>
-
-<h2 id="最长回文子串">最长回文子串</h2>
-
-<p>Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。</p>
-
-<p>先定义数组v，<code>v[i]</code>表示以第i个字符为中心，到回文串一端的距离，我们以字符串<code>&quot;acabacab&quot;</code>为例，如下表（index是下标）</p>
-
-<table>
-<thead>
-<tr>
-<th>string</th>
-<th>a</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-<th>\0</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>index</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>4</td>
-<td>5</td>
-<td>6</td>
-<td>7</td>
-<td>8</td>
-</tr>
-
-<tr>
-<td>m</td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-
-<tr>
-<td>i</td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-
-<tr>
-<td>e</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-<td></td>
-</tr>
-
-<tr>
-<td>v</td>
-<td>1</td>
-<td>2</td>
-<td>1</td>
-<td>4</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
-<p>i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针</p>
-
-<p>然后++i，注意这时候，由于以字符b两边是对称的，所以在求<code>v[4]</code>的值的时候，可以先查<code>v[2]</code>的值，是1，所以<code>v[4]</code>也是1</p>
-
-<table>
-<thead>
-<tr>
-<th>string</th>
-<th>a</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-<th>\0</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>index</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>4</td>
-<td>5</td>
-<td>6</td>
-<td>7</td>
-<td>8</td>
-</tr>
-
-<tr>
-<td>m</td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-
-<tr>
-<td>i</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-
-<tr>
-<td>e</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-<td></td>
-</tr>
-
-<tr>
-<td>v</td>
-<td>1</td>
-<td>2</td>
-<td>1</td>
-<td>4</td>
-<td>1</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
-<p>再继续++i，同样的，在求<code>v[5]</code>的值的时候，可以先查<code>v[1]</code>的值，是2，但是，这个长度达到了e指针的位置，即<code>i+2&gt;=e</code>，这时候就更新指针m，并扩展e的位置，即比较<code>str[7]</code>与<code>str[3]</code>，找到以下标5为中心的回文串边界。</p></p>
-    <a href="/post/20191216-kmp-manacher/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-      
-    
-      
-        
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Dec 15, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    4 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191215-fhq-treap/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191215-fhq-treap/">FHQ Treap</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>讲完了<a href="../20191211-treap-sbt/">treap</a>和<a href="../20191213-tree-sequence/">splaytree</a>，接下来讲把这两的思想混合在一起的 FHQ Treap，据说作者是范浩强。</p>
-
-<p>splay其实还有两个操作split和merge没有介绍，我打算把这两放在这里一并介绍</p>
-
-<h2 id="split和merge">Split和Merge</h2>
-
-<p>Split就是把树按某个条件划分成两棵子树，如果是查找树，就按某个值划分为小于它的以及大于等于它的（等于号取哪边怎么好写怎么来就是），如果是序列维护，那就按照rank来划分。而merge操作则正好相反，把两棵子树合并成为一棵。所以，如果我们需要对某个区间做操作，那么我们就把那个区间Split出来，操作好了后（打懒惰标记，或取出结果）再Merge回去就行了，与splay操作的思路是差不多的。不过为了在split再merge后能间接对树的平衡性优化，我们不能简单地merge，要套用Treap的随机数法，我们先来看怎么split。</p>
-
-<p>先定义好接口<code>void split(int tp, int k, int &amp;x, int &amp;y)</code>，x是返回的左子树，y是返回的右子树，接着我们需要递归split，如果划分点在左子树，那么y一定是根，反之划分点在右子树，那么x一定是根。确定了其中一个，在递归调用的时候，假如y确定了，于是还没确定的，就是x以及根节点的左子树的指向，所以把这两传参就行了，时间复杂度 $O(logn)$ ，具体代码如下：</p>
-
-<pre><code class="language-cpp">// 维护序列的实现
-void split(int tp, int k, int &amp;x, int &amp;y)
-{
-    if (!tp) { x = y = 0; return; }
-    pushdown(tp);
-    if (k &lt;= nodes[ch(tp, 0)].sz)
-    {
-        y = tp;
-        split(ch(tp, 0), k, x, ch(tp, 0));
-        update(y);
-    }
-    else
-    {
-        x = tp;
-        split(ch(tp, 1), k - nodes[ch(tp, 0)].sz - 1, ch(tp, 1), y);
-        update(x);
-    }
-}
-</code></pre></p>
-    <a href="/post/20191215-fhq-treap/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-      
-    
-      
-        
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Dec 13, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    9 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191213-tree-sequence/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191213-tree-sequence/">平衡树与序列维护</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于<a href="../20191211-treap-sbt/">treap</a>的文章。</p>
-
-<h2 id="序列维护">序列维护</h2>
-
-<p>在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。</p></p>
-    <a href="/post/20191213-tree-sequence/">Read more...</a>
   </div>
   
 
@@ -1393,6 +1298,16 @@ void split(int tp, int k, int &amp;x, int &amp;y)
           
           
           
+          <a href="/tags/ac/" style="font-size:0.7rem">AC</a>
+        
+          
+          
+          
+          <a href="/tags/automaton/" style="font-size:2rem">automaton</a>
+        
+          
+          
+          
           <a href="/tags/bst/" style="font-size:0.7rem">BST</a>
         
           
@@ -1403,7 +1318,7 @@ void split(int tp, int k, int &amp;x, int &amp;y)
           
           
           
-          <a href="/tags/c&#43;&#43;/" style="font-size:6.1209025018750065rem">c&#43;&#43;</a>
+          <a href="/tags/c&#43;&#43;/" style="font-size:6.41001264961239rem">c&#43;&#43;</a>
         
           
           
@@ -1428,22 +1343,7 @@ void split(int tp, int k, int &amp;x, int &amp;y)
           
           
           
-          <a href="/tags/kmp/" style="font-size:2rem">KMP</a>
-        
-          
-          
-          
-          <a href="/tags/lcg/" style="font-size:0.7rem">LCG</a>
-        
-          
-          
-          
-          <a href="/tags/manacher/" style="font-size:0.7rem">Manacher</a>
-        
-          
-          
-          
-          <a href="/tags/miller-rabbin/" style="font-size:0.7rem">Miller Rabbin</a>
+          <a href="/tags/kmp/" style="font-size:2.7604512509375025rem">KMP</a>
         
           
           
@@ -1468,7 +1368,7 @@ void split(int tp, int k, int &amp;x, int &amp;y)
           
           
           
-          <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" style="font-size:4.349561398674886rem">数据结构</a>
+          <a href="/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" style="font-size:5.0185065233535715rem">数据结构</a>
         
           
           
@@ -1478,7 +1378,7 @@ void split(int tp, int k, int &amp;x, int &amp;y)
           
           
           
-          <a href="/tags/%E6%A8%A1%E6%9D%BF/" style="font-size:5.0185065233535715rem">模板</a>
+          <a href="/tags/%E6%A8%A1%E6%9D%BF/" style="font-size:5.51057163358342rem">模板</a>
         
           
           
@@ -1489,6 +1389,11 @@ void split(int tp, int k, int &amp;x, int &amp;y)
           
           
           <a href="/tags/%E7%BA%BF%E6%AE%B5%E6%A0%91/" style="font-size:2rem">线段树</a>
+        
+          
+          
+          
+          <a href="/tags/%E8%87%AA%E5%8A%A8%E6%9C%BA/" style="font-size:2.7604512509375025rem">自动机</a>
         
       </div>
     
