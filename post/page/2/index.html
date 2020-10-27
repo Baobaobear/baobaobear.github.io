@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2020-04-16T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2020-10-23T00:00:00&#43;08:00">
   
 
   
@@ -360,6 +360,145 @@
   
 
   
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Dec 8, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    10 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191208-segtree/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191208-segtree/">线段树</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>很多人在初始接触线段树的时候，一看到别人写一大堆代码就直接弃坑了，其实不要被它的外表所欺骗，线段树其实是相当好写的树结构了，而且理解起来其实很简单。要学会这个，你不能光会抄模板就会区间修改和求个区间和，因为实际应用经常会使用它的变形，还是在于理解<del>（理解后背板）</del>。</p>
+
+<h2 id="数据结构">数据结构</h2>
+
+<p>首先，回想一下heap的结构，它使用一个数组，同时使用下标本身来表达父子关系，这样的方式能节省大量指针所需要的内存空间，以下也使用这种表示方法来表示一棵线段树，也就是说，这里介绍的，属于<strong>狭义线段树</strong>。假设我们的数据是以下这样</p>
+
+<table>
+<thead>
+<tr>
+<th>下标</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>数据</td>
+<td>1</td>
+<td>0</td>
+<td>5</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+<p>构建线段树后结果如下</p>
+
+<pre><code class="language-mermaid">graph TD;
+1,8:16--&gt;1,4:8
+1,8:16--&gt;5,8:8
+1,4:8--&gt;1,2:1
+1,4:8--&gt;3,4:7
+1,2:1--&gt;1,1:1
+1,2:1--&gt;2,2:0
+3,4:7--&gt;3,3:5
+3,4:7--&gt;4,4:2
+5,8:8--&gt;5,6:7
+5,8:8--&gt;7,8:1
+5,6:7--&gt;5,5:3
+5,6:7--&gt;6,6:4
+7,8:1--&gt;7,7:0
+7,8:1--&gt;8,8:1
+</code></pre></p>
+    <a href="/post/20191208-segtree/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
   
     
       
@@ -1558,145 +1697,6 @@
 
 <p>其中n是需要被分解的数，c是一个任意小于n的正整数常数。那么我们给一个初始值x1，通过计算 $f(x1)$ 得到x2，然后去求 $|x1-x2|$ 与 n 的最大公约数，只要结果大于1就找到了分解结果。那如果最大公约数仍然是1，那么就通过刚才的x2求出 $x3=f(x2)$ 并计算 $|x1-x3|$ 与 n 的最大公约数。也就是说，我们可以通过这个公式得到一个数列</p></p>
     <a href="/post/20191013-prime-number/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 12, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    4 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191012-binary-skill/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%ac%94%e8%ae%b0">笔记</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191012-binary-skill/">二进制技巧</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>二进制位运算的技巧特别多，这里就做一份cheat sheet，希望能帮助到大家。不过过于简单的就不列举了</p>
-
-<h2 id="单行表达式">单行表达式</h2>
-
-<table>
-<thead>
-<tr>
-<th>作用</th>
-<th>表达式</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>把右边连续的1变成0</td>
-<td>n &amp; ( n + 1 )</td>
-</tr>
-
-<tr>
-<td>把右边第一个1变成0</td>
-<td>n &amp; ( n - 1 )</td>
-</tr>
-
-<tr>
-<td>把右起第一个0变成1</td>
-<td>n | ( n + 1 )</td>
-</tr>
-
-<tr>
-<td>把右起连续的0变成1</td>
-<td>n | ( n - 1 )</td>
-</tr>
-
-<tr>
-<td>取右边连续的1</td>
-<td>n ^ ( n + 1 )</td>
-</tr>
-
-<tr>
-<td>去掉右起第一个1的左边</td>
-<td>n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )</td>
-</tr>
-
-<tr>
-<td>高低位交换，前x位</td>
-<td>( n &lt;&lt; x ) | ( x &gt;&gt; ( 32 - x ) )</td>
-</tr>
-
-<tr>
-<td>有符号整数计算绝对值</td>
-<td>( n ^ (n &gt;&gt; 31) ) - (n &gt;&gt; 31)</td>
-</tr>
-</tbody>
-</table></p>
-    <a href="/post/20191012-binary-skill/">Read more...</a>
   </div>
   
 

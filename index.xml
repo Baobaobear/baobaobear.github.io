@@ -5,12 +5,201 @@
     <link>/</link>
       <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <description>Baobaobear</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 16 Apr 2020 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Fri, 23 Oct 2020 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Baobaobear</title>
       <link>/</link>
     </image>
+    
+    <item>
+      <title>解迷建模</title>
+      <link>/post/20201023-puzzle/</link>
+      <pubDate>Fri, 23 Oct 2020 00:00:00 +0800</pubDate>
+      <guid>/post/20201023-puzzle/</guid>
+      <description>&lt;p&gt;这次来聊点简单的，也许你偶尔有机会在地摊上看到有人摆了一堆解锁玩具，这回我们通过建模来解决当中属于迷宫类型的玩具。&lt;/p&gt;
+
+&lt;h2 id=&#34;魔金-円&#34;&gt;魔金·円&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/Cast Disk.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/Cast Disk - Solved.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;第一图是初始状态，第二图是解开后各自的形状。为了更能理解接下来我说的，最好当然是你手上有一个一样的。&lt;/p&gt;
+
+&lt;p&gt;但是，事实上可以存在两种不同的初始状态，其路线也略不相同，以下会做说明。&lt;/p&gt;
+
+&lt;h3 id=&#34;编码&#34;&gt;编码&lt;/h3&gt;
+
+&lt;p&gt;稍微操作几下，我们就会发现，它的操作很简单，它的边缘有一上一下，在中间的孔也有一左一右，即可边缘的宽度小于等于中间的孔时，即可穿过一格。我们把它如下图摆放(俯视图)：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/yen_1.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这两个disks都有一个特点，有一个孔特别长，这两个孔交错时为初始位置。我们把这个特殊的孔编号为0，然后这个孔中间一左一右大小不同，我们按小的为主方向，于是上图左边的disk从0号孔开始顺时针编码1到6，右边的disk从0号孔开始也是顺时针编码1到6。由于都是顺时针，我称它为同向的初始状态（还有一种是反向的）。&lt;/p&gt;
+
+&lt;p&gt;再来看，左边的disk从0孔到1孔顺时针方向的边是粗的（如下图红色圈），但右边的disk从0孔到1孔顺时针方向的边是细的（如下图蓝色圈），这也决定这两个disk是不同的，在这规定顺时针方向下粗的是disk a，细的是disk b，且a总是放左边，b放右边，如图的交错方式。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/yen_1.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;观察完毕后，为了方便写成代码，我们开始对disk a进行状态描述，如下图，对孔1为例子，取它的顺时针方向的边与它作为一组，按图上次序编码，窄的为0，宽的取1&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/yen_2.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;最后按定义好的方向，进行编码，得到如下的编码表：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c++&#34;&gt;int disk_shape[2][7][4] = {
+    {
+        {1, 0, 1, 0},
+        {0, 1, 0, 1},
+        {1, 0, 1, 0},
+        {0, 1, 0, 0},
+        {1, 0, 0, 1},
+        {1, 0, 1, 0},
+        {0, 1, 0, 1},
+    },
+    {
+        {1, 0, 0, 1},
+        {0, 1, 1, 0},
+        {1, 0, 0, 1},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {1, 0, 0, 1},
+        {0, 1, 1, 0},
+    },
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;有了编码，接下来的事情就是判断哪些位置能做操作了。对于每一个位置，我们都有对disk a顺时针和逆时针，对disk b顺时针和逆时针共4种操作，那直接写成代码并打印，看看哪些可以即可&lt;/p&gt;
+
+&lt;h3 id=&#34;具体代码&#34;&gt;具体代码&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c++&#34;&gt;#include &amp;lt;algorithm&amp;gt;
+#include &amp;lt;cstdio&amp;gt;
+
+int st_map[7][7][4];
+
+void genmap()
+{
+    int disk_shape[2][7][4] = {
+        {
+            {1, 0, 1, 0},
+            {0, 1, 0, 1},
+            {1, 0, 1, 0},
+            {0, 1, 0, 0},
+            {1, 0, 0, 1},
+            {1, 0, 1, 0},
+            {0, 1, 0, 1},
+        },
+        {
+            {1, 0, 0, 1},
+            {0, 1, 1, 0},
+            {1, 0, 0, 1},
+            {0, 1, 0, 0},
+            {0, 0, 1, 0},
+            {1, 0, 0, 1},
+            {0, 1, 1, 0},
+        },
+    };
+    for (int dl = 0; dl &amp;lt; 7; ++dl)
+    {
+        for (int dr = 0; dr &amp;lt; 7; ++dr)
+        {
+            char s[5] = &amp;quot;    &amp;quot;;
+            // 反向
+            /*
+            if (disk_shape[0][(dl + 0) % 7][2] &amp;lt;= disk_shape[1][dr][1] &amp;amp;&amp;amp; disk_shape[0][(dl + 0) % 7][3] &amp;lt;= disk_shape[1][dr][0])
+               s[0] = &#39;D&#39;, st_map[dl][dr][0] = 1;
+            if (disk_shape[0][(dl + 6) % 7][2] &amp;lt;= disk_shape[1][dr][1] &amp;amp;&amp;amp; disk_shape[0][(dl + 6) % 7][3] &amp;lt;= disk_shape[1][dr][0])
+               s[1] = &#39;U&#39;, st_map[dl][dr][1] = 1;
+            if (disk_shape[0][dl][0] &amp;gt;= disk_shape[1][(dr + 0) % 7][3] &amp;amp;&amp;amp; disk_shape[0][dl][1] &amp;gt;= disk_shape[1][(dr + 0) % 7][2])
+               s[2] = &#39;R&#39;, st_map[dl][dr][2] = 1;
+            if (disk_shape[0][dl][0] &amp;gt;= disk_shape[1][(dr + 6) % 7][3] &amp;amp;&amp;amp; disk_shape[0][dl][1] &amp;gt;= disk_shape[1][(dr + 6) % 7][2])
+               s[3] = &#39;L&#39;, st_map[dl][dr][3] = 1;
+            //*/
+            // 同向
+            //*
+            if (disk_shape[0][(dl + 0) % 7][3] &amp;lt;= disk_shape[1][dr][1] &amp;amp;&amp;amp; disk_shape[0][(dl + 0) % 7][2] &amp;lt;= disk_shape[1][dr][0])
+                s[0] = &#39;D&#39;, st_map[dl][dr][0] = 1;
+            if (disk_shape[0][(dl + 6) % 7][3] &amp;lt;= disk_shape[1][dr][1] &amp;amp;&amp;amp; disk_shape[0][(dl + 6) % 7][2] &amp;lt;= disk_shape[1][dr][0])
+                s[1] = &#39;U&#39;, st_map[dl][dr][1] = 1;
+            if (disk_shape[0][dl][0] &amp;gt;= disk_shape[1][(dr + 0) % 7][2] &amp;amp;&amp;amp; disk_shape[0][dl][1] &amp;gt;= disk_shape[1][(dr + 0) % 7][3])
+                s[2] = &#39;R&#39;, st_map[dl][dr][2] = 1;
+            if (disk_shape[0][dl][0] &amp;gt;= disk_shape[1][(dr + 6) % 7][2] &amp;amp;&amp;amp; disk_shape[0][dl][1] &amp;gt;= disk_shape[1][(dr + 6) % 7][3])
+                s[3] = &#39;L&#39;, st_map[dl][dr][3] = 1;
+            //*/
+            printf(&amp;quot;%4s,&amp;quot;, s);
+        }
+        puts(&amp;quot;&amp;quot;);
+    }
+}
+
+int main()
+{
+    genmap();
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;于是UD对应disk a的操作，LR对应disk b的操作&lt;/p&gt;
+
+&lt;h3 id=&#34;结果&#34;&gt;结果&lt;/h3&gt;
+
+&lt;p&gt;我把运行结果导入到excel并对可移动的路径进行染色，结果如下（黄色的是起点和终点状态，蓝色是最短路径）&lt;/p&gt;
+
+&lt;h4 id=&#34;同向&#34;&gt;同向&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/yen_r1.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;反向&#34;&gt;反向&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/yen_r2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;接下来的事情就简单了，蓝色的就是最短路径，而且不唯一，只要按定义操作，怎么走都可以，两种方向均最短15步。&lt;/p&gt;
+
+&lt;h2 id=&#34;魔金-磁&#34;&gt;魔金·磁&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/duet1.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/duet2.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;它也是个迷宫，它有两个小环，开口处有一边有个小齿，这导致了这两个小环的路线是不一样的。&lt;/p&gt;
+
+&lt;h3 id=&#34;编码-1&#34;&gt;编码&lt;/h3&gt;
+
+&lt;p&gt;首先，小环横跨两个区域，那么我们对区域进行编号，且规定图上可见的面为正面&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/duet3.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;然后，两个小环规定，齿在正面时，开口所占区域为十位，另一区域为个位，于是，初始状态分别是09和90（十位的0不能省略）&lt;/p&gt;
+
+&lt;p&gt;但是这个由于比较复杂，编码的时间可能比手动列出状态还麻烦，所以我直接手动把所有的状态做成表格&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/duet_s.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;表格中前两行，表示该状态可以跳转到哪些状态，第三行表示该状态距离解出还需要的步数。每一格的红色数字表示向此数字走能最快到达出口。蓝色表示向还原的方向，没有蓝色时按红色数字的方向。&lt;/p&gt;
+
+&lt;p&gt;特殊情况是30这个状态，即第三行第0列，它移动到20或36，分别能移动到两种不同的初始状态。&lt;/p&gt;
+
+&lt;p&gt;蓝色和橙色格子表示两条不同状态的路线，而绿色表示这两条路线的公共部分。&lt;/p&gt;
+
+&lt;p&gt;但是，记忆这个表太难，且操作起来不是太舒服，唯一好处就是任意情况都能处理。为了快速解开或复原，我加了一个方便操作的数字串：&lt;/p&gt;
+
+&lt;p&gt;解锁：&lt;/p&gt;
+
+&lt;p&gt;90：6-3-52-0-3- 25-2-4-587-0-0&lt;br /&gt;
+09：-8-7-5-8-6-523-0 25-2-4-587-0-0&lt;/p&gt;
+
+&lt;p&gt;还原：&lt;/p&gt;
+
+&lt;p&gt;90：7-4-852-5-3-20 -2-3-56-0-9&lt;br /&gt;
+09：7-4-852-5-3-20 6-258-5-7-8-0-9&lt;/p&gt;
+
+&lt;p&gt;规定初始状态是小环开口小齿在正面，减号表示小环自身转90度，数字表示移动小环其中一则到此区域&lt;/p&gt;
+
+&lt;h2 id=&#34;最后&#34;&gt;最后&lt;/h2&gt;
+
+&lt;p&gt;这种方法只能对比较规范的puzzle进行建模，我看到网上似乎没有针对这两而做的解法视频，所以我就做了一个建模版本，把路线图形化，这样比起单纯一个正解视频，你可以知道任意情况下怎么解，这个是优点。不过缺点是你得花点时间去理解它是怎么编码的。好久没更新了，所以来写点特别的。&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>回文树</title>
