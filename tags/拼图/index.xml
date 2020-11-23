@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>拼图 | Baobaobear</title>
+    <link>/tags/%E6%8B%BC%E5%9B%BE/</link>
+      <atom:link href="/tags/%E6%8B%BC%E5%9B%BE/index.xml" rel="self" type="application/rss+xml" />
+    <description>拼图</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 23 Nov 2020 00:00:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>拼图</title>
+      <link>/tags/%E6%8B%BC%E5%9B%BE/</link>
+    </image>
+    
+    <item>
+      <title>Orz14拼图</title>
+      <link>/post/20201123-orz14puzzle/</link>
+      <pubDate>Mon, 23 Nov 2020 00:00:00 +0800</pubDate>
+      <guid>/post/20201123-orz14puzzle/</guid>
+      <description>&lt;p&gt;为了表达对大佬的膜拜，特设计一款拼图，由14个近似Orz形状的小块组合而成，如下图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/orz14.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;因为由14块一样的小块组合而成，所以我命名为&lt;code&gt;Orz14&lt;/code&gt;，同时也有Orz一直到4的含义。&lt;/p&gt;
+
+&lt;p&gt;以上是就是原题，不同颜色来区分不同位置的小块。每个小方块长宽均为1，底板尺寸是11x11。要求把右边的绿色小块也一并无重叠放入，这一块就代表大佬，放入即成功解出，答案就不在这公开了，祝玩得开心。&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

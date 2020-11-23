@@ -5,12 +5,27 @@
     <link>/tags/puzzle/</link>
       <atom:link href="/tags/puzzle/index.xml" rel="self" type="application/rss+xml" />
     <description>puzzle</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Fri, 23 Oct 2020 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 23 Nov 2020 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>puzzle</title>
       <link>/tags/puzzle/</link>
     </image>
+    
+    <item>
+      <title>Orz14拼图</title>
+      <link>/post/20201123-orz14puzzle/</link>
+      <pubDate>Mon, 23 Nov 2020 00:00:00 +0800</pubDate>
+      <guid>/post/20201123-orz14puzzle/</guid>
+      <description>&lt;p&gt;为了表达对大佬的膜拜，特设计一款拼图，由14个近似Orz形状的小块组合而成，如下图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/orz14.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;因为由14块一样的小块组合而成，所以我命名为&lt;code&gt;Orz14&lt;/code&gt;，同时也有Orz一直到4的含义。&lt;/p&gt;
+
+&lt;p&gt;以上是就是原题，不同颜色来区分不同位置的小块。每个小方块长宽均为1，底板尺寸是11x11。要求把右边的绿色小块也一并无重叠放入，这一块就代表大佬，放入即成功解出，答案就不在这公开了，祝玩得开心。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>解迷建模</title>
@@ -31,13 +46,13 @@
 
 &lt;h3 id=&#34;编码&#34;&gt;编码&lt;/h3&gt;
 
-&lt;p&gt;稍微操作几下，我们就会发现，它的操作很简单，它的边缘有一上一下，在中间的孔也有一左一右，即可边缘的宽度小于等于中间的孔时，即可穿过一格。我们把它如下图摆放(俯视图)：&lt;/p&gt;
+&lt;p&gt;稍微操作几下，我们就会发现，它的操作很简单，它的边缘有一上一下，在中间的孔也有一左一右，即边缘的宽度小于等于中间的孔时，就可穿过一格。我们把它如下图摆放(俯视图)：&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;/img/puz/yen_1.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
 &lt;p&gt;这两个disks都有一个特点，有一个孔特别长，这两个孔交错时为初始位置。我们把这个特殊的孔编号为0，然后这个孔中间一左一右大小不同，我们按小的为主方向，于是上图左边的disk从0号孔开始顺时针编码1到6，右边的disk从0号孔开始也是顺时针编码1到6。由于都是顺时针，我称它为同向的初始状态（还有一种是反向的）。&lt;/p&gt;
 
-&lt;p&gt;再来看，左边的disk从0孔到1孔顺时针方向的边是粗的（如下图红色圈），但右边的disk从0孔到1孔顺时针方向的边是细的（如下图蓝色圈），这也决定这两个disk是不同的，在这规定顺时针方向下粗的是disk a，细的是disk b，且a总是放左边，b放右边，如图的交错方式。&lt;/p&gt;
+&lt;p&gt;再来看，左边的disk从0孔到1孔顺时针方向的边是粗的（如下图红色圈），但右边的disk从0孔到1孔顺时针方向的边是细的（如下图蓝色圈），这也决定这两个disk是不同的，在这规定顺时针方向下粗的是disk a，细的是disk b，且a总是放左边，b放右边，如图的交错方式&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&#34;/img/puz/yen_1.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
@@ -69,7 +84,7 @@
 };
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;有了编码，接下来的事情就是判断哪些位置能做操作了。对于每一个位置，我们都有对disk a顺时针和逆时针，对disk b顺时针和逆时针共4种操作，那直接写成代码并打印，看看哪些可以即可&lt;/p&gt;
+&lt;p&gt;有了编码，接下来的事情就是判断哪些位置能做操作了。对于每一个位置，我们都有对&lt;code&gt;disk a&lt;/code&gt;顺时针和逆时针，对&lt;code&gt;disk b&lt;/code&gt;顺时针和逆时针共4种操作，那直接写成代码并打印，看看哪些可以即可。&lt;/p&gt;
 
 &lt;h3 id=&#34;具体代码&#34;&gt;具体代码&lt;/h3&gt;
 
@@ -140,11 +155,11 @@ int main()
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;于是UD对应disk a的操作，LR对应disk b的操作&lt;/p&gt;
+&lt;p&gt;于是UD对应&lt;code&gt;disk a&lt;/code&gt;的操作，LR对应&lt;code&gt;disk b&lt;/code&gt;的操作&lt;/p&gt;
 
 &lt;h3 id=&#34;结果&#34;&gt;结果&lt;/h3&gt;
 
-&lt;p&gt;我把运行结果导入到excel并对可移动的路径进行染色，结果如下（黄色的是起点和终点状态，蓝色是最短路径）&lt;/p&gt;
+&lt;p&gt;我把运行结果导入到表格并对可移动的路径进行染色，结果如下（黄色的是起点和终点状态，深绿色是最短路径）&lt;/p&gt;
 
 &lt;h4 id=&#34;同向&#34;&gt;同向&lt;/h4&gt;
 
@@ -154,7 +169,7 @@ int main()
 
 &lt;p&gt;&lt;img src=&#34;/img/puz/yen_r2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
 
-&lt;p&gt;接下来的事情就简单了，蓝色的就是最短路径，而且不唯一，只要按定义操作，怎么走都可以，两种方向均最短15步。&lt;/p&gt;
+&lt;p&gt;接下来的事情就简单了，路径明显不唯一，只要按定义操作，怎么走都可以，两种方向均最短15步。&lt;/p&gt;
 
 &lt;h2 id=&#34;魔金-磁&#34;&gt;魔金·磁&lt;/h2&gt;
 
@@ -194,7 +209,7 @@ int main()
 &lt;p&gt;90：7-4-852-5-3-20 -2-3-56-0-9&lt;br /&gt;
 09：7-4-852-5-3-20 6-258-5-7-8-0-9&lt;/p&gt;
 
-&lt;p&gt;规定初始状态是小环开口小齿在正面，减号表示小环自身转90度，数字表示移动小环其中一则到此区域&lt;/p&gt;
+&lt;p&gt;规定初始状态是小环开口小齿在正面，减号表示小环自身转90度，数字表示移动小环其中一则到此区域。&lt;/p&gt;
 
 &lt;h2 id=&#34;最后&#34;&gt;最后&lt;/h2&gt;
 

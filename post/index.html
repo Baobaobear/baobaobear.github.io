@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2020-10-23T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2020-11-23T00:00:00&#43;08:00">
   
 
   
@@ -393,6 +393,99 @@
     
       
     
+    Nov 23, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    1 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20201123-orz14puzzle/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e6%9d%82%e8%b0%88">杂谈</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20201123-orz14puzzle/">Orz14拼图</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>为了表达对大佬的膜拜，特设计一款拼图，由14个近似Orz形状的小块组合而成，如下图</p>
+
+<p><img src="/img/puz/orz14.png" alt="" /></p>
+
+<p>因为由14块一样的小块组合而成，所以我命名为<code>Orz14</code>，同时也有Orz一直到4的含义。</p>
+
+<p>以上是就是原题，不同颜色来区分不同位置的小块。每个小方块长宽均为1，底板尺寸是11x11。要求把右边的绿色小块也一并无重叠放入，这一块就代表大佬，放入即成功解出，答案就不在这公开了，祝玩得开心。</p>
+</p>
+    <a href="/post/20201123-orz14puzzle/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
     Oct 23, 2020
   </span>
   
@@ -450,7 +543,7 @@
 
 <h3 id="编码">编码</h3>
 
-<p>稍微操作几下，我们就会发现，它的操作很简单，它的边缘有一上一下，在中间的孔也有一左一右，即可边缘的宽度小于等于中间的孔时，即可穿过一格。我们把它如下图摆放(俯视图)：</p>
+<p>稍微操作几下，我们就会发现，它的操作很简单，它的边缘有一上一下，在中间的孔也有一左一右，即边缘的宽度小于等于中间的孔时，就可穿过一格。我们把它如下图摆放(俯视图)：</p>
 
 <p><img src="/img/puz/yen_1.jpg" alt="" /></p></p>
     <a href="/post/20201023-puzzle/">Read more...</a>
@@ -1556,106 +1649,6 @@ void split(int tp, int k, int &amp;x, int &amp;y)
 
 <p>在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。</p></p>
     <a href="/post/20191213-tree-sequence/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Dec 11, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    8 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191211-treap-sbt/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191211-treap-sbt/">Treap与SBT</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>这里之所以把这两个放在一起讲，是因为它们实在是相似度很高（至少在竞赛领域），都需要求kth和指定元素的rank（Treap的话可有可无，但通常会需要）。不过如果你没有写过树，强烈建议你自己通过理解来写一遍。</p>
-
-<h2 id="bst">BST</h2>
-
-<p>首先，Treap和SBT都属于BST的一种，BST就是<a href="https://zh.wikipedia.org/wiki/%E4%BA%8C%E5%85%83%E6%90%9C%E5%B0%8B%E6%A8%B9" target="_blank">二叉搜索树</a>，它满足的特点是：</p>
-
-<ul>
-<li>二叉树</li>
-<li>没有两个节点的值相等</li>
-<li>任意子树的根节点的值都比左子树所有节点的值要大</li>
-<li>任意子树的根节点的值都比右子树所有节点的值要小</li>
-<li>任意子树均为二叉搜索树</li>
-</ul>
-
-<p>如果我们实在需要支持多个相同值放在树里面，那么有两种情况，如果那些相同值是确实完全没有区别（例如int），那么只需要在每个节点多加一个字段记录这个值出现的次数就可以了，但如果这些值只有偏序关系，可能不是严格相等，存在其它非比较字段，那么我们就再在每个节点增加一个next域做成一个链表即可。</p></p>
-    <a href="/post/20191211-treap-sbt/">Read more...</a>
   </div>
   
 
