@@ -5,12 +5,27 @@
     <link>/tags/%E5%8E%9F%E5%88%9B/</link>
       <atom:link href="/tags/%E5%8E%9F%E5%88%9B/index.xml" rel="self" type="application/rss+xml" />
     <description>原创</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 23 Nov 2020 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 14 Dec 2020 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>原创</title>
       <link>/tags/%E5%8E%9F%E5%88%9B/</link>
     </image>
+    
+    <item>
+      <title>10个问号拼图</title>
+      <link>/post/20201214-10question/</link>
+      <pubDate>Mon, 14 Dec 2020 00:00:00 +0800</pubDate>
+      <guid>/post/20201214-10question/</guid>
+      <description>&lt;p&gt;刷题经常搞得自己一脸问号，就想到弄一个由问号组成的拼图，如下图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/10question.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;因为由10块一样的形似问号组合而成，所以我命名为&lt;code&gt;10个问号&lt;/code&gt;。&lt;/p&gt;
+
+&lt;p&gt;以上是就是原题，不同颜色来区分不同位置的小块。每个小方块长宽均为1，底板尺寸是10x10。要求把右边的“十”无重叠放入到10个问号里，放入即成功解出，答案就不在这公开了，祝玩得开心。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Orz14拼图</title>

@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2020-11-23T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2020-12-14T00:00:00&#43;08:00">
   
 
   
@@ -360,6 +360,96 @@
   
 
   
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Dec 13, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    9 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191213-tree-sequence/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191213-tree-sequence/">平衡树与序列维护</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于<a href="/post/20191211-treap-sbt/">treap</a>的文章。</p>
+
+<h2 id="序列维护">序列维护</h2>
+
+<p>在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。</p></p>
+    <a href="/post/20191213-tree-sequence/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
   
     
       
@@ -1597,108 +1687,6 @@
 
 <p><a href="https://en.wikipedia.org/wiki/Smoothsort" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Smoothsort.gif" alt="" /></a></p></p>
     <a href="/post/20191017-weakheapsort/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 15, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    4 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191015-sorting-3/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191015-sorting-3/">堆排序优化思路</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>堆排序其实是最不好优化的一个，在数据结构都确定的情况下，优化空间太小，除非优化数据结构本身，但那样就不叫做堆排序了。类似堆排序的还有<code>smooth sort</code>和<code>weakheap sort</code>，有兴趣可以自己查找相关资料。</p>
-
-<h2 id="堆排序原理">堆排序原理</h2>
-
-<p>堆排序其实是选择排序的优化变种，选择排序是把最大或最小的元素放到最边上，然后不断重复以上过程，堆排序也是如此，只不过堆排序通过构建数据结构，让查找最大或最小元素并放到最边上的速度比选择排序快得多。</p>
-
-<p>首先我们先来介绍什么是堆。堆只是个缩写，全名是二叉堆，是一种完全二叉树，它的特点是二叉堆的父节点元素不小于子节点的元素，以下为二叉堆例图</p>
-
-<pre><code class="language-mermaid">graph TD;
-30--&gt;29
-30--&gt;28
-29--&gt;24
-29--&gt;25
-28--&gt;26
-28--&gt;22
-24--&gt;21
-</code></pre></p>
-    <a href="/post/20191015-sorting-3/">Read more...</a>
   </div>
   
 
