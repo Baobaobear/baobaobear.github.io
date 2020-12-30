@@ -5,12 +5,27 @@
     <link>/</link>
       <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <description>Baobaobear</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 14 Dec 2020 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 31 Dec 2020 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Baobaobear</title>
       <link>/</link>
     </image>
+    
+    <item>
+      <title>101010拼图</title>
+      <link>/post/20201231-101010/</link>
+      <pubDate>Thu, 31 Dec 2020 00:00:00 +0800</pubDate>
+      <guid>/post/20201231-101010/</guid>
+      <description>&lt;p&gt;前两个拼图最多算热个身，难度不高，真正有点挑战的是以下这个，作为2020的纪念&lt;/p&gt;
+
+&lt;p&gt;它的名字是101010，因为需要把10个块放入一个10x10的框里，如下图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/101010.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;以上是就是原题，每个小方块长宽均为1，底板尺寸是10x10。右边的块每一块都写了x2，表示有两块完全一样的形状，全部10块放入即成功解出，每一块均可以任意平移、旋转、翻转。答案就不在这公开了，祝玩得开心。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>10个问号拼图</title>
