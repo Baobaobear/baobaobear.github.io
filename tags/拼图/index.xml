@@ -5,12 +5,27 @@
     <link>/tags/%E6%8B%BC%E5%9B%BE/</link>
       <atom:link href="/tags/%E6%8B%BC%E5%9B%BE/index.xml" rel="self" type="application/rss+xml" />
     <description>拼图</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Thu, 31 Dec 2020 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Fri, 01 Jan 2021 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>拼图</title>
       <link>/tags/%E6%8B%BC%E5%9B%BE/</link>
     </image>
+    
+    <item>
+      <title>小恐龙拼图</title>
+      <link>/post/20210101-dino/</link>
+      <pubDate>Fri, 01 Jan 2021 00:00:00 +0800</pubDate>
+      <guid>/post/20210101-dino/</guid>
+      <description>&lt;p&gt;极难警告，本拼图难度非常高！同时作为2021新年的起点！&lt;/p&gt;
+
+&lt;p&gt;它的名字是小恐龙拼图，因为需要连同右边小恐龙形状的拼图块一起放入，一共有12个块，放入一个12x12的框里，如下图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/dino.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;以上是就是原题，每个小方块长宽均为1，底板尺寸是10x10。全部12块放入即成功解出，每一块均可以任意平移、旋转、翻转。答案就不在这公开了，祝玩得开心。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>101010拼图</title>
