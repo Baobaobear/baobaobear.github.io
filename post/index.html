@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-01-01T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-01-11T00:00:00&#43;08:00">
   
 
   
@@ -360,6 +360,172 @@
   
 
   
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jan 11, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    2 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20210111-dlx/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20210111-dlx/">Dancing Links 跳舞链</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>Dancing Links缩写为DLX，其实在竞赛中并不常见，这次会讲这个是因为前一阵子搞拼图写了这个数据结构就顺便写(<del>水</del>)博客。</p>
+
+<p>DLX的发明者是高德纳（Donald Knuth），就是那个传说中的《计算机程序设计艺术》（TAOCP）系列书的作者，这里对这个算法做一些比较直观的解释。</p>
+
+<h2 id="dlx面向的问题">DLX面向的问题</h2>
+
+<p>DLX面向的问题是精确覆盖问题。何谓精确覆盖呢，来看以下这个表格，每一行是一个数组，数组有4个元素，每行的第一列是这个数组的名字</p>
+
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>a</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>b</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>c</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>d</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>e</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>f</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>g</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+<p>我们的目标是，在这些集合里，挑出几个，例如我们挑a,b,c，那对应位置上的元素相加，于是得到 <code>2 1 0 2</code>。而我们的目标是，找到一个挑选的方法，使得相加得到 <code>1 1 1 1</code> 全是1。</p>
+
+<p>例如说，选 d和g，那么相加正好得到 <code>1 1 1 1</code> ，这就是其中一个解，这就是精确覆盖问题的直观感知。</p></p>
+    <a href="/post/20210111-dlx/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
   
     
       
@@ -1304,160 +1470,6 @@ style 7 fill:#f9f,stroke-dasharray: 5, 5
 
 <p>我们之所以使用线性同余，就是因为它实现简单，在对随机数质量要求较低的时候，例如用来作为treap的随机数，那么线性同余完全够用，但建议不要使用rand，因为在windows下不少编译器的最大值太小了，导致效果下降，自己写一个用参数<code>a=69069,c=1,m=2^32</code>比rand好，我在那篇关于treap的文章就是用了这组参数。线性同余法最大的缺陷是低位随机性特别差，如果使用类似<code>next() % k</code>的方式来获得区间在$[0,k-1]$的随机数，那么当线性同余迭代方程的m是2的幂且k也是2的幂的时候，灾难就发生了，特别地当k是2的时候，你将得到一个0101的循环序列。为了避免这种情况，通常会取线性同余结果的高位，而且低位去掉得越多，<code>%2</code>的周期就越长。例如结果是64位，取高32位作为最终结果，那么<code>%2</code>的周期就是 $2^{33}$ ，但这样会导致有效位减少，而且问题也没有根本地解决。另一种解决办法是选取一个素数作为m，例如2147483647正是一个素数，但如此一来，线性同余的计算速度就会慢不少，周期也没有前一个的长。两种基本实现如下：</p></p>
     <a href="/post/20200104-xoshiro/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Dec 31, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    4 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191231-persistent_segtree/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191231-persistent_segtree/">可持久化线段树</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>可持久化权值线段树，wiki上指出引入者名字叫黃嘉泰，名字缩写正好是某位主席名字，所以又叫做主席树。而本篇先介绍可持久化线段树，阅读本篇前你需要先了解<a href="/post/20191208-segtree/">线段树</a></p>
-
-<h2 id="概念">概念</h2>
-
-<p>所谓的可持久化，意思是你能得到所有的历史版本，为了达到这个效果，当然可以每次修改的时候，先整体复制再修改，结果自然就是会爆内存。而事实上，由于每次修改最多改一条链，而其它分支可以重用。我们先拿链表做例子，如果有个链表内容是 1-&gt;2-&gt;3-&gt;4-&gt;5 ，现在我们把3修改成6，得到 1-&gt;2-&gt;6-&gt;4-&gt;5 ，但是后面的元素没有改动，所以我们可以把后面的元素直接重叠在一起使用，如下图：</p>
-
-<pre><code class="language-mermaid">graph LR;
-1--&gt;2
-2--&gt;3
-3--&gt;4
-4--&gt;5
-1'--&gt;2'
-2'--&gt;6
-6--&gt;4
-</code></pre>
-
-<p>这样，完全可以当成两条不同的链表使用，同时节省空间。而可持久化线段树做法与这一样，就是没变的部分还使用原来节点，所以这个实现不能使用之前介绍的堆式储存，要和平衡树一样动态开节点。</p>
-
-<h2 id="数据结构">数据结构</h2>
-
-<p>假设我们的数据是以下这样</p>
-
-<table>
-<thead>
-<tr>
-<th>下标</th>
-<th>1</th>
-<th>2</th>
-<th>3</th>
-<th>4</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>数据</td>
-<td>1</td>
-<td>0</td>
-<td>5</td>
-<td>2</td>
-</tr>
-</tbody>
-</table>
-
-<p>构建线段树后结果如下</p>
-
-<pre><code class="language-mermaid">graph TD;
-1,4:8--&gt;1,2:1
-1,4:8--&gt;3,4:7
-1,2:1--&gt;1,1:1
-1,2:1--&gt;2,2:0
-3,4:7--&gt;3,3:5
-3,4:7--&gt;4,4:2
-</code></pre>
-
-<p>冒号前面的两个数表示一条线段，冒号后表示的是数据，这个数据表示的是这个区间的和。</p>
-
-<p>然后我们要把第3个元素从5改为1，构造第二棵线段树，首先复制一个root，包括儿子的指向也复制，得到</p>
-
-<pre><code class="language-mermaid">graph TD;
-1,4:8--&gt;1,2:1
-1,4:8--&gt;3,4:7
-1,2:1--&gt;1,1:1
-1,2:1--&gt;2,2:0
-3,4:7--&gt;3,3:5
-3,4:7--&gt;4,4:2
-1,4':8--&gt;1,2:1
-1,4':8--&gt;3,4:7
-</code></pre></p>
-    <a href="/post/20191231-persistent_segtree/">Read more...</a>
   </div>
   
 

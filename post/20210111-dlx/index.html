@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Dancing Links缩写为DLX，其实在竞赛中并不常见，这次会讲这个是因为前一阵子搞拼图写了这个数据结构就顺便写(水)博客。
+
+DLX的发明者是高德纳（Donald Knuth），就是那个传说中的《计算机程序设计艺术》（TAOCP）系列书的作者，这里对这个算法做一些比较直观的解释。
+
+DLX面向的问题
+
+DLX面向的问题是精确覆盖问题。何谓精确覆盖呢，来看以下这个表格，每一行是一个数组，数组有4个元素，每行的第一列是这个数组的名字
+
+
+
+
+name
+
+
+
+
+
+
+
+
+
+a
+0
+0
+0
+1
+
+
+
+b
+1
+0
+0
+1
+
+
+
+c
+1
+1
+0
+0
+
+
+
+d
+1
+0
+1
+0
+
+
+
+e
+0
+1
+1
+1
+
+
+
+f
+0
+0
+1
+0
+
+
+
+g
+0
+1
+0
+1
+
+
+
+
+我们的目标是，在这些集合里，挑出几个，例如我们挑a,b,c，那对应位置上的元素相加，于是得到 2 1 0 2。而我们的目标是，找到一个挑选的方法，使得相加得到 1 1 1 1 全是1。
+
+例如说，选 d和g，那么相加正好得到 1 1 1 1 ，这就是其中一个解，这就是精确覆盖问题的直观感知。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20210111-dlx/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20210111-dlx/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20210111-dlx/">
+  <meta property="og:title" content="Dancing Links 跳舞链 | Baobaobear">
+  <meta property="og:description" content="Dancing Links缩写为DLX，其实在竞赛中并不常见，这次会讲这个是因为前一阵子搞拼图写了这个数据结构就顺便写(水)博客。
+
+DLX的发明者是高德纳（Donald Knuth），就是那个传说中的《计算机程序设计艺术》（TAOCP）系列书的作者，这里对这个算法做一些比较直观的解释。
+
+DLX面向的问题
+
+DLX面向的问题是精确覆盖问题。何谓精确覆盖呢，来看以下这个表格，每一行是一个数组，数组有4个元素，每行的第一列是这个数组的名字
+
+
+
+
+name
+
+
+
+
+
+
+
+
+
+a
+0
+0
+0
+1
+
+
+
+b
+1
+0
+0
+1
+
+
+
+c
+1
+1
+0
+0
+
+
+
+d
+1
+0
+1
+0
+
+
+
+e
+0
+1
+1
+1
+
+
+
+f
+0
+0
+1
+0
+
+
+
+g
+0
+1
+0
+1
+
+
+
+
+我们的目标是，在这些集合里，挑出几个，例如我们挑a,b,c，那对应位置上的元素相加，于是得到 2 1 0 2。而我们的目标是，找到一个挑选的方法，使得相加得到 1 1 1 1 全是1。
+
+例如说，选 d和g，那么相加正好得到 1 1 1 1 ，这就是其中一个解，这就是精确覆盖问题的直观感知。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2021-01-11T00:00:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2021-01-11T00:00:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20210111-dlx/"
+  },
+  "headline": "Dancing Links 跳舞链",
+  
+  "datePublished": "2021-01-11T00:00:00+08:00",
+  "dateModified": "2021-01-11T00:00:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003eDancing Links缩写为DLX，其实在竞赛中并不常见，这次会讲这个是因为前一阵子搞拼图写了这个数据结构就顺便写(\u003cdel\u003e水\u003c/del\u003e)博客。\u003c/p\u003e\n\n\u003cp\u003eDLX的发明者是高德纳（Donald Knuth），就是那个传说中的《计算机程序设计艺术》（TAOCP）系列书的作者，这里对这个算法做一些比较直观的解释。\u003c/p\u003e\n\n\u003ch2 id=\"dlx面向的问题\"\u003eDLX面向的问题\u003c/h2\u003e\n\n\u003cp\u003eDLX面向的问题是精确覆盖问题。何谓精确覆盖呢，来看以下这个表格，每一行是一个数组，数组有4个元素，每行的第一列是这个数组的名字\u003c/p\u003e\n\n\u003ctable\u003e\n\u003cthead\u003e\n\u003ctr\u003e\n\u003cth\u003ename\u003c/th\u003e\n\u003cth\u003e\u003c/th\u003e\n\u003cth\u003e\u003c/th\u003e\n\u003cth\u003e\u003c/th\u003e\n\u003cth\u003e\u003c/th\u003e\n\u003c/tr\u003e\n\u003c/thead\u003e\n\n\u003ctbody\u003e\n\u003ctr\u003e\n\u003ctd\u003ea\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003eb\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ec\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ed\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ee\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003ef\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003c/tr\u003e\n\n\u003ctr\u003e\n\u003ctd\u003eg\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003ctd\u003e0\u003c/td\u003e\n\u003ctd\u003e1\u003c/td\u003e\n\u003c/tr\u003e\n\u003c/tbody\u003e\n\u003c/table\u003e\n\n\u003cp\u003e我们的目标是，在这些集合里，挑出几个，例如我们挑a,b,c，那对应位置上的元素相加，于是得到 \u003ccode\u003e2 1 0 2\u003c/code\u003e。而我们的目标是，找到一个挑选的方法，使得相加得到 \u003ccode\u003e1 1 1 1\u003c/code\u003e 全是1。\u003c/p\u003e\n\n\u003cp\u003e例如说，选 d和g，那么相加正好得到 \u003ccode\u003e1 1 1 1\u003c/code\u003e ，这就是其中一个解，这就是精确覆盖问题的直观感知。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>Dancing Links 跳舞链 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>Dancing Links 跳舞链</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jan 11, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    2 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20210111-dlx/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20210111-dlx/&amp;text=Dancing%20Links%20%e8%b7%b3%e8%88%9e%e9%93%be" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20210111-dlx/&amp;t=Dancing%20Links%20%e8%b7%b3%e8%88%9e%e9%93%be" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Dancing%20Links%20%e8%b7%b3%e8%88%9e%e9%93%be&amp;body=/post/20210111-dlx/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20210111-dlx/&amp;title=Dancing%20Links%20%e8%b7%b3%e8%88%9e%e9%93%be" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Dancing%20Links%20%e8%b7%b3%e8%88%9e%e9%93%be%20/post/20210111-dlx/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20210111-dlx/&amp;title=Dancing%20Links%20%e8%b7%b3%e8%88%9e%e9%93%be" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>Dancing Links缩写为DLX，其实在竞赛中并不常见，这次会讲这个是因为前一阵子搞拼图写了这个数据结构就顺便写(<del>水</del>)博客。</p>
+
+<p>DLX的发明者是高德纳（Donald Knuth），就是那个传说中的《计算机程序设计艺术》（TAOCP）系列书的作者，这里对这个算法做一些比较直观的解释。</p>
+
+<h2 id="dlx面向的问题">DLX面向的问题</h2>
+
+<p>DLX面向的问题是精确覆盖问题。何谓精确覆盖呢，来看以下这个表格，每一行是一个数组，数组有4个元素，每行的第一列是这个数组的名字</p>
+
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>a</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>b</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>c</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>d</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>e</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>f</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>g</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+<p>我们的目标是，在这些集合里，挑出几个，例如我们挑a,b,c，那对应位置上的元素相加，于是得到 <code>2 1 0 2</code>。而我们的目标是，找到一个挑选的方法，使得相加得到 <code>1 1 1 1</code> 全是1。</p>
+
+<p>例如说，选 d和g，那么相加正好得到 <code>1 1 1 1</code> ，这就是其中一个解，这就是精确覆盖问题的直观感知。</p>
+
+<h2 id="朴素算法的构思">朴素算法的构思</h2>
+
+<p>我们来一把朴素DFS，例如说，先选择了集合a，而集合a在第4列是个1，那么，其它在第4列同样是1的集合之后就不用再看了，把这些行统统删除，在剩下的行中再选取一行，如此递归进行。我们会发现，怎么选取那一行，以及怎么样高效删除和恢复列，对这个搜索过程的效率有着关键性的影响。</p>
+
+<h2 id="dlx的数据结构">DLX的数据结构</h2>
+
+<p>在学习稀疏矩阵的时候，我们有一个表示稀疏矩阵的数据结构，就是十字链表，十字链表的优点是可以快速删除一行或一列。DLX就是使用十字链表表示这个矩阵。然后就是行的选取方式上，随便选一行目标性不佳。你如果玩过数独，那你可能会感觉这有点像数独，如果某一列，只有一个1，那么对应的含1的行，就确定一定是它了。而如果没有这种情况，我们就去找某一列只有两个1的。换句话来说，我们会从某一列中，含有最少的1的个数的列，来选择含有1的行。</p>
+
+<p>为了能快速知道某一列的1的数量，那必须增加一个头部记录这个信息。再者，某些列删除后，我们也需要快速找到还没有删除的列，所以之前的表格可以换成以下的表示：</p>
+
+<table>
+<thead>
+<tr>
+<th>size</th>
+<th>3</th>
+<th>3</th>
+<th>3</th>
+<th>4</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>head</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>a</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>b</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>c</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>d</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>e</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>f</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>g</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+<p>其中，head那一行包含在十字链表内，但不参与覆盖计算，仅用于索引还没有删除的列。而size是一个数组，不在十字链表内。所以列有表头，但行没有，head行是双向链表不循环，末尾元素的right指向空，其它的每一行是一个双向循环链表，而列是双向链表不循环，最底下的元素的down指向空。</p>
+
+<h2 id="dlx具体应用之拼图">DLX具体应用之拼图</h2>
+
+<p>所谓的精确覆盖其实是一类问题，具体问题有像8皇后问题，伤脑筋13块，智慧珠游戏，数独游戏都是典型的精确覆盖问题。为了方便说明，我们简化成以下问题：</p>
+
+<p>有一块1x2和2x2的方块，怎么拼成一个3x2的矩形</p>
+
+<p>这个怎么用DLX来解呢，首先我们要先对这个3x2的矩形编号：</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+
+<p>然后，给1x2这个方块编号7，2x2这个方块编号8，所以我们有8列。然后穷举每个块可以摆放的位置，每一种情况就作为一行，那位置覆盖的矩形编号就对应十字链表中的列：</p>
+
+<table>
+<thead>
+<tr>
+<th>n</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>sz</td>
+<td>3</td>
+<td>5</td>
+<td>3</td>
+<td>3</td>
+<td>5</td>
+<td>3</td>
+<td>7</td>
+<td>2</td>
+</tr>
+
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>4</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>6</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>7</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+
+<tr>
+<td>8</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+
+<tr>
+<td>9</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+<p>前7行就是1x2这个块的所有情况，8和9行就是2x2这个块的所有情况。</p>
+
+<p>表格做出来了，解法也很简单，看，第8列1的个数最少，那先选第8行，然后删除第8行上是1的所有列，然后只剩下第7行，于是找到第一个解{7,8}。然后第8列如果选另一行，即第9行，然后删除第9行上是1的所有列，然后只剩下第5行，于是找到第二个解{5,9}。于是所有解就都找到了。</p>
+
+<h2 id="dlx应用之n皇后问题">DLX应用之n皇后问题</h2>
+
+<p>在棋盘上任意位置放一个皇后，相当于同时覆盖了棋盘这一行、这一列、相应的/斜线、相应的\斜线。而n*n的棋盘，有n行n列和2n-1条斜线，所以做成表格将有6n-2列，n^2行，每行恰有4个1。具体表示这里不写了，因为页面宽度不够。</p>
+
+<h2 id="dlx应用之数独问题">DLX应用之数独问题</h2>
+
+<p>和n皇后问题类似，考虑在某个格子写了一个数k，那么相当于同时覆盖了这一行的数字k，列数字k，这个3x3区域的数字k，所以表格列数是<code>9*9*3</code>，表格行数是<code>9*9*9</code>，每一行都恰有3个1。初始化这个表格后，数独问题本身有一些初始数字，我们就根据这些数字，找到它所属的行，把这些行有1的列统统删掉，再执行搜索即可。</p>
+
+<h2 id="dlx的剪枝">DLX的剪枝</h2>
+
+<p>剪枝有两类，一种是看实际问题需求产生的剪枝，另一类是与具体问题无关可以在DLX上通用的剪枝。</p>
+
+<h3 id="通用剪枝">通用剪枝</h3>
+
+<p>假如不存在某一行全是1（99.9%的问题都不应该有吧），那这个剪枝就可以使用。在开始DFS搜索之前，我们如果先选定一行，然后把它有1的列删除，然后看有没有列的1的数量为0，如果有，那么这一行一定不可能在解里面，那么就可以把这一行从链表里直接删除干净，这样直到没有这样的无效行再去启动搜索即可。这个剪枝对于规模更大的问题求所有解时，加速效果明显。</p>
+
+<h3 id="特定问题的剪枝">特定问题的剪枝</h3>
+
+<p>对于矩形拼图，有个很明显的点，就是当你随便发现一个解时，那它翻转、旋转便会得到另外7个解，我们希望可以去掉这些镜像解，只保留本质不同的解。那么，我们可以记录四角的编号，例如矩形是3*3时，它的编号就是1,3,7,9，另外再增加一个字段，记录覆盖这一列的时候是选取的哪一行。这样当我们在搜索的过程中覆盖到这些列的时候，就可以启动单调性剪枝，我们定义1号用的行最小，3号比7号要小，如果与定义的不同，那就可以直接return，这样不但搜索时间减少不少，而且得到本质解的数量，一举两得。</p>
+
+<h2 id="原始dlx算法的局限">原始DLX算法的局限</h2>
+
+<p>原始DLX算法最害怕的东西有两个，一是有大量的行极相似，二是有大量的行上面1的数量太少（&lt;=2），这对应于具体问题是什么情况呢，例如说我之前博文的Orz14拼图，它不是精确覆盖，但可以转为精确覆盖问题，只需要补上17个1x1方块即可，但是这样的话，DLX的搜索时间是完全不可接受的，这个拼图同时满足了前面的两个条件，因为有大量的块形状完全一样，那么生成的行每行都有另外13行与之极相似，会导致相同的覆盖方式重复搜索，重复量级约 $14!$ ，好像不是特别多，其实要这么想，如果去重复后计算时间要1秒，那不去重复就需要 $14! = 87178291200$ 秒或者说2700多年。另外由于要补上的1x1方块非常多，而这些1x1方块在每一行只有2个1，同样也产生了 $17!$ 的重复，所以原始算法不适合解决这种问题，必须对其进行改进，或更换其它搜索方式。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">数据结构</a>
+  
+  <a class="badge badge-light" href="/tags/dancing-links/">Dancing Links</a>
+  
+  <a class="badge badge-light" href="/tags/dlx/">DLX</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20200416-pam/">回文树</a></li>
+          
+          <li><a href="/post/20200220-sam/">后缀自动机SAM</a></li>
+          
+          <li><a href="/post/20200210-ac/">AC自动机</a></li>
+          
+          <li><a href="/post/20191231-persistent_segtree/">可持久化线段树</a></li>
+          
+          <li><a href="/post/20191215-fhq-treap/">FHQ Treap</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
