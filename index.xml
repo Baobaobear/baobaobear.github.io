@@ -5,12 +5,27 @@
     <link>/</link>
       <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <description>Baobaobear</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 11 Jan 2021 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 18 Jan 2021 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Baobaobear</title>
       <link>/</link>
     </image>
+    
+    <item>
+      <title>很头疼拼图</title>
+      <link>/post/20210118-htt/</link>
+      <pubDate>Mon, 18 Jan 2021 00:00:00 +0800</pubDate>
+      <guid>/post/20210118-htt/</guid>
+      <description>&lt;p&gt;本拼图难度较高，是给程序解答专用的题目（手工解我觉得没多少可能，但不排除有运气极佳的人），是检验你的程序效率有多高用的。&lt;/p&gt;
+
+&lt;p&gt;它的名字是很头疼拼图，因为放入的块有H和两种T形状，而HTT就是很头疼。一共有21个块，放入一个12x12的框里，具体形状如下图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/puz/htt.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;以上是就是原题，每个小方块长宽均为1，底板尺寸是12x12。全部21块放入即成功解出，每一块均可以任意平移、旋转、翻转。你需要确定本题有多少个本质不同的解及相应具体答案。答案就不在这公开了，祝玩得开心。&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Dancing Links 跳舞链</title>
@@ -10458,7 +10473,6 @@ int main(void)
 &lt;li&gt;&lt;a href=&#34;http://vrmei.52chye.cn/&#34; target=&#34;_blank&#34;&gt;vrmei的博客&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;//jiangkk.top&#34; target=&#34;_blank&#34;&gt;废江&amp;rsquo;s博客&lt;/a&gt;  备战acm小菜鸟的个人日常&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://blog.csdn.net/burningdzb&#34; target=&#34;_blank&#34;&gt;burningdzb的博客&lt;/a&gt;  白月光__编程小萌新&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://blog.xunanmu.com/&#34; target=&#34;_blank&#34;&gt;徐南木blog&lt;/a&gt;  南木心屋&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
