@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-01-18T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-02-28T00:00:00&#43;08:00">
   
 
   
@@ -360,6 +360,290 @@
   
 
   
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Oct 28, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191028-kmp/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191028-kmp/">KMP及扩展KMP</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀</p>
+
+<h2 id="最长公共前缀">最长公共前缀</h2>
+
+<p>我们拿字符串<code>ababcab</code>作为例子</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>这里所表达的是，例如取第3、4个字符&rdquo;ab&rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&rdquo;abc&rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>?</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>然后两个a匹配，<code>arr[6] = pointer1 - arr</code> 得到3，然后两指针一起移动</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>?</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+</tbody>
+</table>
+
+<p>这时候，不匹配，那么前一个指针上一次指向的是<code>arr[2]</code>的位置，即图上<code>*</code>的地方，值是1，这个值如果是p，那就移动到<code>arr[p]</code>的地方，所以就移动到<code>arr[1]</code>的地方，本质上就是找到前一个匹配此后缀的位置，即</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>len</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+
+<tr>
+<td>pointer</td>
+<td></td>
+<td>^</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>^</td>
+</tr>
+</tbody>
+</table>
+
+<p>然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2</p></p>
+    <a href="/post/20191028-kmp/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
   
     
       
@@ -1254,96 +1538,6 @@
 
 <p><img src="https://raw.githubusercontent.com/heray1990/AlgorithmVisualization/master/images/selection_sort_50samples_fps30_dpi50.gif" alt="" /></p></p>
     <a href="/post/20191008-sorting-1/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 7, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    2 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191007-qsort-talk-1/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191007-qsort-talk-1/">Quick sort(快速排序)杂谈 1</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>我们现在使用的排序，很大比例在使用quick sort，因为它是平均速度最快的排序，但与此同时它可能也是坑最深的排序，现在我们就来讨论讨论它，因为内容较多，我计划写多篇，本篇是第一篇。</p>
-
-<h2 id="快排的思路">快排的思路</h2>
-
-<p>我们先来介绍一下快排的思路。快排的思路其实很简单，在数组中选一个元素，我们就称呼这个元素为pivot，通过与这个元素的比较，把数组划分成不比pivot大的在一边，不比pivot小的在另一边，于是就分成了两个更小的数据，对它们分别再排序就行了。但是，这个描述特别的含糊，首先是怎么选中间元素，这里面有很多不同的做法。然后就是划分了，这个划分方法非常的多，水也特别深，这里主要介绍最为常见的划分方法。</p></p>
-    <a href="/post/20191007-qsort-talk-1/">Read more...</a>
   </div>
   
 

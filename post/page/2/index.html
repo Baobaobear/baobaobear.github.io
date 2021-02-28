@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-01-18T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-02-28T00:00:00&#43;08:00">
   
 
   
@@ -360,6 +360,152 @@
   
 
   
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Feb 10, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20200210-ac/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20200210-ac/">AC自动机</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>听到AC自动机很多人第一次听到的反应往往是很兴奋的。但其实并不是你们想的那种东西。它的全称是Aho-Corasick algorithm，另外，自动机的英文是Automaton，所以AC自动机即 AC Automaton。为了解释这个算法，首先我们来回顾KMP，你需要很理解KMP的原理，不然看后面的内容就会变得<del>妙不可读</del>。</p>
+
+<h2 id="kmp自动机">KMP自动机</h2>
+
+<p>本质上KMP其实就是一种自动机。这次我们改用自动机的形式来理解。所谓自动机，一般指的是确定有限状态自动机，你可以看作一个黑箱，每次输入一个数据，它就会改变它的内部状态，并有相应的输出。如果你知道Trie，那么它其实就是一个典型的自动机。我们还是拿字符串<code>abacabab</code>作为例子，如果是生成next数组，结果如下：</p>
+
+<table>
+<thead>
+<tr>
+<th>string</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>c</th>
+<th>a</th>
+<th>b</th>
+<th>a</th>
+<th>b</th>
+<th>\0</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>next</td>
+<td>-1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+
+<p>为了方便变成自动机的方式理解，我们把这个改成有向图</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0[Start]--a--&gt;00[1]
+00--b--&gt;1[2]
+1--a--&gt;2[3]
+2--c--&gt;3[4]
+3--a--&gt;4[5]
+4--b--&gt;5[6]
+5--a--&gt;6[7]
+6--b--&gt;7[8]
+00-.-&gt;0
+1-.-&gt;0
+2-.-&gt;00
+3-.-&gt;0
+4-.-&gt;00
+5-.-&gt;1
+6-.-&gt;2
+%%7[b]-.-&gt;3[c]
+style 0 fill:#f9f,stroke-dasharray: 5, 5
+style 7 fill:#f9f,stroke-dasharray: 5, 5
+</code></pre></p>
+    <a href="/post/20200210-ac/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
   
     
       
@@ -1684,290 +1830,6 @@ void split(int tp, int k, int &amp;x, int &amp;y)
 
 <p>这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是<code>x + (x &amp; -x)</code>，其中，<code>x &amp; -x</code>是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是<code>6+2=8</code>，更多的可以参考这篇<a href="/post/20191012-binary-skill/">二进制技巧</a>。</p></p>
     <a href="/post/20191111-fenwicktree/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Oct 28, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    4 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191028-kmp/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191028-kmp/">KMP及扩展KMP</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>KMP之所以在竞赛中常见，并不是因为它用来匹配字符串，而是用它的next数组，为了介绍它，我们先讲讲最长公共前缀</p>
-
-<h2 id="最长公共前缀">最长公共前缀</h2>
-
-<p>我们拿字符串<code>ababcab</code>作为例子</p>
-
-<table>
-<thead>
-<tr>
-<th>string</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>b</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>len</td>
-<td>0</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-</tr>
-</tbody>
-</table>
-
-<p>这里所表达的是，例如取第3、4个字符&rdquo;ab&rdquo;，这个子串与前缀完全匹配，且它的长度是2，所以就记录2，而第3、4、5个字符&rdquo;abc&rdquo;与前缀不能完全匹配，就记作0，含义就这么简单，而且你会发现，计算b的时候，可以根据它所匹配的字符的偏移来，b如果是匹配的，就找到匹配的那个字符是数组中的第几个，它是第二个，所以填2进去。我们再来看更复杂的例子</p>
-
-<table>
-<thead>
-<tr>
-<th>string</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>b</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>len</td>
-<td>0</td>
-<td>0</td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>2</td>
-</tr>
-</tbody>
-</table>
-
-<p>最后那个字符不匹配的时候，1是怎么计算出来的呢，直接重新计算当然也可以，但就出现重复计算了。我们考虑一下匹配过程，在前面的字符a的时候，前后各一个指针，像这样</p>
-
-<table>
-<thead>
-<tr>
-<th>string</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>b</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>len</td>
-<td>0</td>
-<td>0</td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>?</td>
-</tr>
-
-<tr>
-<td>pointer</td>
-<td></td>
-<td></td>
-<td>^</td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
-<p>然后两个a匹配，<code>arr[6] = pointer1 - arr</code> 得到3，然后两指针一起移动</p>
-
-<table>
-<thead>
-<tr>
-<th>string</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>b</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>len</td>
-<td>0</td>
-<td>0</td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>?</td>
-</tr>
-
-<tr>
-<td>pointer</td>
-<td></td>
-<td></td>
-<td>*</td>
-<td>^</td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-</tr>
-</tbody>
-</table>
-
-<p>这时候，不匹配，那么前一个指针上一次指向的是<code>arr[2]</code>的位置，即图上<code>*</code>的地方，值是1，这个值如果是p，那就移动到<code>arr[p]</code>的地方，所以就移动到<code>arr[1]</code>的地方，本质上就是找到前一个匹配此后缀的位置，即</p>
-
-<table>
-<thead>
-<tr>
-<th>string</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>c</th>
-<th>a</th>
-<th>b</th>
-<th>a</th>
-<th>b</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>len</td>
-<td>0</td>
-<td>0</td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>3</td>
-<td>2</td>
-</tr>
-
-<tr>
-<td>pointer</td>
-<td></td>
-<td>^</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>^</td>
-</tr>
-</tbody>
-</table>
-
-<p>然后再尝试匹配，这次匹配上了，然后前一指针指向第二个元素，所以赋值2</p></p>
-    <a href="/post/20191028-kmp/">Read more...</a>
   </div>
   
 

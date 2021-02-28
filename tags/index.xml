@@ -5,12 +5,44 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 18 Jan 2021 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sun, 28 Feb 2021 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Tags</title>
       <link>/tags/</link>
     </image>
+    
+    <item>
+      <title>大整数</title>
+      <link>/tags/%E5%A4%A7%E6%95%B4%E6%95%B0/</link>
+      <pubDate>Sun, 28 Feb 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/%E5%A4%A7%E6%95%B4%E6%95%B0/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>模板</title>
+      <link>/tags/%E6%A8%A1%E6%9D%BF/</link>
+      <pubDate>Sun, 28 Feb 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/%E6%A8%A1%E6%9D%BF/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>算法</title>
+      <link>/tags/%E7%AE%97%E6%B3%95/</link>
+      <pubDate>Sun, 28 Feb 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/%E7%AE%97%E6%B3%95/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>高精度</title>
+      <link>/tags/%E9%AB%98%E7%B2%BE%E5%BA%A6/</link>
+      <pubDate>Sun, 28 Feb 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/%E9%AB%98%E7%B2%BE%E5%BA%A6/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>puzzle</title>
@@ -101,14 +133,6 @@
     </item>
     
     <item>
-      <title>模板</title>
-      <link>/tags/%E6%A8%A1%E6%9D%BF/</link>
-      <pubDate>Thu, 16 Apr 2020 00:00:00 +0800</pubDate>
-      <guid>/tags/%E6%A8%A1%E6%9D%BF/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>自动机</title>
       <link>/tags/%E8%87%AA%E5%8A%A8%E6%9C%BA/</link>
       <pubDate>Thu, 16 Apr 2020 00:00:00 +0800</pubDate>
@@ -169,14 +193,6 @@
       <link>/tags/xoshiro/xoroshiro/</link>
       <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
       <guid>/tags/xoshiro/xoroshiro/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>算法</title>
-      <link>/tags/%E7%AE%97%E6%B3%95/</link>
-      <pubDate>Sat, 04 Jan 2020 08:26:00 +0800</pubDate>
-      <guid>/tags/%E7%AE%97%E6%B3%95/</guid>
       <description></description>
     </item>
     

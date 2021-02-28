@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-01-11T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-02-28T00:00:00&#43;08:00">
   
 
   
@@ -359,6 +359,22 @@
   
 
   
+  
+  <div>
+    <h2><a href="/post/20191008-sorting-1/">选择和冒泡排序优化思路</a></h2>
+    <div class="article-style">
+      
+      本篇针对两种最基本的排序（冒泡、选择）来讲优化思路。越是简单的东西反而可能存在你越想不到的优化点。但是在开始之前，先给不了解的人讲一个设计原则的问题，我们在设计排序接口的时候，最为常见的有
+void sort(type arr[], int len)
+也许你也见过
+void sort(iter beg, iter end)
+这时候问题就来了，很多人会错误地把end认为是最后一个元素，其实不然，这两接口可以相互转换，例如我们可以写 sort(arr, arr + len) ，这样写很自然对不对，但如果你认为end是最后一个元素，那你就不得不改成 sort(arr, arr + len - 1) 。事实上，这类的接口我们需要一个统一的原则，就是左闭右开区间原则，即beg就是首个元素，而end是最后一个元素+1，即end是作为结束标志，不应该把end算在范围内。接下来下面所有的接口写法，都是以
+void sort(iter beg, iter end)
+这种方式写的，至于这样写有什么好处，接下来我们就看示例。
+选择排序 
+      
+    </div>
+  </div>
   
   <div>
     <h2><a href="/post/20191007-qsort-talk-1/">Quick sort(快速排序)杂谈 1</a></h2>
