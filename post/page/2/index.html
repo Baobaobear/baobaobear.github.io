@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-02-28T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-03-05T00:00:00&#43;08:00">
   
 
   
@@ -360,6 +360,120 @@
   
 
   
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Feb 20, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    2 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20200220-sam/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20200220-sam/">后缀自动机SAM</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>后缀自动机（SAM），可以结合前文的AC自动机一起理解，所谓后缀自动机，就是把一个字符串的所有后缀构造AC自动机，即只匹配其后缀的自动机。但是作为一个字符串的所有后缀，与一般的AC自动机有些不一样的性质，直接构造AC自动机，节点数是 $O(n^2)$，而SAM则对重复的节点合并了，可以让节点数大幅下降到 $O(n)$。</p>
+
+<p>首先我们来直观地看看SAM的图形化，以下是字符串<code>abcac</code>的SAM</p>
+
+<pre><code class="language-mermaid">graph LR;
+linkStyle default interpolate basis
+0((0))--a--&gt;1
+1--b--&gt;2
+2--c--&gt;3
+3--a--&gt;4
+4--c--&gt;5((5))
+0--c--&gt;6(1)
+
+0--b--&gt;2
+1--c--&gt;5
+6--a--&gt;4
+
+4-.-&gt;1
+5-.-&gt;6
+3-.-&gt;6
+
+1-.-&gt;0
+2-.-&gt;0
+6-.-&gt;0
+style 0 fill:#f9f
+style 5 fill:#f9f
+</code></pre>
+
+<p>实线方向就是匹配方向，虚线与AC自动机中的失败指针非常像，在SAM里称为link指针。</p></p>
+    <a href="/post/20200220-sam/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
   
     
       
@@ -1590,246 +1704,6 @@ void split(int tp, int k, int &amp;x, int &amp;y)
 
 <p>要注意的一点是下标从1开始。有了这个，可以做点什么呢？例如给你一个串p，求出p在主串s中出现了多少次。那么在有了sa的情况下，因为sa是有序的，问题就变成了二分搜索，分别用<code>lower_bound</code>和<code>upper_bound</code>通过sa搜索p，两个相减便得出现次数。</p></p>
     <a href="/post/20191113-suffixarray/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Nov 11, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    3 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191111-fenwicktree/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191111-fenwicktree/">树状数组</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>树状数组，是一个用于在近似 $O(logn)$ 时间内动态修改以及查询前缀和的数据结构，以下我们先来看以下树关系表格</p>
-
-<table>
-<thead>
-<tr>
-<th>层</th>
-<th>1</th>
-<th>2</th>
-<th>3</th>
-<th>4</th>
-<th>5</th>
-<th>6</th>
-<th>7</th>
-<th>8</th>
-<th>9</th>
-<th>10</th>
-<th>11</th>
-<th>12</th>
-<th>13</th>
-<th>14</th>
-<th>15</th>
-<th>16</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>1</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>16</td>
-</tr>
-
-<tr>
-<td>2</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td>8</td>
-<td></td>
-<td></td>
-<td></td>
-<td>12</td>
-<td></td>
-<td>14</td>
-<td>15</td>
-<td></td>
-</tr>
-
-<tr>
-<td>3</td>
-<td></td>
-<td></td>
-<td></td>
-<td>4</td>
-<td></td>
-<td>6</td>
-<td>7</td>
-<td></td>
-<td></td>
-<td>10</td>
-<td>11</td>
-<td></td>
-<td>13</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-
-<tr>
-<td>4</td>
-<td></td>
-<td>2</td>
-<td>3</td>
-<td></td>
-<td>5</td>
-<td></td>
-<td></td>
-<td></td>
-<td>9</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-
-<tr>
-<td>5</td>
-<td>1</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
-<p>这里表达的是，16的子节点有8, 12, 14, 15</p>
-
-<p>8的子节点有4, 6, 7</p>
-
-<p>12的子节点有10, 11，即夹在12与它的同级节点8之间</p>
-
-<p>我们把数值与它的二进制一起形象化画出下图</p>
-
-<pre><code class="language-mermaid">graph TD;
-2,0010--&gt;1,0001
-4,0100--&gt;3,0011
-4,0100--&gt;2,0010
-6,0110--&gt;5,0101
-8,1000--&gt;7,0111
-8,1000--&gt;6,0110
-8,1000--&gt;4,0100
-10,1010--&gt;9,1001
-12,1100--&gt;11,1011
-12,1100--&gt;10,1010
-14,1110--&gt;13,1101
-16,10000--&gt;8,1000
-16,10000--&gt;12,1100
-16,10000--&gt;14,1110
-16,10000--&gt;15,1111
-</code></pre>
-
-<p>这样构造的原理是运用到一个二进制运算技巧，假设一个节点x，那么它的父节点就是<code>x + (x &amp; -x)</code>，其中，<code>x &amp; -x</code>是去掉右起第一个1的左边的1，例如x如果是6，二进制是110，只保留最右边的1结果就是10了，所以6的父节点就是<code>6+2=8</code>，更多的可以参考这篇<a href="/post/20191012-binary-skill/">二进制技巧</a>。</p></p>
-    <a href="/post/20191111-fenwicktree/">Read more...</a>
   </div>
   
 

@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：
+
+
+支持四则运算，必须包含除法及求余
+支持字符串输入输出
+代码不长
+
+
+small biginteger library for contest
+
+代码原作者Jane Alam Jan，你可以在Google上直接搜索small_biginteger_library_for_contest.pdf并下载到原始代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20210305-bigint_fun/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20210305-bigint_fun/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20210305-bigint_fun/">
+  <meta property="og:title" content="大整数高精度计算——有趣的实现 | Baobaobear">
+  <meta property="og:description" content="这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：
+
+
+支持四则运算，必须包含除法及求余
+支持字符串输入输出
+代码不长
+
+
+small biginteger library for contest
+
+代码原作者Jane Alam Jan，你可以在Google上直接搜索small_biginteger_library_for_contest.pdf并下载到原始代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2021-03-05T00:00:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2021-03-05T00:00:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20210305-bigint_fun/"
+  },
+  "headline": "大整数高精度计算——有趣的实现",
+  
+  "datePublished": "2021-03-05T00:00:00+08:00",
+  "dateModified": "2021-03-05T00:00:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：\u003c/p\u003e\n\n\u003col\u003e\n\u003cli\u003e支持四则运算，必须包含除法及求余\u003c/li\u003e\n\u003cli\u003e支持字符串输入输出\u003c/li\u003e\n\u003cli\u003e代码不长\u003c/li\u003e\n\u003c/ol\u003e\n\n\u003ch2 id=\"small-biginteger-library-for-contest\"\u003esmall biginteger library for contest\u003c/h2\u003e\n\n\u003cp\u003e代码原作者Jane Alam Jan，你可以在Google上直接搜索\u003ccode\u003esmall_biginteger_library_for_contest.pdf\u003c/code\u003e并下载到原始代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>大整数高精度计算——有趣的实现 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>大整数高精度计算——有趣的实现</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Mar 5, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    6 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20210305-bigint_fun/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e6%9d%82%e8%b0%88">杂谈</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20210305-bigint_fun/&amp;text=%e5%a4%a7%e6%95%b4%e6%95%b0%e9%ab%98%e7%b2%be%e5%ba%a6%e8%ae%a1%e7%ae%97%e2%80%94%e2%80%94%e6%9c%89%e8%b6%a3%e7%9a%84%e5%ae%9e%e7%8e%b0" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20210305-bigint_fun/&amp;t=%e5%a4%a7%e6%95%b4%e6%95%b0%e9%ab%98%e7%b2%be%e5%ba%a6%e8%ae%a1%e7%ae%97%e2%80%94%e2%80%94%e6%9c%89%e8%b6%a3%e7%9a%84%e5%ae%9e%e7%8e%b0" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e5%a4%a7%e6%95%b4%e6%95%b0%e9%ab%98%e7%b2%be%e5%ba%a6%e8%ae%a1%e7%ae%97%e2%80%94%e2%80%94%e6%9c%89%e8%b6%a3%e7%9a%84%e5%ae%9e%e7%8e%b0&amp;body=/post/20210305-bigint_fun/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20210305-bigint_fun/&amp;title=%e5%a4%a7%e6%95%b4%e6%95%b0%e9%ab%98%e7%b2%be%e5%ba%a6%e8%ae%a1%e7%ae%97%e2%80%94%e2%80%94%e6%9c%89%e8%b6%a3%e7%9a%84%e5%ae%9e%e7%8e%b0" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e5%a4%a7%e6%95%b4%e6%95%b0%e9%ab%98%e7%b2%be%e5%ba%a6%e8%ae%a1%e7%ae%97%e2%80%94%e2%80%94%e6%9c%89%e8%b6%a3%e7%9a%84%e5%ae%9e%e7%8e%b0%20/post/20210305-bigint_fun/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20210305-bigint_fun/&amp;title=%e5%a4%a7%e6%95%b4%e6%95%b0%e9%ab%98%e7%b2%be%e5%ba%a6%e8%ae%a1%e7%ae%97%e2%80%94%e2%80%94%e6%9c%89%e8%b6%a3%e7%9a%84%e5%ae%9e%e7%8e%b0" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：</p>
+
+<ol>
+<li>支持四则运算，必须包含除法及求余</li>
+<li>支持字符串输入输出</li>
+<li>代码不长</li>
+</ol>
+
+<h2 id="small-biginteger-library-for-contest">small biginteger library for contest</h2>
+
+<p>代码原作者Jane Alam Jan，你可以在Google上直接搜索<code>small_biginteger_library_for_contest.pdf</code>并下载到原始代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。</p>
+
+<pre><code class="language-cpp">struct Bigint {
+    // representations and structures
+    std::string a; // to store the digits
+    int sign;      // sign = -1 for negative numbers, sign = 1 otherwise
+    // constructors
+    Bigint() {}                            // default constructor
+    Bigint(std::string b) { (*this) = b; } // constructor for string
+    Bigint(int v) {
+        char buf[30];
+        sprintf(buf, &quot;%d&quot;, v);
+        (*this) = buf;
+    }
+    // some helpful methods
+    int size() { return a.size(); } // returns number of digits
+    Bigint inverseSign() {
+        sign *= -1;
+        return (*this);
+    }
+    Bigint normalize(int newSign) { // removes leading 0, fixes sign
+        for (int i = a.size() - 1; i &gt; 0 &amp;&amp; a[i] == '0'; i--)
+            a.erase(a.begin() + i);
+        sign = (a.size() == 1 &amp;&amp; a[0] == '0') ? 1 : newSign;
+        return (*this);
+    }
+    // assignment operator
+    void operator=(std::string b) { // assigns a string to Bigint
+        a = b[0] == '-' ? b.substr(1) : b;
+        reverse(a.begin(), a.end());
+        this-&gt;normalize(b[0] == '-' ? -1 : 1);
+    }
+    // conditional operators
+    bool operator&lt;(const Bigint &amp;b) const { // less than operator
+        if (sign != b.sign) return sign &lt; b.sign;
+        if (a.size() != b.a.size()) return sign == 1 ? a.size() &lt; b.a.size() : a.size() &gt; b.a.size();
+        for (int i = a.size() - 1; i &gt;= 0; i--)
+            if (a[i] != b.a[i]) return sign == 1 ? a[i] &lt; b.a[i] : a[i] &gt; b.a[i];
+        return false;
+    }
+    bool operator==(const Bigint &amp;b) const { return a == b.a &amp;&amp; sign == b.sign; }
+    // mathematical operators
+    Bigint operator+(Bigint b) { // addition operator overloading
+        if (sign != b.sign) return (*this) - b.inverseSign();
+        Bigint c;
+        for (int i = 0, carry = 0; i &lt; a.size() || i &lt; b.size() || carry; i++) {
+            carry += (i &lt; a.size() ? a[i] - 48 : 0) + (i &lt; b.a.size() ? b.a[i] - 48 : 0);
+            c.a += (carry % 10 + 48);
+            carry /= 10;
+        }
+        return c.normalize(sign);
+    }
+    Bigint operator-(Bigint b) { // subtraction operator overloading
+        if (sign != b.sign) return (*this) + b.inverseSign();
+        int s = sign;
+        sign = b.sign = 1;
+        if ((*this) &lt; b) return ((b - (*this)).inverseSign()).normalize(-s);
+        Bigint c;
+        for (int i = 0, borrow = 0; i &lt; a.size(); i++) {
+            borrow = a[i] - borrow - (i &lt; b.size() ? b.a[i] : 48);
+            c.a += borrow &gt;= 0 ? borrow + 48 : borrow + 58;
+            borrow = borrow &gt;= 0 ? 0 : 1;
+        }
+        return c.normalize(s);
+    }
+    Bigint operator*(Bigint b) { // multiplication operator overloading
+        Bigint c(&quot;0&quot;);
+        for (int i = 0, k = a[i] - 48; i &lt; a.size(); i++, k = a[i] - 48) {
+            while (k--)
+                c = c + b;                // ith digit is k, so, we add k times
+            b.a.insert(b.a.begin(), '0'); // multiplied by 10
+        }
+        return c.normalize(sign * b.sign);
+    }
+    Bigint operator/(Bigint b) { // division operator overloading
+        if (b.size() == 1 &amp;&amp; b.a[0] == '0') b.a[0] /= (b.a[0] - 48);
+        Bigint c(&quot;0&quot;), d;
+        for (int j = 0; j &lt; a.size(); j++)
+            d.a += &quot;0&quot;;
+        int dSign = sign * b.sign;
+        b.sign = 1;
+        for (int i = a.size() - 1; i &gt;= 0; i--) {
+            c.a.insert(c.a.begin(), '0');
+            c = c + a.substr(i, 1);
+            while (!(c &lt; b))
+                c = c - b, d.a[i]++;
+        }
+        return d.normalize(dSign);
+    }
+    Bigint operator%(Bigint b) { // modulo operator overloading
+        if (b.size() == 1 &amp;&amp; b.a[0] == '0') b.a[0] /= (b.a[0] - 48);
+        Bigint c(&quot;0&quot;);
+        b.sign = 1;
+        for (int i = a.size() - 1; i &gt;= 0; i--) {
+            c.a.insert(c.a.begin(), '0');
+            c = c + a.substr(i, 1);
+            while (!(c &lt; b))
+                c = c - b;
+        }
+        return c.normalize(sign);
+    }
+    std::string to_str() const {
+        std::string s;
+        if (sign == -1) s += '-';
+        for (int i = a.size() - 1; i &gt;= 0; i--)
+            s += a[i];
+        return s;
+    }
+    bool operator&gt;(const Bigint &amp;b) const { return b &lt; *this; }
+    bool operator&lt;=(const Bigint &amp;b) const { return !(b &lt; *this); }
+    bool operator&gt;=(const Bigint &amp;b) const { return !(*this &lt; b); }
+    bool operator!=(const Bigint &amp;b) const { return !(*this == b); }
+};
+</code></pre>
+
+<p>这个实现使用string来实现大整数，于是缺点就非常明显了，就是性能低下，非常低，求个300阶乘都要1.5秒。不过，这代码里有不少写法是牺牲性能换代码长度，有的思路确实也不错。在同样代码长度级别下，我实现的<a href="https://github.com/Baobaobear/MiniBigInteger" target="_blank">BitIntTiny</a>有着好得多的性能。或者来直接看以下这份更短的实现。</p>
+
+<h2 id="一份60行不到的大整数实现">一份60行不到的大整数实现</h2>
+
+<p>改编自<a href="https://wu-kan.cn/_posts/2019-01-26-%E9%AB%98%E7%B2%BE%E5%BA%A6/" target="_blank">wu-kan</a>以及<a href="https://zhuanlan.zhihu.com/p/72730434" target="_blank">hqztrue</a>的基于bitset实现的定长大整数，支持10进制输入输出，四则运算及位运算均支持。</p>
+
+<pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;bitset&gt;
+#include &lt;string&gt;
+
+#define BINT_MAXSIZE 2048
+typedef typename std::bitset&lt;BINT_MAXSIZE&gt; Bint;
+bool operator&lt;(const Bint &amp;a, const Bint &amp;b) {
+    for (int i = a.size() - 1; i &gt;= 0; --i)
+        if (a[i] != b[i]) return a[i] &lt; b[i];
+    return false;
+}
+bool operator&gt;(const Bint &amp;a, const Bint &amp;b) { return b &lt; a; }
+bool operator&lt;=(const Bint &amp;a, const Bint &amp;b) { return !(b &lt; a); }
+bool operator&gt;=(const Bint &amp;a, const Bint &amp;b) { return !(a &lt; b); }
+Bint operator+(const Bint &amp;a, const Bint &amp;b) { return b.any() ? (a ^ b) + ((a &amp; b) &lt;&lt; 1) : a; }
+Bint &amp;operator+=(Bint &amp;a, const Bint &amp;b) { return a = a + b; }
+Bint operator-(const Bint &amp;a) { return Bint(1) + ~a; }
+Bint operator-(const Bint &amp;a, const Bint &amp;b) { return b.any() ? (a ^ b) - ((~a &amp; b) &lt;&lt; 1) : a; }
+Bint &amp;operator-=(Bint &amp;a, const Bint &amp;b) { return a = a - b; }
+Bint operator*(Bint a, Bint b) {
+    Bint r(0);
+    for (; b.any(); b &gt;&gt;= 1, a &lt;&lt;= 1) if (b[0]) r += a;
+    return r;
+}
+Bint &amp;operator*=(Bint &amp;a, const Bint &amp;b) { return a = a * b; }
+std::pair&lt;Bint, Bint&gt; divide(Bint a, const Bint &amp;b) {
+    Bint c = 0;
+    int i = 0;
+    while (b &lt;&lt; (i + 1) &lt;= a) ++i;
+    for (; i &gt;= 0; --i)
+        if (a &gt;= (b &lt;&lt; i)) a -= b &lt;&lt; i, c.set(i, 1);
+    return std::make_pair(c, a);
+}
+Bint operator/(const Bint &amp;a, const Bint &amp;b) { return divide(a, b).first; }
+Bint &amp;operator/=(Bint &amp;a, const Bint &amp;b) { return a = a / b; }
+Bint operator%(const Bint &amp;a, const Bint &amp;b) { return divide(a, b).second; }
+Bint &amp;operator%=(Bint &amp;a, const Bint &amp;b) { return a = a % b; }
+Bint BintFromStr(const char *p) {
+    Bint x = 0;
+    int sign = 1;
+    for (; *p == '-'; ++p) sign = -sign;
+    for (; *p &gt;= '0' &amp;&amp; *p &lt;= '9'; ++p) x = (x &lt;&lt; 3) + (x &lt;&lt; 1) + (*p - '0');
+    return sign &gt; 0 ? x : -x;
+}
+Bint BintFromInt(int i) {
+    char buf[20];
+    sprintf(buf, &quot;%d&quot;, i);
+    return BintFromStr(buf);
+}
+std::string BintToStr(Bint x) {
+    std::string out = x == 0 ? &quot;0&quot; : &quot;&quot;;
+    std::vector&lt;Bint&gt; v;
+    if (x[x.size() - 1]) out += '-', x = -x;
+    for (Bint y = 1; y &lt;= x; y = (y &lt;&lt; 3) + (y &lt;&lt; 1)) v.push_back(y);
+    for (int i = v.size() - 1; i &gt;= 0; --i) {
+        int t = 0;
+        for (int l = 3; l &gt;= 0; --l)
+            if (x &gt;= (v[i] &lt;&lt; l)) x -= v[i] &lt;&lt; l, t += 1 &lt;&lt; l;
+        out += t + '0';
+    }
+    return out;
+}
+</code></pre>
+
+<p>这个实现的代码就短到极致了，但性能同样也挺糟糕的，而且负数支持不佳（做除法会出错），还有一个缺点是受bitset所限只能定长，不过在绝大部分情况下还能比前一份代码来得快不少，比如说求阶乘，长度设置为2048，求300的阶乘，这份代码只要0.01秒，前一份代码却要1.5秒，相差上百倍。要是改成求1000阶乘，设置长度为16384，计算时间为0.3秒（事实上这里面大部分时间花在了转出时转换到10进制，实际计算时间不到0.1秒），而前一份代码用时55秒。所以如果真要临时用用大整数，还是这个好，又短又不至于太慢。</p>
+
+<h2 id="其它的github库实现">其它的Github库实现</h2>
+
+<p>以下是我在Github找到的平均性能表现较好的一些小型实现，已经按平均性能进行排序（优先按1万位以内的乘法和除法运算性能进行排序<del>，才没有打广告</del>）</p>
+
+<ol>
+<li><a href="https://github.com/Baobaobear/MiniBigInteger" target="_blank">Baobaobear/MiniBigInteger</a></li>
+<li><a href="https://github.com/kedixa/klibcpp" target="_blank">kedixa/klibcpp</a></li>
+<li><a href="https://github.com/ron4fun/BigIntegerCPP" target="_blank">ron4fun/BigIntegerCPP</a></li>
+<li><a href="https://github.com/square1001/bigint-library" target="_blank">square1001/bigint-library</a></li>
+</ol>
+
+<p>特别地，对于超过万位的乘法，在x86下，最快的是第4个实现。</p>
+
+<p>除了以上这些，还有个更神奇的，在Github上搜索排行第一的大整数库，但是，性能比本文最开头的那个用string实现的还要慢不少，求100阶乘都超过1秒，就是这个<a href="https://github.com/faheel/BigInt" target="_blank">faheel/BigInt</a>，而且这个项目还有非常多的星星哦，看来大家都很有幽默感呢。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">大整数</a>
+  
+  <a class="badge badge-light" href="">高精度</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20210228-bigint1/">大整数高精度计算1——基础算法</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

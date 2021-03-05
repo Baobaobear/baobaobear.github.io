@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-02-28T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-03-05T00:00:00&#43;08:00">
   
 
   
@@ -393,6 +393,102 @@
     
       
     
+    Mar 5, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    6 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20210305-bigint_fun/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e6%9d%82%e8%b0%88">杂谈</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20210305-bigint_fun/">大整数高精度计算——有趣的实现</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：</p>
+
+<ol>
+<li>支持四则运算，必须包含除法及求余</li>
+<li>支持字符串输入输出</li>
+<li>代码不长</li>
+</ol>
+
+<h2 id="small-biginteger-library-for-contest">small biginteger library for contest</h2>
+
+<p>代码原作者Jane Alam Jan，你可以在Google上直接搜索<code>small_biginteger_library_for_contest.pdf</code>并下载到原始代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。</p></p>
+    <a href="/post/20210305-bigint_fun/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
     Feb 28, 2021
   </span>
   
@@ -431,12 +527,12 @@
   
 
   <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20210228-bigint1/">大整数高精度计算1————基础算法</a>
+    <a href="/post/20210228-bigint1/">大整数高精度计算1——基础算法</a>
   </h3>
 
   
   <div class="article-style">
-    <p><p>最近在编写大整数库的过程中，踩到不少的坑，于是把一些有用的细节准备写成文章做整理。如果你只是想直接查找并使用一个大整数库，那直接上GMP即可，如果你是想学习个中细节，那你可以坐下来细品。</p>
+    <p><p>最近在编写大整数库的过程中，踩到不少的坑，于是把一些有用的细节准备写成文章做整理。如果你只是想直接查找并使用一个大整数库，那直接上GMP即可，如果是用在比赛，那直接用我的<a href="https://github.com/Baobaobear/MiniBigInteger" target="_blank">MiniBigInteger项目</a>，如果你是想学习个中细节，那你可以坐下来细品。</p>
 
 <p>所谓大整数，又叫高精度运算，就是运算对象是上千位甚至到百万位，总之远远超过内置数据类型的表示范围，这类数字都叫大整数。而C/C++的标准库里目前并没有大整数库，于是这个轮子被反复制造了无数个，不过在github上比较有质量的轮子并没有很多。本文除了介绍基础实现，主要还是介绍优化方法。</p>
 
@@ -455,19 +551,7 @@
 
 <p>至于使用链表，好处是变长容易，变短也不难，但性能比用string的更差还更难写，这里就不谈了，以下介绍使用数组的表示法</p>
 
-<p>为了在数组里表示一个大整数，如果我们采用10进制，表示<code>123456789</code>，那很简单，例如这样：</p>
-
-<pre><code class="language-cpp">int a[] = {9, 8, 7, 6, 5, 4, 3, 2, 1};
-</code></pre>
-
-<p>即<code>a[0]</code>表示个位，<code>a[1]</code>表示十位，如此类推。之所以这样做，是希望同一个位置的元素的含义是固定的，这样能简化后面的算法编写。</p>
-
-<p>但是，对于计算机来说，这样表示实在是太浪费空间和时间，我们还可以这样：</p>
-
-<pre><code class="language-cpp">int a[] = {6789, 2345, 1};
-</code></pre>
-
-<p>也就是说，采用10000进制，那么这个10000叫做<code>基数</code>或<code>base</code>。我们还可以视情况使用其它的基数，例如使用<code>2^16</code>或<code>2^32</code>等等。对于这种我们原始进制是b的情况，但通过更大的基数<code>b^n</code>来表示的方法，叫做<code>压位高精度</code>，n就是压的位数。压位高精度的运算效率远超非压位。</p></p>
+<p>为了在数组里表示一个大整数，如果我们采用10进制，表示<code>123456789</code>，那很简单，例如这样：</p></p>
     <a href="/post/20210228-bigint1/">Read more...</a>
   </div>
   
@@ -1316,120 +1400,6 @@ style 1 fill:#f9f
 
 <p>实线方向就是子节点方向，虚线是fail指针，指向这个节点最长的回文后缀节点。图有点乱，但又不希望画得过于简单导致说不清楚，将就一下吧。</p></p>
     <a href="/post/20200416-pam/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Feb 20, 2020
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    2 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20200220-sam/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20200220-sam/">后缀自动机SAM</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>后缀自动机（SAM），可以结合前文的AC自动机一起理解，所谓后缀自动机，就是把一个字符串的所有后缀构造AC自动机，即只匹配其后缀的自动机。但是作为一个字符串的所有后缀，与一般的AC自动机有些不一样的性质，直接构造AC自动机，节点数是 $O(n^2)$，而SAM则对重复的节点合并了，可以让节点数大幅下降到 $O(n)$。</p>
-
-<p>首先我们来直观地看看SAM的图形化，以下是字符串<code>abcac</code>的SAM</p>
-
-<pre><code class="language-mermaid">graph LR;
-linkStyle default interpolate basis
-0((0))--a--&gt;1
-1--b--&gt;2
-2--c--&gt;3
-3--a--&gt;4
-4--c--&gt;5((5))
-0--c--&gt;6(1)
-
-0--b--&gt;2
-1--c--&gt;5
-6--a--&gt;4
-
-4-.-&gt;1
-5-.-&gt;6
-3-.-&gt;6
-
-1-.-&gt;0
-2-.-&gt;0
-6-.-&gt;0
-style 0 fill:#f9f
-style 5 fill:#f9f
-</code></pre>
-
-<p>实线方向就是匹配方向，虚线与AC自动机中的失败指针非常像，在SAM里称为link指针。</p></p>
-    <a href="/post/20200220-sam/">Read more...</a>
   </div>
   
 

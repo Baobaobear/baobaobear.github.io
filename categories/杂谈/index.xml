@@ -5,12 +5,230 @@
     <link>/categories/%E6%9D%82%E8%B0%88/</link>
       <atom:link href="/categories/%E6%9D%82%E8%B0%88/index.xml" rel="self" type="application/rss+xml" />
     <description>杂谈</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 18 Jan 2021 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Fri, 05 Mar 2021 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>杂谈</title>
       <link>/categories/%E6%9D%82%E8%B0%88/</link>
     </image>
+    
+    <item>
+      <title>大整数高精度计算——有趣的实现</title>
+      <link>/post/20210305-bigint_fun/</link>
+      <pubDate>Fri, 05 Mar 2021 00:00:00 +0800</pubDate>
+      <guid>/post/20210305-bigint_fun/</guid>
+      <description>&lt;p&gt;这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;支持四则运算，必须包含除法及求余&lt;/li&gt;
+&lt;li&gt;支持字符串输入输出&lt;/li&gt;
+&lt;li&gt;代码不长&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;small-biginteger-library-for-contest&#34;&gt;small biginteger library for contest&lt;/h2&gt;
+
+&lt;p&gt;代码原作者Jane Alam Jan，你可以在Google上直接搜索&lt;code&gt;small_biginteger_library_for_contest.pdf&lt;/code&gt;并下载到原始代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct Bigint {
+    // representations and structures
+    std::string a; // to store the digits
+    int sign;      // sign = -1 for negative numbers, sign = 1 otherwise
+    // constructors
+    Bigint() {}                            // default constructor
+    Bigint(std::string b) { (*this) = b; } // constructor for string
+    Bigint(int v) {
+        char buf[30];
+        sprintf(buf, &amp;quot;%d&amp;quot;, v);
+        (*this) = buf;
+    }
+    // some helpful methods
+    int size() { return a.size(); } // returns number of digits
+    Bigint inverseSign() {
+        sign *= -1;
+        return (*this);
+    }
+    Bigint normalize(int newSign) { // removes leading 0, fixes sign
+        for (int i = a.size() - 1; i &amp;gt; 0 &amp;amp;&amp;amp; a[i] == &#39;0&#39;; i--)
+            a.erase(a.begin() + i);
+        sign = (a.size() == 1 &amp;amp;&amp;amp; a[0] == &#39;0&#39;) ? 1 : newSign;
+        return (*this);
+    }
+    // assignment operator
+    void operator=(std::string b) { // assigns a string to Bigint
+        a = b[0] == &#39;-&#39; ? b.substr(1) : b;
+        reverse(a.begin(), a.end());
+        this-&amp;gt;normalize(b[0] == &#39;-&#39; ? -1 : 1);
+    }
+    // conditional operators
+    bool operator&amp;lt;(const Bigint &amp;amp;b) const { // less than operator
+        if (sign != b.sign) return sign &amp;lt; b.sign;
+        if (a.size() != b.a.size()) return sign == 1 ? a.size() &amp;lt; b.a.size() : a.size() &amp;gt; b.a.size();
+        for (int i = a.size() - 1; i &amp;gt;= 0; i--)
+            if (a[i] != b.a[i]) return sign == 1 ? a[i] &amp;lt; b.a[i] : a[i] &amp;gt; b.a[i];
+        return false;
+    }
+    bool operator==(const Bigint &amp;amp;b) const { return a == b.a &amp;amp;&amp;amp; sign == b.sign; }
+    // mathematical operators
+    Bigint operator+(Bigint b) { // addition operator overloading
+        if (sign != b.sign) return (*this) - b.inverseSign();
+        Bigint c;
+        for (int i = 0, carry = 0; i &amp;lt; a.size() || i &amp;lt; b.size() || carry; i++) {
+            carry += (i &amp;lt; a.size() ? a[i] - 48 : 0) + (i &amp;lt; b.a.size() ? b.a[i] - 48 : 0);
+            c.a += (carry % 10 + 48);
+            carry /= 10;
+        }
+        return c.normalize(sign);
+    }
+    Bigint operator-(Bigint b) { // subtraction operator overloading
+        if (sign != b.sign) return (*this) + b.inverseSign();
+        int s = sign;
+        sign = b.sign = 1;
+        if ((*this) &amp;lt; b) return ((b - (*this)).inverseSign()).normalize(-s);
+        Bigint c;
+        for (int i = 0, borrow = 0; i &amp;lt; a.size(); i++) {
+            borrow = a[i] - borrow - (i &amp;lt; b.size() ? b.a[i] : 48);
+            c.a += borrow &amp;gt;= 0 ? borrow + 48 : borrow + 58;
+            borrow = borrow &amp;gt;= 0 ? 0 : 1;
+        }
+        return c.normalize(s);
+    }
+    Bigint operator*(Bigint b) { // multiplication operator overloading
+        Bigint c(&amp;quot;0&amp;quot;);
+        for (int i = 0, k = a[i] - 48; i &amp;lt; a.size(); i++, k = a[i] - 48) {
+            while (k--)
+                c = c + b;                // ith digit is k, so, we add k times
+            b.a.insert(b.a.begin(), &#39;0&#39;); // multiplied by 10
+        }
+        return c.normalize(sign * b.sign);
+    }
+    Bigint operator/(Bigint b) { // division operator overloading
+        if (b.size() == 1 &amp;amp;&amp;amp; b.a[0] == &#39;0&#39;) b.a[0] /= (b.a[0] - 48);
+        Bigint c(&amp;quot;0&amp;quot;), d;
+        for (int j = 0; j &amp;lt; a.size(); j++)
+            d.a += &amp;quot;0&amp;quot;;
+        int dSign = sign * b.sign;
+        b.sign = 1;
+        for (int i = a.size() - 1; i &amp;gt;= 0; i--) {
+            c.a.insert(c.a.begin(), &#39;0&#39;);
+            c = c + a.substr(i, 1);
+            while (!(c &amp;lt; b))
+                c = c - b, d.a[i]++;
+        }
+        return d.normalize(dSign);
+    }
+    Bigint operator%(Bigint b) { // modulo operator overloading
+        if (b.size() == 1 &amp;amp;&amp;amp; b.a[0] == &#39;0&#39;) b.a[0] /= (b.a[0] - 48);
+        Bigint c(&amp;quot;0&amp;quot;);
+        b.sign = 1;
+        for (int i = a.size() - 1; i &amp;gt;= 0; i--) {
+            c.a.insert(c.a.begin(), &#39;0&#39;);
+            c = c + a.substr(i, 1);
+            while (!(c &amp;lt; b))
+                c = c - b;
+        }
+        return c.normalize(sign);
+    }
+    std::string to_str() const {
+        std::string s;
+        if (sign == -1) s += &#39;-&#39;;
+        for (int i = a.size() - 1; i &amp;gt;= 0; i--)
+            s += a[i];
+        return s;
+    }
+    bool operator&amp;gt;(const Bigint &amp;amp;b) const { return b &amp;lt; *this; }
+    bool operator&amp;lt;=(const Bigint &amp;amp;b) const { return !(b &amp;lt; *this); }
+    bool operator&amp;gt;=(const Bigint &amp;amp;b) const { return !(*this &amp;lt; b); }
+    bool operator!=(const Bigint &amp;amp;b) const { return !(*this == b); }
+};
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个实现使用string来实现大整数，于是缺点就非常明显了，就是性能低下，非常低，求个300阶乘都要1.5秒。不过，这代码里有不少写法是牺牲性能换代码长度，有的思路确实也不错。在同样代码长度级别下，我实现的&lt;a href=&#34;https://github.com/Baobaobear/MiniBigInteger&#34; target=&#34;_blank&#34;&gt;BitIntTiny&lt;/a&gt;有着好得多的性能。或者来直接看以下这份更短的实现。&lt;/p&gt;
+
+&lt;h2 id=&#34;一份60行不到的大整数实现&#34;&gt;一份60行不到的大整数实现&lt;/h2&gt;
+
+&lt;p&gt;改编自&lt;a href=&#34;https://wu-kan.cn/_posts/2019-01-26-%E9%AB%98%E7%B2%BE%E5%BA%A6/&#34; target=&#34;_blank&#34;&gt;wu-kan&lt;/a&gt;以及&lt;a href=&#34;https://zhuanlan.zhihu.com/p/72730434&#34; target=&#34;_blank&#34;&gt;hqztrue&lt;/a&gt;的基于bitset实现的定长大整数，支持10进制输入输出，四则运算及位运算均支持。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;algorithm&amp;gt;
+#include &amp;lt;bitset&amp;gt;
+#include &amp;lt;string&amp;gt;
+
+#define BINT_MAXSIZE 2048
+typedef typename std::bitset&amp;lt;BINT_MAXSIZE&amp;gt; Bint;
+bool operator&amp;lt;(const Bint &amp;amp;a, const Bint &amp;amp;b) {
+    for (int i = a.size() - 1; i &amp;gt;= 0; --i)
+        if (a[i] != b[i]) return a[i] &amp;lt; b[i];
+    return false;
+}
+bool operator&amp;gt;(const Bint &amp;amp;a, const Bint &amp;amp;b) { return b &amp;lt; a; }
+bool operator&amp;lt;=(const Bint &amp;amp;a, const Bint &amp;amp;b) { return !(b &amp;lt; a); }
+bool operator&amp;gt;=(const Bint &amp;amp;a, const Bint &amp;amp;b) { return !(a &amp;lt; b); }
+Bint operator+(const Bint &amp;amp;a, const Bint &amp;amp;b) { return b.any() ? (a ^ b) + ((a &amp;amp; b) &amp;lt;&amp;lt; 1) : a; }
+Bint &amp;amp;operator+=(Bint &amp;amp;a, const Bint &amp;amp;b) { return a = a + b; }
+Bint operator-(const Bint &amp;amp;a) { return Bint(1) + ~a; }
+Bint operator-(const Bint &amp;amp;a, const Bint &amp;amp;b) { return b.any() ? (a ^ b) - ((~a &amp;amp; b) &amp;lt;&amp;lt; 1) : a; }
+Bint &amp;amp;operator-=(Bint &amp;amp;a, const Bint &amp;amp;b) { return a = a - b; }
+Bint operator*(Bint a, Bint b) {
+    Bint r(0);
+    for (; b.any(); b &amp;gt;&amp;gt;= 1, a &amp;lt;&amp;lt;= 1) if (b[0]) r += a;
+    return r;
+}
+Bint &amp;amp;operator*=(Bint &amp;amp;a, const Bint &amp;amp;b) { return a = a * b; }
+std::pair&amp;lt;Bint, Bint&amp;gt; divide(Bint a, const Bint &amp;amp;b) {
+    Bint c = 0;
+    int i = 0;
+    while (b &amp;lt;&amp;lt; (i + 1) &amp;lt;= a) ++i;
+    for (; i &amp;gt;= 0; --i)
+        if (a &amp;gt;= (b &amp;lt;&amp;lt; i)) a -= b &amp;lt;&amp;lt; i, c.set(i, 1);
+    return std::make_pair(c, a);
+}
+Bint operator/(const Bint &amp;amp;a, const Bint &amp;amp;b) { return divide(a, b).first; }
+Bint &amp;amp;operator/=(Bint &amp;amp;a, const Bint &amp;amp;b) { return a = a / b; }
+Bint operator%(const Bint &amp;amp;a, const Bint &amp;amp;b) { return divide(a, b).second; }
+Bint &amp;amp;operator%=(Bint &amp;amp;a, const Bint &amp;amp;b) { return a = a % b; }
+Bint BintFromStr(const char *p) {
+    Bint x = 0;
+    int sign = 1;
+    for (; *p == &#39;-&#39;; ++p) sign = -sign;
+    for (; *p &amp;gt;= &#39;0&#39; &amp;amp;&amp;amp; *p &amp;lt;= &#39;9&#39;; ++p) x = (x &amp;lt;&amp;lt; 3) + (x &amp;lt;&amp;lt; 1) + (*p - &#39;0&#39;);
+    return sign &amp;gt; 0 ? x : -x;
+}
+Bint BintFromInt(int i) {
+    char buf[20];
+    sprintf(buf, &amp;quot;%d&amp;quot;, i);
+    return BintFromStr(buf);
+}
+std::string BintToStr(Bint x) {
+    std::string out = x == 0 ? &amp;quot;0&amp;quot; : &amp;quot;&amp;quot;;
+    std::vector&amp;lt;Bint&amp;gt; v;
+    if (x[x.size() - 1]) out += &#39;-&#39;, x = -x;
+    for (Bint y = 1; y &amp;lt;= x; y = (y &amp;lt;&amp;lt; 3) + (y &amp;lt;&amp;lt; 1)) v.push_back(y);
+    for (int i = v.size() - 1; i &amp;gt;= 0; --i) {
+        int t = 0;
+        for (int l = 3; l &amp;gt;= 0; --l)
+            if (x &amp;gt;= (v[i] &amp;lt;&amp;lt; l)) x -= v[i] &amp;lt;&amp;lt; l, t += 1 &amp;lt;&amp;lt; l;
+        out += t + &#39;0&#39;;
+    }
+    return out;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个实现的代码就短到极致了，但性能同样也挺糟糕的，而且负数支持不佳（做除法会出错），还有一个缺点是受bitset所限只能定长，不过在绝大部分情况下还能比前一份代码来得快不少，比如说求阶乘，长度设置为2048，求300的阶乘，这份代码只要0.01秒，前一份代码却要1.5秒，相差上百倍。要是改成求1000阶乘，设置长度为16384，计算时间为0.3秒（事实上这里面大部分时间花在了转出时转换到10进制，实际计算时间不到0.1秒），而前一份代码用时55秒。所以如果真要临时用用大整数，还是这个好，又短又不至于太慢。&lt;/p&gt;
+
+&lt;h2 id=&#34;其它的github库实现&#34;&gt;其它的Github库实现&lt;/h2&gt;
+
+&lt;p&gt;以下是我在Github找到的平均性能表现较好的一些小型实现，已经按平均性能进行排序（优先按1万位以内的乘法和除法运算性能进行排序&lt;del&gt;，才没有打广告&lt;/del&gt;）&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/Baobaobear/MiniBigInteger&#34; target=&#34;_blank&#34;&gt;Baobaobear/MiniBigInteger&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/kedixa/klibcpp&#34; target=&#34;_blank&#34;&gt;kedixa/klibcpp&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/ron4fun/BigIntegerCPP&#34; target=&#34;_blank&#34;&gt;ron4fun/BigIntegerCPP&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/square1001/bigint-library&#34; target=&#34;_blank&#34;&gt;square1001/bigint-library&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;特别地，对于超过万位的乘法，在x86下，最快的是第4个实现。&lt;/p&gt;
+
+&lt;p&gt;除了以上这些，还有个更神奇的，在Github上搜索排行第一的大整数库，但是，性能比本文最开头的那个用string实现的还要慢不少，求100阶乘都超过1秒，就是这个&lt;a href=&#34;https://github.com/faheel/BigInt&#34; target=&#34;_blank&#34;&gt;faheel/BigInt&lt;/a&gt;，而且这个项目还有非常多的星星哦，看来大家都很有幽默感呢。&lt;/p&gt;</description>
+    </item>
     
     <item>
       <title>很头疼拼图</title>
