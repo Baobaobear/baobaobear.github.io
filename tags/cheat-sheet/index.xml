@@ -97,9 +97,9 @@
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;3-计算二进制中的1的个数&#34;&gt;3. 计算二进制中的1的个数&lt;/h3&gt;
+&lt;h3 id=&#34;3-计算二进制中的1的个数-popcount&#34;&gt;3. 计算二进制中的1的个数(popcount)&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;uint32_t method_1_uint32_count1(uint32_t n)
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;uint32_t method_1_uint32_popcount(uint32_t n)
 {
 	n = (n &amp;amp; 0x55555555) + ((n &amp;gt;&amp;gt; 1) &amp;amp; 0x55555555);
 	n = (n &amp;amp; 0x33333333) + ((n &amp;gt;&amp;gt; 2) &amp;amp; 0x33333333);
@@ -109,7 +109,7 @@
 	return n;
 }
 
-uint32_t method_2_uint32_count1(uint32_t n)
+uint32_t method_2_uint32_popcount(uint32_t n)
 {
 	n = n - ((n &amp;gt;&amp;gt; 1) &amp;amp; 0x55555555);
 	n = (n &amp;amp; 0x33333333) + ((n &amp;gt;&amp;gt; 2) &amp;amp; 0x33333333);
@@ -117,6 +117,13 @@ uint32_t method_2_uint32_count1(uint32_t n)
 	n = n + (n &amp;gt;&amp;gt; 8);
 	n = n + (n &amp;gt;&amp;gt; 16);
 	return n &amp;amp; 0x3f;
+}
+
+uint32_t method_3_uint32_popcount(uint32_t n)
+{
+	n = n - ((n&amp;gt;&amp;gt;1) &amp;amp; 0x55555555);
+	n = (n &amp;amp; 0x33333333) + ((n &amp;gt;&amp;gt; 2) &amp;amp; 0x33333333);
+	return ((n + (n &amp;gt;&amp;gt; 4) &amp;amp; 0xF0F0F0F) * 0x1010101) &amp;gt;&amp;gt; 24;
 }
 &lt;/code&gt;&lt;/pre&gt;
 

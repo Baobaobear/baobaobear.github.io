@@ -741,9 +741,9 @@ n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )
 }
 </code></pre>
 
-<h3 id="3-计算二进制中的1的个数">3. 计算二进制中的1的个数</h3>
+<h3 id="3-计算二进制中的1的个数-popcount">3. 计算二进制中的1的个数(popcount)</h3>
 
-<pre><code class="language-cpp">uint32_t method_1_uint32_count1(uint32_t n)
+<pre><code class="language-cpp">uint32_t method_1_uint32_popcount(uint32_t n)
 {
 	n = (n &amp; 0x55555555) + ((n &gt;&gt; 1) &amp; 0x55555555);
 	n = (n &amp; 0x33333333) + ((n &gt;&gt; 2) &amp; 0x33333333);
@@ -753,7 +753,7 @@ n &amp; -n 或 n &amp; ( n ^ ( n - 1 ) )
 	return n;
 }
 
-uint32_t method_2_uint32_count1(uint32_t n)
+uint32_t method_2_uint32_popcount(uint32_t n)
 {
 	n = n - ((n &gt;&gt; 1) &amp; 0x55555555);
 	n = (n &amp; 0x33333333) + ((n &gt;&gt; 2) &amp; 0x33333333);
@@ -761,6 +761,13 @@ uint32_t method_2_uint32_count1(uint32_t n)
 	n = n + (n &gt;&gt; 8);
 	n = n + (n &gt;&gt; 16);
 	return n &amp; 0x3f;
+}
+
+uint32_t method_3_uint32_popcount(uint32_t n)
+{
+	n = n - ((n&gt;&gt;1) &amp; 0x55555555);
+	n = (n &amp; 0x33333333) + ((n &gt;&gt; 2) &amp; 0x33333333);
+	return ((n + (n &gt;&gt; 4) &amp; 0xF0F0F0F) * 0x1010101) &gt;&gt; 24;
 }
 </code></pre>
 

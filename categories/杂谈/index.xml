@@ -27,7 +27,7 @@
 
 &lt;h2 id=&#34;small-biginteger-library-for-contest&#34;&gt;small biginteger library for contest&lt;/h2&gt;
 
-&lt;p&gt;代码原作者Jane Alam Jan，你可以在Google上直接搜索&lt;code&gt;small_biginteger_library_for_contest.pdf&lt;/code&gt;并下载到原始代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。&lt;/p&gt;
+&lt;p&gt;代码原作者Jane Alam Jan，你可以在Google上直接搜索&lt;code&gt;small_biginteger_library_for_contest.pdf&lt;/code&gt;并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct Bigint {
     // representations and structures
@@ -142,7 +142,7 @@
 };
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;这个实现使用string来实现大整数，于是缺点就非常明显了，就是性能低下，非常低，求个300阶乘都要1.5秒。不过，这代码里有不少写法是牺牲性能换代码长度，有的思路确实也不错。在同样代码长度级别下，我实现的&lt;a href=&#34;https://github.com/Baobaobear/MiniBigInteger&#34; target=&#34;_blank&#34;&gt;BitIntTiny&lt;/a&gt;有着好得多的性能。或者来直接看以下这份更短的实现。&lt;/p&gt;
+&lt;p&gt;这个实现使用string来实现大整数，于是缺点就非常明显了，就是性能低下，非常低，求个300阶乘都要1.5秒。不过，这代码里有不少写法是牺牲性能换代码长度，有的思路确实也不错。在同样代码长度级别下，我实现的&lt;a href=&#34;https://github.com/Baobaobear/MiniBigInteger/blob/main/bigint_tiny.h&#34; target=&#34;_blank&#34;&gt;BigIntTiny&lt;/a&gt;有着好得多的性能。或者来直接看以下这份更短的实现。&lt;/p&gt;
 
 &lt;h2 id=&#34;一份60行不到的大整数实现&#34;&gt;一份60行不到的大整数实现&lt;/h2&gt;
 
@@ -212,7 +212,7 @@ std::string BintToStr(Bint x) {
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;这个实现的代码就短到极致了，但性能同样也挺糟糕的，而且负数支持不佳（做除法会出错），还有一个缺点是受bitset所限只能定长，不过在绝大部分情况下还能比前一份代码来得快不少，比如说求阶乘，长度设置为2048，求300的阶乘，这份代码只要0.01秒，前一份代码却要1.5秒，相差上百倍。要是改成求1000阶乘，设置长度为16384，计算时间为0.3秒（事实上这里面大部分时间花在了转出时转换到10进制，实际计算时间不到0.1秒），而前一份代码用时55秒。所以如果真要临时用用大整数，还是这个好，又短又不至于太慢。&lt;/p&gt;
+&lt;p&gt;这个实现的代码就短到极致了，但性能同样也挺糟糕的，而且负数支持不佳（做除法会出错，需要自己转为正数做除法，或者可以自己写个类封装一下来解决这个问题），还有一个缺点是受bitset所限只能定长，不过在绝大部分情况下还能比前一份代码来得快不少，比如说求阶乘，长度设置为2048，求300的阶乘，这份代码只要0.01秒，前一份代码却要1.5秒，相差上百倍。要是改成求1000阶乘，设置长度为16384，计算时间为0.3秒（事实上这里面大部分时间花在了转出时转换到10进制，实际计算时间不到0.1秒），而前一份代码用时55秒。所以如果真要临时用用大整数，还是这个好，又短又不至于太慢。&lt;/p&gt;
 
 &lt;h2 id=&#34;其它的github库实现&#34;&gt;其它的Github库实现&lt;/h2&gt;
 
@@ -225,9 +225,7 @@ std::string BintToStr(Bint x) {
 &lt;li&gt;&lt;a href=&#34;https://github.com/square1001/bigint-library&#34; target=&#34;_blank&#34;&gt;square1001/bigint-library&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;特别地，对于超过万位的乘法，在x86下，最快的是第4个实现。&lt;/p&gt;
-
-&lt;p&gt;除了以上这些，还有个更神奇的，在Github上搜索排行第一的大整数库，但是，性能比本文最开头的那个用string实现的还要慢不少，求100阶乘都超过1秒，就是这个&lt;a href=&#34;https://github.com/faheel/BigInt&#34; target=&#34;_blank&#34;&gt;faheel/BigInt&lt;/a&gt;，而且这个项目还有非常多的星星哦，看来大家都很有幽默感呢。&lt;/p&gt;</description>
+&lt;p&gt;还有一个只能在x64平台且只能用支持AT&amp;amp;T内联汇编编译器(如GCC/clang)的实现 &lt;a href=&#34;https://github.com/calebsander/bigint&#34; target=&#34;_blank&#34;&gt;calebsander/bigint&lt;/a&gt;，它的加减法和小规模乘法速度确实飞快，比前面列举到的都快，但受编译环境限制较大。&lt;/p&gt;</description>
     </item>
     
     <item>

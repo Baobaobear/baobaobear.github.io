@@ -5,12 +5,689 @@
     <link>/</link>
       <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <description>Baobaobear</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Fri, 05 Mar 2021 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 08 Mar 2021 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Baobaobear</title>
       <link>/</link>
     </image>
+    
+    <item>
+      <title>大整数高精度计算2——乘法优化及进制转换</title>
+      <link>/post/20210308-bigint2/</link>
+      <pubDate>Mon, 08 Mar 2021 00:00:00 +0800</pubDate>
+      <guid>/post/20210308-bigint2/</guid>
+      <description>&lt;p&gt;在上一篇介绍了基础算法后，本篇介绍算法级别的优化。本篇的三大内容：乘法优化，任意进制输入，任意进制输出。&lt;/p&gt;
+
+&lt;h2 id=&#34;乘法优化&#34;&gt;乘法优化&lt;/h2&gt;
+
+&lt;p&gt;这里要介绍的，是Karatsuba发现的分治法，我们假设要相乘的两个数，都有2n位，那么这两个数就可以分别表示为$a_1base^n+a_2, b_1base^n+b_2$，其中，$a_1,a_2,b_1,b_2$是n位的大整数，那么，它们的积就是&lt;/p&gt;
+
+&lt;p&gt;$$\begin{align}
+&amp;amp;   (a_1base^n+a_2) \times (b_1base^n+b_2) \\&lt;br /&gt;
+&amp;amp; = a_1b_1base^{2n} + (a_1b_2+a_2b_1)base^n + a_2b_2 \\&lt;br /&gt;
+&amp;amp; = a_1b_1base^{2n} + ((a_1+a_2)(b_1+b_2)-a_1b_1-a_2b_2)base^n + a_2b_2
+\end{align}$$&lt;/p&gt;
+
+&lt;p&gt;如果这样不够明显的话，我们用$c_1$代替$a_1b_1$，用$c_3$代替$a_2b_2$，得到&lt;/p&gt;
+
+&lt;p&gt;$c_1base^{2n} + ((a_1+a_2)(b_1+b_2)-c_1-c_3)base^n + c_3$&lt;/p&gt;
+
+&lt;p&gt;于是，这里一共有3次乘法，比起原来的4次暴力乘法减少了1次。而里面的乘法又可以进行递归优化，时间复杂度从$O(n^2)$下降到$O(n^{log_23})$约$O(n^{1.585})$&lt;/p&gt;
+
+&lt;p&gt;当然，在实际应用时，这两个数不可能都正好一样的位，不过也不要紧，这个算法对分割点位置也没有要求，但当然分割位置尽可能在中间，效率越高，于是实际实现就会有一堆细节，这里就不做介绍了。只要在原有的模板里面增加移位加法操作，这个优化算法就能套上去用，用起来非常简单。以下就是在上文中对&lt;code&gt;BigIntSimple&lt;/code&gt;修改的例子&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;    BigIntSimple &amp;amp;offset_add(const BigIntSimple &amp;amp;b, int offset) {
+        //填充高位
+        if (v.size() &amp;lt; b.v.size() + offset) v.resize(b.v.size() + offset);
+        int carry = 0;
+        //逐位相加
+        for (size_t i = 0; i &amp;lt; b.v.size(); ++i) {
+            carry += v[i + offset] + b.v[i] - BIGINT_BASE;
+            v[i + offset] = carry - BIGINT_BASE * (carry &amp;gt;&amp;gt; 31);
+            carry = (carry &amp;gt;&amp;gt; 31) + 1;
+        }
+        //处理进位，拆两个循环来写是避免做 i &amp;lt; b.v.size() 的判断
+        for (size_t i = b.v.size() + offset; carry &amp;amp;&amp;amp; i &amp;lt; v.size(); ++i) {
+            carry += v[i] - BIGINT_BASE;
+            v[i] = carry - BIGINT_BASE * (carry &amp;gt;&amp;gt; 31);
+            carry = (carry &amp;gt;&amp;gt; 31) + 1;
+        }
+        //处理升位进位
+        if (carry) v.push_back(carry);
+        return *this;
+    }
+
+    BigIntSimple mul(const BigIntSimple &amp;amp;b) const {
+        // r记录相加结果
+        BigIntSimple r;
+        r.v.resize(v.size() + b.v.size()); //初始化长度
+        for (size_t j = 0; j &amp;lt; v.size(); ++j) {
+            int carry = 0, m = v[j]; // m用来缓存乘数
+            // carry可能很大，只能使用求模的办法，此循环与加法部分几乎相同，就多乘了个m
+            for (size_t i = 0; i &amp;lt; b.v.size(); ++i) {
+                carry += r.v[i + j] + b.v[i] * m;
+                r.v[i + j] = carry % BIGINT_BASE;
+                carry /= BIGINT_BASE;
+            }
+            r.v[j + b.v.size()] += carry;
+        }
+        r.trim();
+        return r;
+    }
+
+    BigIntSimple &amp;amp;fastmul(const BigIntSimple &amp;amp;a, const BigIntSimple &amp;amp;b) {
+        //小于某个阈值就直接用暴力乘法
+        if (std::min(a.v.size(), b.v.size()) &amp;lt;= 300) {
+            return *this = a.mul(b);
+        }
+        BigIntSimple ah, al, bh, bl, h, m;
+        //计算分割点
+        size_t split = std::max(
+            std::min((a.v.size() + 1) / 2, b.v.size() - 1),
+            std::min((b.v.size() + 1) / 2, a.v.size() - 1));
+        //按分割点拆成4个数
+        al.v.assign(a.v.begin(), a.v.begin() + split);
+        ah.v.assign(a.v.begin() + split, a.v.end());
+        bl.v.assign(b.v.begin(), b.v.begin() + split);
+        bh.v.assign(b.v.begin() + split, b.v.end());
+        //按公式递归计算
+        fastmul(al, bl);
+        h.fastmul(ah, bh);
+        m.fastmul(al + ah, bl + bh);
+        m.subtract(*this + h);
+        v.resize(a.v.size() + b.v.size());
+        offset_add(m, split);
+        offset_add(h, split * 2);
+        trim();
+        return *this;
+    }
+
+    BigIntSimple operator*(const BigIntSimple &amp;amp;b) const {
+        BigIntSimple r;
+        r.fastmul(*this, b);
+        r.sign = sign * b.sign;
+        return r;
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个优化一加，那个10000阶乘的题目就轻松缩短到109ms。且代码不长，加起来轻松又愉快。&lt;/p&gt;
+
+&lt;p&gt;类似地，以上优化算法是分成两路进行分治，如果分成三路，那么就叫做&lt;code&gt;Toom-3&lt;/code&gt;算法，时间复杂度为$O(n^{log_35})$约$O(n^{1.465})$，如果分成四路，那么就叫做&lt;code&gt;Toom-4&lt;/code&gt;算法，时间复杂度为$O(n^{log_47})$约$O(n^{1.404})$，Toom算法还有很多个变种，Karatsuba分治法其实就是Toom算法在n为2的情况。但很多时候，用Karatsuba已经足够了，除非你对性能有特别的追求。&lt;/p&gt;
+
+&lt;h2 id=&#34;任意进制读入&#34;&gt;任意进制读入&lt;/h2&gt;
+
+&lt;p&gt;所谓任意进制，如果用字符串输入，通常限定为2~36进制，当然如果你直接用数组作为输入，那确实可以支持任意进制。为了方便表述，以下假设你的大整数类使用base进制，输入是b进制，$base \neq b$。&lt;/p&gt;
+
+&lt;p&gt;对于这个问题，最多人的想法是，按进制的定义直接加起来，假设输入是$s_ns_{n-1} \dots s_2s_1s_0$，那就求出$s_0+s_1b+s_2b^2+ \dots +s_nb^n$，再整理就得到$((\dots((s_n*b+s_{n-1}) *b+s_{n-2}) *b+\dots)+s_1) *b + s_0$，所以写一个循环，计算过程用这个大整数类即可。这样一共有n次乘法，而这里每次乘法是$O(n)$，所以整体复杂度是$O(n^2)$。&lt;/p&gt;
+
+&lt;p&gt;但是，不能光看时间复杂度，来回忆一下在上一篇文章里，阶乘代码是怎么写的&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;BigIntSimple fac(int start, int n) {
+    if (n &amp;lt; 16) {
+        BigIntSimple s = 1;
+        for (int i = start; i &amp;lt; start + n; ++i)
+            s = BigIntSimple(i) * s;
+        return s;
+    }
+    int m = (n + 1) / 2;
+    return fac(start, m) * fac(start + m, n - m);
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个写法丝毫没有减少&lt;code&gt;BigIntSimple&lt;/code&gt;之间做乘法的次数，但却比暴力乘法来的快，原因是什么？你有想过原因吗？&lt;/p&gt;
+
+&lt;p&gt;假设有2n个小整数相乘，假设它们大小都在base附近，那么直接乘的话，那么小整数的乘法次数（即把大整数的乘法过程拆分来统计）就是&lt;/p&gt;
+
+&lt;p&gt;$\sum\limits_{i=1}^{2n-1}{i} = n(2n-1) = 2n^2 - n$&lt;/p&gt;
+
+&lt;p&gt;而我们分成两组，每组各n个先乘，再来做1次n位的乘法，那么总次数是&lt;/p&gt;
+
+&lt;p&gt;$2\sum\limits_{i=1}^{n-1}{i} + n^2 = n(n-1) + n^2 = 2n^2 - n$&lt;/p&gt;
+
+&lt;p&gt;完全没有差别！那再假设，它们的大小都在$\sqrt{base}$附近呢，那直接乘的话，是&lt;/p&gt;
+
+&lt;p&gt;$\sum\limits_{i=1}^{2n-1}{\lceil\dfrac{i}{2}\rceil} = \dfrac{n(n-1)+n(n+1)}{2} = n^2$&lt;/p&gt;
+
+&lt;p&gt;分组再乘是&lt;/p&gt;
+
+&lt;p&gt;$2\sum\limits_{i=1}^{n-1}{\lceil\dfrac{i}{2}\rceil + (\dfrac{n}{2})^2} = \dfrac{n^2}{2} + \dfrac{n^2}{4} = \dfrac{3n^2}{4}$&lt;/p&gt;
+
+&lt;p&gt;甚至直接分成n组，每组两两相乘&lt;/p&gt;
+
+&lt;p&gt;$n + \sum\limits_{i=1}^{n-1}{i} = n + \dfrac{n(n-1)}{2} = \dfrac{n^2 + n}{2}$&lt;/p&gt;
+
+&lt;p&gt;这回差别就产生了，也就是说，如果做多次小整数乘法（小整数的定义为小于base），那么通过分组便可以有效减少计算次数，而且，我们还可以进行递归分组来节省更多的时间，最终得到约$\dfrac{n^2}{2}$的计算量。而求阶乘正好满足这个条件，于是便有了这个求阶乘的优化代码，而且这个方法还可以拓展，用优先队列维护最小的两个，每次找最小的两个来相乘，用此法时间在那个阶乘题目里可以稍微减少到93ms。而且，转换成两个大整数相乘还能用上前面说的乘法优化节省更多的时间。&lt;/p&gt;
+
+&lt;p&gt;那阶乘和这进制转换有啥关系啊？重新看看那个进制转换的循环过程，是不是有超多的小整数乘法？所以又可以分治了。&lt;/p&gt;
+
+&lt;p&gt;找一个分割点n，且满足$n=2^k$，原输入分割为$a_1b^n+a_2$，其中$a_1,a_2$都是大整数，这样求出$b^n$只需要k次自乘，这样就把原输入分割为两小段，这两小段再分别做输入的进制转换，这就是一个递归。这k次自乘，相乘的两数必然是等长度的，可以非常好的利用乘法加速特性。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;    //分治进制转换输入
+    BigIntSimple &amp;amp;_from_str(const std::string &amp;amp;s, int base) {
+        //较短长度时直接计算，36^4 &amp;lt; 2^31，但取5就大于了，所以长度上限是4
+        if (s.size() &amp;lt;= 4) {
+            int v = 0;
+            for (size_t i = 0; i &amp;lt; s.size(); ++i) {
+                int digit = -1;
+                if (s[i] &amp;gt;= &#39;0&#39; &amp;amp;&amp;amp; s[i] &amp;lt;= &#39;9&#39;)
+                    digit = s[i] - &#39;0&#39;;
+                else if (s[i] &amp;gt;= &#39;A&#39; &amp;amp;&amp;amp; s[i] &amp;lt;= &#39;Z&#39;)
+                    digit = s[i] - &#39;A&#39; + 10;
+                else if (s[i] &amp;gt;= &#39;a&#39; &amp;amp;&amp;amp; s[i] &amp;lt;= &#39;z&#39;)
+                    digit = s[i] - &#39;a&#39; + 10;
+                v = v * base + digit;
+            }
+            return *this = v;
+        }
+        BigIntSimple m(base), h;
+        size_t len = 1;
+        //计算分割点
+        for (; len * 3 &amp;lt; s.size(); len *= 2) {
+            m = m * m;
+        }
+        h._from_str(s.substr(0, s.size() - len), base);
+        _from_str(s.substr(s.size() - len), base);
+        *this = *this + m * h;
+        return *this;
+    }
+    //任意进制字符串输入（2~36进制）
+    BigIntSimple &amp;amp;from_str(const char *s, int base = 10) {
+        //特殊情况直接用原来的读入函数速度快
+        if (base == 10) {
+            set(s);
+            return *this;
+        }
+        int vsign = 1, i = 0;
+        while (s[i] == &#39;-&#39;) {
+            ++i;
+            vsign = -vsign;
+        }
+        _from_str(std::string(s + i), base);
+        sign = vsign;
+        return *this;
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;任意进制输出&#34;&gt;任意进制输出&lt;/h2&gt;
+
+&lt;p&gt;相信对于这个问题，如果那个数有n位，你不会考虑做n次除法吧，做n次除法的总时间复杂度是$O(n^3)$，一个一万位的大整数你要进制转换输出那你得计算到什么时候去。假设大整数类的基是base，要输出的进制是b，通过前一个输入的方案，你应该很容易想到做除法分割，这样下一次的长度就下降到n/2，即我们先求出分割点k，满足$log_{base}b^k \approx n/2$，原数是a的话，计算出$a_1=\lfloor\dfrac{a}{b^k}\rfloor, a_2=a\,mod\,b^k$，然后再分别对$a_1,a_2$做进制转换，最后$a_2$的结果视情况补充前导0后，与$a_1$的结果做字符串连接即可。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;    //字符串输出
+    std::string to_dec() const {
+        std::string s;
+        for (size_t i = 0; i &amp;lt; v.size(); ++i) {
+            int d = v[i];
+            //拆开压位
+            for (size_t k = 0; k &amp;lt; BIGINT_DIGITS; ++k) {
+                s += d % 10 + &#39;0&#39;;
+                d /= 10;
+            }
+        }
+        //去除前导0
+        while (s.size() &amp;gt; 1 &amp;amp;&amp;amp; s.back() == &#39;0&#39;)
+            s.pop_back();
+        //补符号
+        if (sign &amp;lt; 0) s += &#39;-&#39;;
+        //不要忘记要逆序
+        std::reverse(s.begin(), s.end());
+        return s;
+    }
+    //递归分治进制转换输出
+    std::string _to_str(int base, int pack) const {
+        std::string s;
+        //长度只剩下2时可以直接算
+        if (v.size() &amp;lt;= 2) {
+            int d = v[0] + (v.size() &amp;gt; 1 ? v[1] : 0) * BIGINT_BASE;
+            do {
+                int g = d % base;
+                if (g &amp;lt; 10) {
+                    s += char(g + &#39;0&#39;);
+                } else {
+                    s += char(g + &#39;a&#39; - 10);
+                }
+                d /= base;
+            } while (d);
+            //填充前导0
+            while (s.size() &amp;lt; pack)
+                s += &#39;0&#39;;
+            std::reverse(s.begin(), s.end());
+            return s;
+        }
+        BigIntSimple m(base), h, l;
+        size_t len = 1; //计算余数部分要补的前导0
+        //计算分割点
+        for (; m.v.size() * 3 &amp;lt; v.size(); len *= 2) {
+            m = m * m;
+        }
+        h = div_mod(m, l); //算出分割后的高位h和低位l
+        s = h._to_str(base, std::max(pack - (int)len, 0));
+        return s + l._to_str(base, len);
+    }
+    //任意进制（2~36进制）字符串输出
+    std::string to_str(int base = 10) const {
+        if (base == 10) {
+            return to_dec();
+        }
+        std::string s;
+        BigIntSimple m(*this);
+        m.sign = 1;
+        s = m._to_str(base, 0);
+        return sign &amp;gt;= 0 ? s : &amp;quot;-&amp;quot; + s;
+    }
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;方法是有了，但问题是，这个方法并不够快，虽然复杂度确实下降到$O(n^2)$，但常数大，除法比乘法的常数大，而且除法不太好优化，但乘法的优化前面已经有了，有没有不需要除法的办法？有啊，考虑一下，既然输出是b进制，那么我们直接动态方式构造一个使用的base为$b^n$的大整数类，直接按前一个方法，把输出作为这个新大整数类的输入，这样输入完了再转了b进制输出不就只有乘法了。不过需要再另写一个类，这里不提供示例代码了，直接看项目代码吧，因为代码比较长。&lt;/p&gt;
+
+&lt;p&gt;具体请参见&lt;a href=&#34;https://github.com/Baobaobear/MiniBigInteger&#34; target=&#34;_blank&#34;&gt;MiniBigInteger项目&lt;/a&gt;中BigIntBase的实现。&lt;/p&gt;
+
+&lt;h2 id=&#34;模板&#34;&gt;模板&lt;/h2&gt;
+
+&lt;p&gt;最后，加上了乘法优化和任意进制输入输出的模板（用分治除法实现的输出）如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct BigIntSimple {
+    static const int BIGINT_BASE = 10000;
+    static const int BIGINT_DIGITS = 4;
+
+    int sign; // 1表示正数，-1表示负数
+    std::vector&amp;lt;int&amp;gt; v;
+
+    //定义0也需要长度1
+    BigIntSimple() {
+        sign = 1;
+        v.push_back(0);
+    }
+    BigIntSimple(int n) { *this = n; }
+    //判断是否为0
+    bool iszero() const { return v.size() == 1 &amp;amp;&amp;amp; v.back() == 0; }
+    //消除前导0并修正符号
+    void trim() {
+        while (v.back() == 0 &amp;amp;&amp;amp; v.size() &amp;gt; 1)
+            v.pop_back();
+        if (iszero()) sign = 1;
+    }
+    //获取pos位置上的数值，用于防越界，简化输入处理
+    int get(unsigned pos) const {
+        if (pos &amp;gt;= v.size()) return 0;
+        return v[pos];
+    }
+    //绝对值大小比较
+    bool absless(const BigIntSimple &amp;amp;b) const {
+        if (v.size() == b.v.size()) {
+            for (size_t i = v.size() - 1; i &amp;lt; v.size(); --i)
+                if (v[i] != b.v[i]) return v[i] &amp;lt; b.v[i];
+            return false;
+        } else {
+            return v.size() &amp;lt; b.v.size();
+        }
+    }
+    //字符串输入
+    void set(const char *s) {
+        v.clear();
+        sign = 1;
+        //处理负号
+        while (*s == &#39;-&#39;)
+            sign = -sign, ++s;
+        //先按数位直接存入数组里
+        for (size_t i = 0; s[i]; ++i)
+            v.push_back(s[i] - &#39;0&#39;);
+        std::reverse(v.begin(), v.end());
+        //压位处理，e是压位后的长度
+        size_t e = (v.size() + BIGINT_DIGITS - 1) / BIGINT_DIGITS;
+        for (size_t i = 0, j = 0; i &amp;lt; e; ++i, j += BIGINT_DIGITS) {
+            v[i] = v[j]; //设置压位的最低位
+            //高位的按每一位上的数值乘以m，m是该位的权值
+            for (size_t k = 1, m = 10; k &amp;lt; BIGINT_DIGITS; ++k, m *= 10)
+                v[i] += get(j + k) * m;
+        }
+        //修正压位后的长度
+        if (e) {
+            v.resize(e);
+            trim();
+        } else {
+            v.resize(1);
+        }
+    }
+    //分治进制转换输入
+    BigIntSimple &amp;amp;_from_str(const std::string &amp;amp;s, int base) {
+        //较短长度时直接计算，36^4 &amp;lt; 2^31，但取5就大于了，所以长度上限是4
+        if (s.size() &amp;lt;= 4) {
+            int v = 0;
+            for (size_t i = 0; i &amp;lt; s.size(); ++i) {
+                int digit = -1;
+                if (s[i] &amp;gt;= &#39;0&#39; &amp;amp;&amp;amp; s[i] &amp;lt;= &#39;9&#39;)
+                    digit = s[i] - &#39;0&#39;;
+                else if (s[i] &amp;gt;= &#39;A&#39; &amp;amp;&amp;amp; s[i] &amp;lt;= &#39;Z&#39;)
+                    digit = s[i] - &#39;A&#39; + 10;
+                else if (s[i] &amp;gt;= &#39;a&#39; &amp;amp;&amp;amp; s[i] &amp;lt;= &#39;z&#39;)
+                    digit = s[i] - &#39;a&#39; + 10;
+                v = v * base + digit;
+            }
+            return *this = v;
+        }
+        BigIntSimple m(base), h;
+        size_t len = 1;
+        //计算分割点
+        for (; len * 3 &amp;lt; s.size(); len *= 2) {
+            m = m * m;
+        }
+        h._from_str(s.substr(0, s.size() - len), base);
+        _from_str(s.substr(s.size() - len), base);
+        *this = *this + m * h;
+        return *this;
+    }
+    //任意进制字符串输入（2~36进制）
+    BigIntSimple &amp;amp;from_str(const char *s, int base = 10) {
+        //特殊情况直接用原来的读入函数速度快
+        if (base == 10) {
+            set(s);
+            return *this;
+        }
+        int vsign = 1, i = 0;
+        while (s[i] == &#39;-&#39;) {
+            ++i;
+            vsign = -vsign;
+        }
+        _from_str(std::string(s + i), base);
+        sign = vsign;
+        return *this;
+    }
+    //字符串输出
+    std::string to_dec() const {
+        std::string s;
+        for (size_t i = 0; i &amp;lt; v.size(); ++i) {
+            int d = v[i];
+            //拆开压位
+            for (size_t k = 0; k &amp;lt; BIGINT_DIGITS; ++k) {
+                s += d % 10 + &#39;0&#39;;
+                d /= 10;
+            }
+        }
+        //去除前导0
+        while (s.size() &amp;gt; 1 &amp;amp;&amp;amp; s.back() == &#39;0&#39;)
+            s.pop_back();
+        //补符号
+        if (sign &amp;lt; 0) s += &#39;-&#39;;
+        //不要忘记要逆序
+        std::reverse(s.begin(), s.end());
+        return s;
+    }
+    //递归分治进制转换输出
+    std::string _to_str(int base, int pack) const {
+        std::string s;
+        //长度只剩下2时可以直接算
+        if (v.size() &amp;lt;= 2) {
+            int d = v[0] + (v.size() &amp;gt; 1 ? v[1] : 0) * BIGINT_BASE;
+            do {
+                int g = d % base;
+                if (g &amp;lt; 10) {
+                    s += char(g + &#39;0&#39;);
+                } else {
+                    s += char(g + &#39;a&#39; - 10);
+                }
+                d /= base;
+            } while (d);
+            //填充前导0
+            while (s.size() &amp;lt; pack)
+                s += &#39;0&#39;;
+            std::reverse(s.begin(), s.end());
+            return s;
+        }
+        BigIntSimple m(base), h, l;
+        size_t len = 1; //计算余数部分要补的前导0
+        //计算分割点
+        for (; m.v.size() * 3 &amp;lt; v.size(); len *= 2) {
+            m = m * m;
+        }
+        h = div_mod(m, l); //算出分割后的高位h和低位l
+        s = h._to_str(base, std::max(pack - (int)len, 0));
+        return s + l._to_str(base, len);
+    }
+    //任意进制（2~36进制）字符串输出
+    std::string to_str(int base = 10) const {
+        if (base == 10) {
+            return to_dec();
+        }
+        std::string s;
+        BigIntSimple m(*this);
+        m.sign = 1;
+        s = m._to_str(base, 0);
+        return sign &amp;gt;= 0 ? s : &amp;quot;-&amp;quot; + s;
+    }
+
+    bool operator&amp;lt;(const BigIntSimple &amp;amp;b) const {
+        if (sign == b.sign) {
+            return sign &amp;gt; 0 ? absless(b) : b.absless(*this);
+        } else {
+            return sign &amp;lt; 0;
+        }
+    }
+
+    bool operator==(const BigIntSimple &amp;amp;b) const {
+        if (sign == b.sign) {
+            return !absless(b) &amp;amp;&amp;amp; !b.absless(*this);
+        }
+        return false;
+    }
+
+    BigIntSimple &amp;amp;operator=(int n) {
+        v.clear();
+        sign = n &amp;gt;= 0 ? 1 : -1;
+        for (n = abs(n); n; n /= BIGINT_BASE)
+            v.push_back(n % BIGINT_BASE);
+        if (v.empty()) v.push_back(0);
+        return *this;
+    }
+
+    BigIntSimple &amp;amp;operator=(const std::string &amp;amp;s) {
+        set(s.c_str());
+        return *this;
+    }
+
+    BigIntSimple operator-() const {
+        BigIntSimple r = *this;
+        r.sign = -r.sign;
+        return r;
+    }
+
+    BigIntSimple operator+(const BigIntSimple &amp;amp;b) const {
+        //符号不同时转换为减法
+        if (sign != b.sign) return *this - -b;
+        BigIntSimple r = *this;
+        //填充高位
+        if (r.v.size() &amp;lt; b.v.size()) r.v.resize(b.v.size());
+        int carry = 0;
+        //逐位相加
+        for (size_t i = 0; i &amp;lt; b.v.size(); ++i) {
+            carry += r.v[i] + b.v[i] - BIGINT_BASE;
+            r.v[i] = carry - BIGINT_BASE * (carry &amp;gt;&amp;gt; 31);
+            carry = (carry &amp;gt;&amp;gt; 31) + 1;
+        }
+        //处理进位，拆两个循环来写是避免做 i &amp;lt; b.v.size() 的判断
+        for (size_t i = b.v.size(); carry &amp;amp;&amp;amp; i &amp;lt; r.v.size(); ++i) {
+            carry += r.v[i] - BIGINT_BASE;
+            r.v[i] = carry - BIGINT_BASE * (carry &amp;gt;&amp;gt; 31);
+            carry = (carry &amp;gt;&amp;gt; 31) + 1;
+        }
+        //处理升位进位
+        if (carry) r.v.push_back(carry);
+        return r;
+    }
+
+    BigIntSimple &amp;amp;subtract(const BigIntSimple &amp;amp;b) {
+        int borrow = 0;
+        //先处理b的长度
+        for (size_t i = 0; i &amp;lt; b.v.size(); ++i) {
+            borrow += v[i] - b.v[i];
+            v[i] = borrow;
+            v[i] -= BIGINT_BASE * (borrow &amp;gt;&amp;gt;= 31);
+        }
+        //如果还有借位就继续处理
+        for (size_t i = b.v.size(); borrow; ++i) {
+            borrow += v[i];
+            v[i] = borrow;
+            v[i] -= BIGINT_BASE * (borrow &amp;gt;&amp;gt;= 31);
+        }
+        //减法可能会出现前导0需要消去
+        trim();
+        return *this;
+    }
+
+    BigIntSimple operator-(const BigIntSimple &amp;amp;b) const {
+        //符号不同时转换为加法
+        if (sign != b.sign) return (*this) + -b;
+        if (absless(b)) { //保证大数减小数
+            BigIntSimple r = b;
+            return -r.subtract(*this);
+        } else {
+            BigIntSimple r = *this;
+            return r.subtract(b);
+        }
+    }
+
+    BigIntSimple &amp;amp;offset_add(const BigIntSimple &amp;amp;b, int offset) {
+        //填充高位
+        if (v.size() &amp;lt; b.v.size() + offset) v.resize(b.v.size() + offset);
+        int carry = 0;
+        //逐位相加
+        for (size_t i = 0; i &amp;lt; b.v.size(); ++i) {
+            carry += v[i + offset] + b.v[i] - BIGINT_BASE;
+            v[i + offset] = carry - BIGINT_BASE * (carry &amp;gt;&amp;gt; 31);
+            carry = (carry &amp;gt;&amp;gt; 31) + 1;
+        }
+        //处理进位，拆两个循环来写是避免做 i &amp;lt; b.v.size() 的判断
+        for (size_t i = b.v.size() + offset; carry &amp;amp;&amp;amp; i &amp;lt; v.size(); ++i) {
+            carry += v[i] - BIGINT_BASE;
+            v[i] = carry - BIGINT_BASE * (carry &amp;gt;&amp;gt; 31);
+            carry = (carry &amp;gt;&amp;gt; 31) + 1;
+        }
+        //处理升位进位
+        if (carry) v.push_back(carry);
+        return *this;
+    }
+
+    BigIntSimple mul(const BigIntSimple &amp;amp;b) const {
+        // r记录相加结果
+        BigIntSimple r;
+        r.v.resize(v.size() + b.v.size()); //初始化长度
+        for (size_t j = 0; j &amp;lt; v.size(); ++j) {
+            int carry = 0, m = v[j]; // m用来缓存乘数
+            // carry可能很大，只能使用求模的办法，此循环与加法部分几乎相同，就多乘了个m
+            for (size_t i = 0; i &amp;lt; b.v.size(); ++i) {
+                carry += r.v[i + j] + b.v[i] * m;
+                r.v[i + j] = carry % BIGINT_BASE;
+                carry /= BIGINT_BASE;
+            }
+            r.v[j + b.v.size()] += carry;
+        }
+        r.trim();
+        return r;
+    }
+
+    BigIntSimple &amp;amp;fastmul(const BigIntSimple &amp;amp;a, const BigIntSimple &amp;amp;b) {
+        //小于某个阈值就直接用暴力乘法
+        if (std::min(a.v.size(), b.v.size()) &amp;lt;= 300) {
+            return *this = a.mul(b);
+        }
+        BigIntSimple ah, al, bh, bl, h, m;
+        //计算分割点
+        size_t split = std::max(                            //
+            std::min((a.v.size() + 1) / 2, b.v.size() - 1), //
+            std::min((b.v.size() + 1) / 2, a.v.size() - 1));
+        //按分割点拆成4个数
+        al.v.assign(a.v.begin(), a.v.begin() + split);
+        ah.v.assign(a.v.begin() + split, a.v.end());
+        bl.v.assign(b.v.begin(), b.v.begin() + split);
+        bh.v.assign(b.v.begin() + split, b.v.end());
+        //按公式递归计算
+        fastmul(al, bl);
+        h.fastmul(ah, bh);
+        m.fastmul(al + ah, bl + bh);
+        m.subtract(*this + h);
+        v.resize(a.v.size() + b.v.size());
+
+        offset_add(m, split);
+        offset_add(h, split * 2);
+        trim();
+        return *this;
+    }
+
+    BigIntSimple operator*(const BigIntSimple &amp;amp;b) const {
+        BigIntSimple r;
+        r.fastmul(*this, b);
+        r.sign = sign * b.sign;
+        return r;
+    }
+
+    //对b乘以mul再左移offset的结果相减，为除法服务
+    BigIntSimple &amp;amp;sub_mul(const BigIntSimple &amp;amp;b, int mul, int offset) {
+        if (mul == 0) return *this;
+        int borrow = 0;
+        //与减法不同的是，borrow可能很大，不能使用减法的写法
+        for (size_t i = 0; i &amp;lt; b.v.size(); ++i) {
+            borrow += v[i + offset] - b.v[i] * mul - BIGINT_BASE + 1;
+            v[i + offset] = borrow % BIGINT_BASE + BIGINT_BASE - 1;
+            borrow /= BIGINT_BASE;
+        }
+        //如果还有借位就继续处理
+        for (size_t i = b.v.size(); borrow; ++i) {
+            borrow += v[i + offset] - BIGINT_BASE + 1;
+            v[i + offset] = borrow % BIGINT_BASE + BIGINT_BASE - 1;
+            borrow /= BIGINT_BASE;
+        }
+        return *this;
+    }
+
+    BigIntSimple div_mod(const BigIntSimple &amp;amp;b, BigIntSimple &amp;amp;r) const {
+        BigIntSimple d;
+        r = *this;
+        if (absless(b)) return d;
+        d.v.resize(v.size() - b.v.size() + 1);
+        //提前算好除数的最高三位+1的倒数，若最高三位是a3,a2,a1
+        //那么db是a3+a2/base+(a1+1)/base^2的倒数，最后用乘法估商的每一位
+        //此法在BIGINT_BASE&amp;lt;=32768时可在int32范围内用
+        //但即使使用int64，那么也只有BIGINT_BASE&amp;lt;=131072时可用（受double的精度限制）
+        //能保证估计结果q&#39;与实际结果q的关系满足q&#39;&amp;lt;=q&amp;lt;=q&#39;+1
+        //所以每一位的试商平均只需要一次，只要后面再统一处理进位即可
+        //如果要使用更大的base，那么需要更换其它试商方案
+        double t = (b.get((unsigned)b.v.size() - 2) +
+                   (b.get((unsigned)b.v.size() - 3) + 1.0) / BIGINT_BASE);
+        double db = 1.0 / (b.v.back() + t / BIGINT_BASE);
+        for (size_t i = v.size() - 1, j = d.v.size() - 1; j &amp;lt;= v.size();) {
+            int rm = r.get(i + 1) * BIGINT_BASE + r.get(i);
+            int m = std::max((int)(db * rm), r.get(i + 1));
+            r.sub_mul(b, m, j);
+            d.v[j] += m;
+            if (!r.get(i + 1)) //检查最高位是否已为0，避免极端情况
+                --i, --j;
+        }
+        r.trim();
+        //修正结果的个位
+        int carry = 0;
+        while (!r.absless(b)) {
+            r.subtract(b);
+            ++carry;
+        }
+        //修正每一位的进位
+        for (size_t i = 0; i &amp;lt; d.v.size(); ++i) {
+            carry += d.v[i];
+            d.v[i] = carry % BIGINT_BASE;
+            carry /= BIGINT_BASE;
+        }
+        d.trim();
+        d.sign = sign * b.sign;
+        return d;
+    }
+
+    BigIntSimple operator/(const BigIntSimple &amp;amp;b) const {
+        BigIntSimple r;
+        return div_mod(b, r);
+    }
+
+    BigIntSimple operator%(const BigIntSimple &amp;amp;b) const { return *this - *this / b * b; }
+};
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
     
     <item>
       <title>大整数高精度计算——有趣的实现</title>
@@ -27,7 +704,7 @@
 
 &lt;h2 id=&#34;small-biginteger-library-for-contest&#34;&gt;small biginteger library for contest&lt;/h2&gt;
 
-&lt;p&gt;代码原作者Jane Alam Jan，你可以在Google上直接搜索&lt;code&gt;small_biginteger_library_for_contest.pdf&lt;/code&gt;并下载到原始代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。&lt;/p&gt;
+&lt;p&gt;代码原作者Jane Alam Jan，你可以在Google上直接搜索&lt;code&gt;small_biginteger_library_for_contest.pdf&lt;/code&gt;并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct Bigint {
     // representations and structures
@@ -142,7 +819,7 @@
 };
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;这个实现使用string来实现大整数，于是缺点就非常明显了，就是性能低下，非常低，求个300阶乘都要1.5秒。不过，这代码里有不少写法是牺牲性能换代码长度，有的思路确实也不错。在同样代码长度级别下，我实现的&lt;a href=&#34;https://github.com/Baobaobear/MiniBigInteger&#34; target=&#34;_blank&#34;&gt;BitIntTiny&lt;/a&gt;有着好得多的性能。或者来直接看以下这份更短的实现。&lt;/p&gt;
+&lt;p&gt;这个实现使用string来实现大整数，于是缺点就非常明显了，就是性能低下，非常低，求个300阶乘都要1.5秒。不过，这代码里有不少写法是牺牲性能换代码长度，有的思路确实也不错。在同样代码长度级别下，我实现的&lt;a href=&#34;https://github.com/Baobaobear/MiniBigInteger/blob/main/bigint_tiny.h&#34; target=&#34;_blank&#34;&gt;BigIntTiny&lt;/a&gt;有着好得多的性能。或者来直接看以下这份更短的实现。&lt;/p&gt;
 
 &lt;h2 id=&#34;一份60行不到的大整数实现&#34;&gt;一份60行不到的大整数实现&lt;/h2&gt;
 
@@ -212,7 +889,7 @@ std::string BintToStr(Bint x) {
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;这个实现的代码就短到极致了，但性能同样也挺糟糕的，而且负数支持不佳（做除法会出错），还有一个缺点是受bitset所限只能定长，不过在绝大部分情况下还能比前一份代码来得快不少，比如说求阶乘，长度设置为2048，求300的阶乘，这份代码只要0.01秒，前一份代码却要1.5秒，相差上百倍。要是改成求1000阶乘，设置长度为16384，计算时间为0.3秒（事实上这里面大部分时间花在了转出时转换到10进制，实际计算时间不到0.1秒），而前一份代码用时55秒。所以如果真要临时用用大整数，还是这个好，又短又不至于太慢。&lt;/p&gt;
+&lt;p&gt;这个实现的代码就短到极致了，但性能同样也挺糟糕的，而且负数支持不佳（做除法会出错，需要自己转为正数做除法，或者可以自己写个类封装一下来解决这个问题），还有一个缺点是受bitset所限只能定长，不过在绝大部分情况下还能比前一份代码来得快不少，比如说求阶乘，长度设置为2048，求300的阶乘，这份代码只要0.01秒，前一份代码却要1.5秒，相差上百倍。要是改成求1000阶乘，设置长度为16384，计算时间为0.3秒（事实上这里面大部分时间花在了转出时转换到10进制，实际计算时间不到0.1秒），而前一份代码用时55秒。所以如果真要临时用用大整数，还是这个好，又短又不至于太慢。&lt;/p&gt;
 
 &lt;h2 id=&#34;其它的github库实现&#34;&gt;其它的Github库实现&lt;/h2&gt;
 
@@ -225,9 +902,7 @@ std::string BintToStr(Bint x) {
 &lt;li&gt;&lt;a href=&#34;https://github.com/square1001/bigint-library&#34; target=&#34;_blank&#34;&gt;square1001/bigint-library&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;特别地，对于超过万位的乘法，在x86下，最快的是第4个实现。&lt;/p&gt;
-
-&lt;p&gt;除了以上这些，还有个更神奇的，在Github上搜索排行第一的大整数库，但是，性能比本文最开头的那个用string实现的还要慢不少，求100阶乘都超过1秒，就是这个&lt;a href=&#34;https://github.com/faheel/BigInt&#34; target=&#34;_blank&#34;&gt;faheel/BigInt&lt;/a&gt;，而且这个项目还有非常多的星星哦，看来大家都很有幽默感呢。&lt;/p&gt;</description>
+&lt;p&gt;还有一个只能在x64平台且只能用支持AT&amp;amp;T内联汇编编译器(如GCC/clang)的实现 &lt;a href=&#34;https://github.com/calebsander/bigint&#34; target=&#34;_blank&#34;&gt;calebsander/bigint&lt;/a&gt;，它的加减法和小规模乘法速度确实飞快，比前面列举到的都快，但受编译环境限制较大。&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -266,7 +941,7 @@ std::string BintToStr(Bint x) {
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int a[] = {6789, 2345, 1};
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;也就是说，采用10000进制，那么这个10000叫做&lt;code&gt;基数&lt;/code&gt;或&lt;code&gt;base&lt;/code&gt;。我们还可以视情况使用其它的基数，例如使用&lt;code&gt;2^16&lt;/code&gt;或&lt;code&gt;2^32&lt;/code&gt;等等。对于这种我们原始进制是b的情况，但通过更大的基数&lt;code&gt;b^n&lt;/code&gt;来表示的方法，叫做&lt;code&gt;压位高精度&lt;/code&gt;，n就是压的位数。压位高精度的运算效率远超非压位。&lt;/p&gt;
+&lt;p&gt;也就是说，采用10000进制，那么这个10000叫做&lt;code&gt;基数&lt;/code&gt;或&lt;code&gt;base&lt;/code&gt;。我们还可以视情况使用其它的基数，例如使用$2^{16}$或$2^{32}$等等。对于这种我们原始进制是b的情况，但通过更大的基数$b^n$来表示的方法，叫做&lt;code&gt;压位高精度&lt;/code&gt;，n就是压的位数。压位高精度的运算效率远超非压位。&lt;/p&gt;
 
 &lt;p&gt;以下我们用万进制来做一步步的演示，首先定义出这个类，在这里我用vector来保存（没有必要采用定长数组，因为效率没啥区别，除非你的OJ就不给加&lt;code&gt;O2&lt;/code&gt;优化例如某谷或参加某些信息竞赛）：&lt;/p&gt;
 
@@ -428,7 +1103,7 @@ std::string BintToStr(Bint x) {
         }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;但除法就没这么简单了，这时候还可以利用位运算来区分正负，比如，我们用当前位是&lt;code&gt;sum - (sum &amp;gt;&amp;gt; 31) * base&lt;/code&gt;，因为如果sum是负数，那么&lt;code&gt;sum &amp;gt;&amp;gt; 31&lt;/code&gt;在sum是int时就等于-1，相当于&lt;code&gt;sum + base&lt;/code&gt;；而如果sum是非负数，那么&lt;code&gt;sum &amp;gt;&amp;gt; 31&lt;/code&gt;就是0，结果就相当于&lt;code&gt;sum&lt;/code&gt;，这样就成功实现了&lt;code&gt;sum&amp;lt;0 ? sum+base : sum&lt;/code&gt;的逻辑。而这种方法同样可以用在加法上。&lt;/p&gt;
+&lt;p&gt;但除法就没这么简单了，这时候还可以利用位运算来区分正负，比如，我们用当前位是&lt;code&gt;sum - (sum &amp;gt;&amp;gt; 31) * base&lt;/code&gt;，因为如果sum是负数，那么&lt;code&gt;sum &amp;gt;&amp;gt; 31&lt;/code&gt;在sum是int时就等于-1，相当于&lt;code&gt;sum + base&lt;/code&gt;；而如果sum是非负数，那么&lt;code&gt;sum &amp;gt;&amp;gt; 31&lt;/code&gt;就是0，结果就相当于&lt;code&gt;sum&lt;/code&gt;，这样就成功实现了&lt;code&gt;sum&amp;lt;0 ? sum+base : sum&lt;/code&gt;的逻辑。而这种方法同样可以用在加法上。另外，在较新的CPU上除法的性能比较高的时候，加法这种改进写法就会被淘汰。&lt;/p&gt;
 
 &lt;p&gt;其它的细节在以下代码的注释中有标注&lt;/p&gt;
 
@@ -528,13 +1203,13 @@ std::string BintToStr(Bint x) {
 
 &lt;p&gt;除法是高精度的基础算法里面变化最多的，也是基础算法里面最难的，网上也有很多不同的写法，顺带说一说一些误区，同时这里提供一个我自己的写法，不过此法有限制条件，但在限制条件内应该是模拟手工的方法里面速度较快的。&lt;/p&gt;
 
-&lt;p&gt;第一种就是暴力整体二分，然后做乘法验证（或者利用二进制一位一位来确定，但却不使用移位减法，而使用整体相乘），这时候，设是2n位除以n位，那么二分的次数就是n，然后一次乘法是n^2，所以整体复杂度是&lt;code&gt;O(n^3)&lt;/code&gt;，这是一个非常糟糕的方法，虽然写起来似乎更简单，但时间上还不如直接模拟，千万不要做整体二分。类似地还有二分开方，也是&lt;code&gt;O(n^3)&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;第一种就是暴力整体二分，然后做乘法验证（或者利用二进制一位一位来确定，但却不使用移位减法，而使用整体相乘），这时候，设是2n位除以n位，那么二分的次数就是n，然后一次乘法是n^2，所以整体复杂度是$O(n^3)$，这是一个非常糟糕的方法，虽然写起来似乎更简单，但时间上还不如直接模拟，千万不要做整体二分。类似地还有二分开方，也是$O(n^3)$。&lt;/p&gt;
 
-&lt;p&gt;在模拟手工除法时，最关键的就是试商的部分，试商方法有很多，最简单的方式是用减法，先判断余数是不是大于等于除数，如果是，就做一次减法。这个写法确实容易，但问题是效率低下，除非你用的基数特别小，比如不压位10进制，这样速度还能看，甚至乎你用的是&lt;code&gt;2^n&lt;/code&gt;进制，直接每个位枚举。&lt;/p&gt;
+&lt;p&gt;在模拟手工除法时，最关键的就是试商的部分，试商方法有很多，最简单的方式是用减法，先判断余数是不是大于等于除数，如果是，就做一次减法。这个写法确实容易，但问题是效率低下，除非你用的基数特别小，比如不压位10进制，这样速度还能看，甚至乎你用的是$2^n$进制，直接每个位枚举。&lt;/p&gt;
 
 &lt;p&gt;那我们来个二分呢？如果在每一位上分别二分，那在基数较大的时候比做减法好一些，但还是不够好，我们还需要更快的方案，进一步减少试商次数。&lt;/p&gt;
 
-&lt;p&gt;假设被除数有4个位，是$a_4,a_3,a_2,a_1$，除数有3个位，是$b_3,b_2,b_1$，那么我们只要试一位的商（多个位就是一位的写法加个循环），假如我们用$\frac{a_4 base+a_3}{b_3}$来试商，结果一定大于等于实际的商，但同时这会有一个问题，就是假如b2等于&lt;code&gt;base-1&lt;/code&gt;，那会导致试商与实际的商误差非常大，例如&lt;code&gt;9999,0000&lt;/code&gt;除以&lt;code&gt;1,9999&lt;/code&gt;，直接用高位除得到9999，但这远超过实际商了，修正商的代价也不小。于是，我们想到，在&lt;code&gt;base&lt;/code&gt;不太大的情况下，我们可以通过增加位数来估商，这样误差就会小得多。比如说我们用$\frac{a_4 base^2 + a_3 base + a_2}{b_3 base + b_2}$来试商，精度确实会大为提高，而且商的误差最多只有1，但缺点是，$a_4 base^2$的结果超出int的范围了，不过我们还可以用double。注意到，上式中a2对结果并没有任何影响，所以可以变形为$\frac{a_4 base + a_3}{b_3 + b_2/base}$。另外，我不希望这个估商总比实际商大，我们希望是小于等于实际商，这样在试后一位的时候，这个结果能自然得到修正，就增加了试商的效率，于是可以把式子改为$\frac{a_4 base + a_3}{b_3 + (b_2+1)base^{-1}}$，但这个+1导致误差增大，与实际商的误差最大达到2，那解决方法很简单，我们再增加1位的精度，得到式子$\frac{a_4 base + a_3}{b_3 + b_2 base^{-1} + (b_1+1)base^{-2}}$，于是便得到接下来在代码中所使用的算法。由于误差不超过1，如果估小了，那在下一位的估商时候就会产生补回去的效果，于是不必重复试商。这个方法要求&lt;code&gt;base&amp;lt;=32768&lt;/code&gt;以避免各种溢出，在满足此条件下，因为每个位均只需要估一次，那么其时间常数与乘法相比，和减法与加法常数比是几乎相同的。&lt;/p&gt;
+&lt;p&gt;假设被除数有4个位，是$a_4,a_3,a_2,a_1$，除数有3个位，是$b_3,b_2,b_1$，那么我们只要试一位的商（多个位就是一位的写法加个循环），假如我们用$\dfrac{a_4 base+a_3}{b_3}$来试商，结果一定大于等于实际的商，但同时这会有一个问题，就是假如b2等于&lt;code&gt;base-1&lt;/code&gt;，那会导致试商与实际的商误差非常大，例如&lt;code&gt;9999,0000&lt;/code&gt;除以&lt;code&gt;1,9999&lt;/code&gt;，直接用高位除得到9999，但这远超过实际商了，修正商的代价也不小。于是，我们想到，在&lt;code&gt;base&lt;/code&gt;不太大的情况下，我们可以通过增加位数来估商，这样误差就会小得多。比如说我们用$\dfrac{a_4 base^2 + a_3 base + a_2}{b_3 base + b_2}$来试商，精度确实会大为提高，而且商的误差最多只有1，但缺点是，$a_4 base^2$的结果超出int的范围了，不过我们还可以用double。注意到，上式中a2对结果并没有任何影响，所以可以变形为$\dfrac{a_4 base + a_3}{b_3 + b_2/base}$。另外，我不希望这个估商总比实际商大，我们希望是小于等于实际商，这样在试后一位的时候，这个结果能自然得到修正，就增加了试商的效率，于是可以把式子改为$\dfrac{a_4 base + a_3}{b_3 + (b_2+1)base^{-1}}$，但这个+1导致误差增大，与实际商的误差最大达到2，那解决方法很简单，我们再增加1位的精度，得到式子$\dfrac{a_4 base + a_3}{b_3 + b_2 base^{-1} + (b_1+1)base^{-2}}$，于是便得到接下来在代码中所使用的算法。由于误差不超过1，如果估小了，那在下一位的估商时候就会产生补回去的效果，于是不必重复试商。这个方法要求&lt;code&gt;base&amp;lt;=32768&lt;/code&gt;以避免各种溢出，在满足此条件下，因为每个位均只需要估一次，那么其时间常数与乘法相比，和减法与加法常数比是几乎相同的。&lt;/p&gt;
 
 &lt;p&gt;但是，有一个非常极端的情况，既然商最大误差是1，那么相当于余数的最大误差就等于除数，那如果除数特别大呢？举个例子，求&lt;code&gt;9999,9999,9999,9999/9999,9999,9999&lt;/code&gt;，用上面的方法，高一位的试商结果是0，次一位的试商是9999（实际商是10000），相减得到余数&lt;code&gt;1,0000,0000,9998&lt;/code&gt;，结果最高位并没有减到0，于是不能继续移位，需要在同一位再一次试商。但虽然在同一位试商两次，但后一位就不用做减法了，均摊还是n次。&lt;/p&gt;
 
@@ -11383,9 +12058,9 @@ else:
 }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;3-计算二进制中的1的个数&#34;&gt;3. 计算二进制中的1的个数&lt;/h3&gt;
+&lt;h3 id=&#34;3-计算二进制中的1的个数-popcount&#34;&gt;3. 计算二进制中的1的个数(popcount)&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;uint32_t method_1_uint32_count1(uint32_t n)
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;uint32_t method_1_uint32_popcount(uint32_t n)
 {
 	n = (n &amp;amp; 0x55555555) + ((n &amp;gt;&amp;gt; 1) &amp;amp; 0x55555555);
 	n = (n &amp;amp; 0x33333333) + ((n &amp;gt;&amp;gt; 2) &amp;amp; 0x33333333);
@@ -11395,7 +12070,7 @@ else:
 	return n;
 }
 
-uint32_t method_2_uint32_count1(uint32_t n)
+uint32_t method_2_uint32_popcount(uint32_t n)
 {
 	n = n - ((n &amp;gt;&amp;gt; 1) &amp;amp; 0x55555555);
 	n = (n &amp;amp; 0x33333333) + ((n &amp;gt;&amp;gt; 2) &amp;amp; 0x33333333);
@@ -11403,6 +12078,13 @@ uint32_t method_2_uint32_count1(uint32_t n)
 	n = n + (n &amp;gt;&amp;gt; 8);
 	n = n + (n &amp;gt;&amp;gt; 16);
 	return n &amp;amp; 0x3f;
+}
+
+uint32_t method_3_uint32_popcount(uint32_t n)
+{
+	n = n - ((n&amp;gt;&amp;gt;1) &amp;amp; 0x55555555);
+	n = (n &amp;amp; 0x33333333) + ((n &amp;gt;&amp;gt; 2) &amp;amp; 0x33333333);
+	return ((n + (n &amp;gt;&amp;gt; 4) &amp;amp; 0xF0F0F0F) * 0x1010101) &amp;gt;&amp;gt; 24;
 }
 &lt;/code&gt;&lt;/pre&gt;
 
