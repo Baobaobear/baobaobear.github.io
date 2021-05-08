@@ -786,7 +786,7 @@
         }
 </code></pre>
 
-<p>但除法就没这么简单了，这时候还可以利用位运算来区分正负，比如，我们用当前位是<code>sum - (sum &gt;&gt; 31) * base</code>，因为如果sum是负数，那么<code>sum &gt;&gt; 31</code>在sum是int时就等于-1，相当于<code>sum + base</code>；而如果sum是非负数，那么<code>sum &gt;&gt; 31</code>就是0，结果就相当于<code>sum</code>，这样就成功实现了<code>sum&lt;0 ? sum+base : sum</code>的逻辑。而这种方法同样可以用在加法上。另外，在较新的CPU上除法的性能比较高的时候，加法这种改进写法就会被淘汰。</p>
+<p>但减法就没这么简单了，这时候还可以利用位运算来区分正负，比如，我们用当前位是<code>sum - (sum &gt;&gt; 31) * base</code>，因为如果sum是负数，那么<code>sum &gt;&gt; 31</code>在sum是int时就等于-1，相当于<code>sum + base</code>；而如果sum是非负数，那么<code>sum &gt;&gt; 31</code>就是0，结果就相当于<code>sum</code>，这样就成功实现了<code>sum&lt;0 ? sum+base : sum</code>的逻辑。而这种方法同样可以用在加法上。另外，在较新的CPU上除法的性能比较高的时候，加法这种改进写法就会被淘汰。</p>
 
 <p>其它的细节在以下代码的注释中有标注</p>
 

@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-03-20T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-05-06T00:00:00&#43;08:00">
   
 
   
@@ -361,6 +361,19 @@
   
   
   <div>
+    <h2><a href="/post/20210507-binsearch/">二分搜索杂谈</a></h2>
+    <div class="article-style">
+      
+      二分搜索虽然基本思想简单，但其细节却令人意外的抓狂（Although the basic idea of binary search is comparatively straightforward, the details can be surprisingly tricky）。这里我们来分析一下常见写法的坑。
+两类不同的二分 二分有两类，一是找值，即判断某个值存不存在，二是找边界，前者比后者简单很多，以下是找值的典型写法（来自中文wiki百科）
+int binary_search(const int arr[], int start, int end, int key) { int ret = -1; // 未搜索到数据返回-1下标 int mid; while (start &lt;= end) { mid = start + (end - start) / 2; //直接平均可能會溢位，所以用此算法 if (arr[mid] &lt; key) start = mid + 1; else if (arr[mid] &gt; key) end = mid - 1; else { // 最後檢測相等是因為多數搜尋狀況不是大於要不就小於 ret = mid; break; } } return ret; // 单一出口 }  对于找边界，有四种情况，如以下例子，查找数值5的四种边界
+1 1 1 2 2 5 5 5 5 7 9 ^ 1 小于的最右元素 ^ 2 大于等于的最左元素 ^ 3 小于等于的最右元素 ^ 4 大于的最左元素  既然有四种边界，那就有四种写法。
+
+      
+    </div>
+  </div>
+  
+  <div>
     <h2><a href="/post/20210320-bigint3/">大整数高精度计算3——快速傅里叶/数论变换及分治除法</a></h2>
     <div class="article-style">
       
@@ -480,21 +493,6 @@ graph LR; 1--&gt;2 2--&gt;3 3--&gt;4 4--&gt;5 1'--&gt;2' 2'--&gt;6 6--&gt;4  这
 graph TD; 1,4:8--&gt;1,2:1 1,4:8--&gt;3,4:7 1,2:1--&gt;1,1:1 1,2:1--&gt;2,2:0 3,4:7--&gt;3,3:5 3,4:7--&gt;4,4:2  冒号前面的两个数表示一条线段，冒号后表示的是数据，这个数据表示的是这个区间的和。
 然后我们要把第3个元素从5改为1，构造第二棵线段树，首先复制一个root，包括儿子的指向也复制，得到
 graph TD; 1,4:8--&gt;1,2:1 1,4:8--&gt;3,4:7 1,2:1--&gt;1,1:1 1,2:1--&gt;2,2:0 3,4:7--&gt;3,3:5 3,4:7--&gt;4,4:2 1,4':8--&gt;1,2:1 1,4':8--&gt;3,4:7 
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20191216-kmp-manacher/">扩展KMP与Manacher</a></h2>
-    <div class="article-style">
-      
-      KMP已经介绍过了，这次主要介绍的是Manacher
-最长回文子串 Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。
-先定义数组v，v[i]表示以第i个字符为中心，到回文串一端的距离，我们以字符串&quot;acabacab&quot;为例，如下表（index是下标）
-   string a c a b a c a b \0     index 0 1 2 3 4 5 6 7 8   m    ^        i    ^        e        ^    v 1 2 1 4         i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针
-然后++i，注意这时候，由于以字符b两边是对称的，所以在求v[4]的值的时候，可以先查v[2]的值，是1，所以v[4]也是1
-   string a c a b a c a b \0     index 0 1 2 3 4 5 6 7 8   m    ^        i     ^       e        ^    v 1 2 1 4 1        再继续++i，同样的，在求v[5]的值的时候，可以先查v[1]的值，是2，但是，这个长度达到了e指针的位置，即i+2&gt;=e，这时候就更新指针m，并扩展e的位置，即比较str[7]与str[3]，找到以下标5为中心的回文串边界。
-
       
     </div>
   </div>

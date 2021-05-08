@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-03-20T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-05-06T00:00:00&#43;08:00">
   
 
   
@@ -613,6 +613,127 @@
     
       
     
+    May 6, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    5 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20210507-binsearch/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20210507-binsearch/">二分搜索杂谈</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>二分搜索虽然基本思想简单，但其细节却令人意外的抓狂（Although the basic idea of binary search is comparatively straightforward, the details can be surprisingly tricky）。这里我们来分析一下常见写法的坑。</p>
+
+<h2 id="两类不同的二分">两类不同的二分</h2>
+
+<p>二分有两类，一是找值，即判断某个值存不存在，二是找边界，前者比后者简单很多，以下是找值的典型写法（来自中文wiki百科）</p>
+
+<pre><code class="language-cpp">int binary_search(const int arr[], int start, int end, int key) {
+	int ret = -1;       // 未搜索到数据返回-1下标
+
+	int mid;
+	while (start &lt;= end) {
+		mid = start + (end - start) / 2; //直接平均可能會溢位，所以用此算法
+		if (arr[mid] &lt; key)
+			start = mid + 1;
+		else if (arr[mid] &gt; key)
+			end = mid - 1;
+		else {            // 最後檢測相等是因為多數搜尋狀況不是大於要不就小於
+			ret = mid;  
+			break;
+		}
+	}
+
+	return ret;     // 单一出口
+}
+</code></pre>
+
+<p>对于找边界，有四种情况，如以下例子，查找数值5的四种边界</p>
+
+<pre><code class="language-text">1 1 1 2 2 5 5 5 5 7 9
+        ^ 1 小于的最右元素
+          ^ 2 大于等于的最左元素
+                ^ 3 小于等于的最右元素
+                  ^ 4 大于的最左元素
+</code></pre>
+
+<p>既然有四种边界，那就有四种写法。</p></p>
+    <a href="/post/20210507-binsearch/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+      
+    
+      
+        
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
     Mar 20, 2021
   </span>
   
@@ -980,98 +1101,6 @@
 
       
     
-      
-        
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Jan 18, 2021
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    1 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20210118-htt/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e6%9d%82%e8%b0%88">杂谈</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20210118-htt/">很头疼拼图</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>本拼图难度较高，是给程序解答专用的题目（手工解我觉得没多少可能，但不排除有运气极佳的人），是检验你的程序效率有多高用的。</p>
-
-<p>它的名字是很头疼拼图，因为放入的块有H和两种T形状，而HTT就是很头疼。一共有21个块，放入一个12x12的框里，具体形状如下图</p>
-
-<p><img src="/img/puz/htt.png" alt="" /></p>
-
-<p>以上是就是原题，每个小方块长宽均为1，底板尺寸是12x12。全部21块放入即成功解出，每一块均可以任意平移、旋转、翻转。你需要确定本题有多少个本质不同的解及相应具体答案。答案就不在这公开了，祝玩得开心。</p></p>
-    <a href="/post/20210118-htt/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-      
-    
 
     
     <div class="see-all">
@@ -1239,7 +1268,7 @@
           
           
           
-          <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size:7.367094036270675rem">算法</a>
+          <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size:7.5614683653691515rem">算法</a>
         
           
           

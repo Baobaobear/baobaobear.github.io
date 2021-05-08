@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-03-20T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-05-06T00:00:00&#43;08:00">
   
 
   
@@ -361,6 +361,19 @@
   
   
   <div>
+    <h2><a href="/post/20210507-binsearch/">二分搜索杂谈</a></h2>
+    <div class="article-style">
+      
+      二分搜索虽然基本思想简单，但其细节却令人意外的抓狂（Although the basic idea of binary search is comparatively straightforward, the details can be surprisingly tricky）。这里我们来分析一下常见写法的坑。
+两类不同的二分 二分有两类，一是找值，即判断某个值存不存在，二是找边界，前者比后者简单很多，以下是找值的典型写法（来自中文wiki百科）
+int binary_search(const int arr[], int start, int end, int key) { int ret = -1; // 未搜索到数据返回-1下标 int mid; while (start &lt;= end) { mid = start + (end - start) / 2; //直接平均可能會溢位，所以用此算法 if (arr[mid] &lt; key) start = mid + 1; else if (arr[mid] &gt; key) end = mid - 1; else { // 最後檢測相等是因為多數搜尋狀況不是大於要不就小於 ret = mid; break; } } return ret; // 单一出口 }  对于找边界，有四种情况，如以下例子，查找数值5的四种边界
+1 1 1 2 2 5 5 5 5 7 9 ^ 1 小于的最右元素 ^ 2 大于等于的最左元素 ^ 3 小于等于的最右元素 ^ 4 大于的最左元素  既然有四种边界，那就有四种写法。
+
+      
+    </div>
+  </div>
+  
+  <div>
     <h2><a href="/post/20210320-bigint3/">大整数高精度计算3——快速傅里叶/数论变换及分治除法</a></h2>
     <div class="article-style">
       
@@ -478,18 +491,6 @@ GCC的实现 这个我直接给个github来源，链接里是gcc8分支的实现
       本篇补充smooth sort和weakheap sort，不打算做太多介绍，因为自己太菜不会讲，只作为笔记来记录一下实现代码。smooth sort在接近排序完成的情况下的动态图
 
 
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20191015-sorting-3/">堆排序优化思路</a></h2>
-    <div class="article-style">
-      
-      堆排序其实是最不好优化的一个，在数据结构都确定的情况下，优化空间太小，除非优化数据结构本身，但那样就不叫做堆排序了。类似堆排序的还有smooth sort和weakheap sort，有兴趣可以自己查找相关资料。
-堆排序原理 堆排序其实是选择排序的优化变种，选择排序是把最大或最小的元素放到最边上，然后不断重复以上过程，堆排序也是如此，只不过堆排序通过构建数据结构，让查找最大或最小元素并放到最边上的速度比选择排序快得多。
-首先我们先来介绍什么是堆。堆只是个缩写，全名是二叉堆，是一种完全二叉树，它的特点是二叉堆的父节点元素不小于子节点的元素，以下为二叉堆例图
-graph TD; 30--&gt;29 30--&gt;28 29--&gt;24 29--&gt;25 28--&gt;26 28--&gt;22 24--&gt;21 
       
     </div>
   </div>

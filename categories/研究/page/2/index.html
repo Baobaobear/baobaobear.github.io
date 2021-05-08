@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-03-20T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-05-06T00:00:00&#43;08:00">
   
 
   
@@ -361,6 +361,21 @@
   
   
   <div>
+    <h2><a href="/post/20191216-kmp-manacher/">扩展KMP与Manacher</a></h2>
+    <div class="article-style">
+      
+      KMP已经介绍过了，这次主要介绍的是Manacher
+最长回文子串 Manacher算法要解决的问题就是求最长回文子串，用到的思维和扩展KMP实在是像，不过理解起来比扩展KMP简单。
+先定义数组v，v[i]表示以第i个字符为中心，到回文串一端的距离，我们以字符串&quot;acabacab&quot;为例，如下表（index是下标）
+   string a c a b a c a b \0     index 0 1 2 3 4 5 6 7 8   m    ^        i    ^        e        ^    v 1 2 1 4         i是当前要计算的指针，m是上次计算的指针，e是下一个要比较的位置的指针
+然后++i，注意这时候，由于以字符b两边是对称的，所以在求v[4]的值的时候，可以先查v[2]的值，是1，所以v[4]也是1
+   string a c a b a c a b \0     index 0 1 2 3 4 5 6 7 8   m    ^        i     ^       e        ^    v 1 2 1 4 1        再继续++i，同样的，在求v[5]的值的时候，可以先查v[1]的值，是2，但是，这个长度达到了e指针的位置，即i+2&gt;=e，这时候就更新指针m，并扩展e的位置，即比较str[7]与str[3]，找到以下标5为中心的回文串边界。
+
+      
+    </div>
+  </div>
+  
+  <div>
     <h2><a href="/post/20191215-fhq-treap/">FHQ Treap</a></h2>
     <div class="article-style">
       
@@ -468,17 +483,6 @@ GCC的实现 这个我直接给个github来源，链接里是gcc8分支的实现
       
       在上一篇我们介绍了四种不同的划分算法，现在我们来针对Hoare partition scheme来讲解一些优化和注意的问题。
 最坏时间复杂度的优化 在前一篇的示例代码里面，只是最简单地选择的最开头或最后面的元素作为划分，这对于乱序的数据还好，对于有序的数据这么做，时间复杂度就直接变成$O(n^2)$了，那么怎么解决？第一个要解决的反而不是划分元素的选择上，而是改成intro sort，记录递归深度或类似的办法，到达限制条件的时候改而使用堆排序，这属于混合排序，先让排序的最坏时间复杂度降下来是第一要务。所以可以改写出以下代码：
-
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20191018-pythagorean-triple/">毕氏三元数与复数</a></h2>
-    <div class="article-style">
-      
-      所谓毕氏（毕达哥拉斯）三元数（Pythagorean triple），又叫做勾股数，商高数，是由毕氏定理衍生出来的，即直角三角形两直角边的平方和等于第三边的平方。毕氏三元数就是满足方程 $a^2+b^2=c^2$ 的正整数解，例如3,4,5这组解，以下我们用 $(3,4,5)$ 来表示一组毕氏三元数。这里存在一个问题，有没有可能表示出所有的正整数解呢？
-假设我们随意取直角边的长度，例如1和2，那么斜边长为 $\sqrt{5}$ ，斜边长度不是整数，那怎么把它变成整数呢，很简单，直接平方一下，可是两直角边就不对了，那怎么解决呢？标题上已经剧透了我们要使用复数，那么，我们可以把斜边看成是一个复数，而两直角边分别是复数的实部和虚部，那么我们就可以把刚刚例子中的直角三角形用 $2+i$ 来表示，那我们对这个复数计算平方，$(2+i)(2+i)=4+4i-1=3+4i$，这个复数的模就是5。哎？我们看到了这是啥？是不是正好表示 $(3,4,5)$ ，这是巧合吗？
 
       
     </div>

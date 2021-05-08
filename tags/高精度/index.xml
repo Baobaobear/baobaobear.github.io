@@ -1806,7 +1806,7 @@ std::string BintToStr(Bint x) {
         }
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;但除法就没这么简单了，这时候还可以利用位运算来区分正负，比如，我们用当前位是&lt;code&gt;sum - (sum &amp;gt;&amp;gt; 31) * base&lt;/code&gt;，因为如果sum是负数，那么&lt;code&gt;sum &amp;gt;&amp;gt; 31&lt;/code&gt;在sum是int时就等于-1，相当于&lt;code&gt;sum + base&lt;/code&gt;；而如果sum是非负数，那么&lt;code&gt;sum &amp;gt;&amp;gt; 31&lt;/code&gt;就是0，结果就相当于&lt;code&gt;sum&lt;/code&gt;，这样就成功实现了&lt;code&gt;sum&amp;lt;0 ? sum+base : sum&lt;/code&gt;的逻辑。而这种方法同样可以用在加法上。另外，在较新的CPU上除法的性能比较高的时候，加法这种改进写法就会被淘汰。&lt;/p&gt;
+&lt;p&gt;但减法就没这么简单了，这时候还可以利用位运算来区分正负，比如，我们用当前位是&lt;code&gt;sum - (sum &amp;gt;&amp;gt; 31) * base&lt;/code&gt;，因为如果sum是负数，那么&lt;code&gt;sum &amp;gt;&amp;gt; 31&lt;/code&gt;在sum是int时就等于-1，相当于&lt;code&gt;sum + base&lt;/code&gt;；而如果sum是非负数，那么&lt;code&gt;sum &amp;gt;&amp;gt; 31&lt;/code&gt;就是0，结果就相当于&lt;code&gt;sum&lt;/code&gt;，这样就成功实现了&lt;code&gt;sum&amp;lt;0 ? sum+base : sum&lt;/code&gt;的逻辑。而这种方法同样可以用在加法上。另外，在较新的CPU上除法的性能比较高的时候，加法这种改进写法就会被淘汰。&lt;/p&gt;
 
 &lt;p&gt;其它的细节在以下代码的注释中有标注&lt;/p&gt;
 

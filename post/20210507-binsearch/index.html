@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="二分搜索虽然基本思想简单，但其细节却令人意外的抓狂（Although the basic idea of binary search is comparatively straightforward, the details can be surprisingly tricky）。这里我们来分析一下常见写法的坑。
+
+两类不同的二分
+
+二分有两类，一是找值，即判断某个值存不存在，二是找边界，前者比后者简单很多，以下是找值的典型写法（来自中文wiki百科）
+
+int binary_search(const int arr[], int start, int end, int key) {
+	int ret = -1;       // 未搜索到数据返回-1下标
+
+	int mid;
+	while (start &lt;= end) {
+		mid = start &#43; (end - start) / 2; //直接平均可能會溢位，所以用此算法
+		if (arr[mid] &lt; key)
+			start = mid &#43; 1;
+		else if (arr[mid] &gt; key)
+			end = mid - 1;
+		else {            // 最後檢測相等是因為多數搜尋狀況不是大於要不就小於
+			ret = mid;  
+			break;
+		}
+	}
+
+	return ret;     // 单一出口
+}
+
+
+对于找边界，有四种情况，如以下例子，查找数值5的四种边界
+
+1 1 1 2 2 5 5 5 5 7 9
+        ^ 1 小于的最右元素
+          ^ 2 大于等于的最左元素
+                ^ 3 小于等于的最右元素
+                  ^ 4 大于的最左元素
+
+
+既然有四种边界，那就有四种写法。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20210507-binsearch/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20210507-binsearch/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20210507-binsearch/">
+  <meta property="og:title" content="二分搜索杂谈 | Baobaobear">
+  <meta property="og:description" content="二分搜索虽然基本思想简单，但其细节却令人意外的抓狂（Although the basic idea of binary search is comparatively straightforward, the details can be surprisingly tricky）。这里我们来分析一下常见写法的坑。
+
+两类不同的二分
+
+二分有两类，一是找值，即判断某个值存不存在，二是找边界，前者比后者简单很多，以下是找值的典型写法（来自中文wiki百科）
+
+int binary_search(const int arr[], int start, int end, int key) {
+	int ret = -1;       // 未搜索到数据返回-1下标
+
+	int mid;
+	while (start &lt;= end) {
+		mid = start &#43; (end - start) / 2; //直接平均可能會溢位，所以用此算法
+		if (arr[mid] &lt; key)
+			start = mid &#43; 1;
+		else if (arr[mid] &gt; key)
+			end = mid - 1;
+		else {            // 最後檢測相等是因為多數搜尋狀況不是大於要不就小於
+			ret = mid;  
+			break;
+		}
+	}
+
+	return ret;     // 单一出口
+}
+
+
+对于找边界，有四种情况，如以下例子，查找数值5的四种边界
+
+1 1 1 2 2 5 5 5 5 7 9
+        ^ 1 小于的最右元素
+          ^ 2 大于等于的最左元素
+                ^ 3 小于等于的最右元素
+                  ^ 4 大于的最左元素
+
+
+既然有四种边界，那就有四种写法。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2021-05-06T00:00:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2021-05-06T00:00:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20210507-binsearch/"
+  },
+  "headline": "二分搜索杂谈",
+  
+  "datePublished": "2021-05-06T00:00:00+08:00",
+  "dateModified": "2021-05-06T00:00:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e二分搜索虽然基本思想简单，但其细节却令人意外的抓狂（Although the basic idea of binary search is comparatively straightforward, the details can be surprisingly tricky）。这里我们来分析一下常见写法的坑。\u003c/p\u003e\n\n\u003ch2 id=\"两类不同的二分\"\u003e两类不同的二分\u003c/h2\u003e\n\n\u003cp\u003e二分有两类，一是找值，即判断某个值存不存在，二是找边界，前者比后者简单很多，以下是找值的典型写法（来自中文wiki百科）\u003c/p\u003e\n\n\u003cpre\u003e\u003ccode class=\"language-cpp\"\u003eint binary_search(const int arr[], int start, int end, int key) {\n\tint ret = -1;       // 未搜索到数据返回-1下标\n\n\tint mid;\n\twhile (start \u0026lt;= end) {\n\t\tmid = start + (end - start) / 2; //直接平均可能會溢位，所以用此算法\n\t\tif (arr[mid] \u0026lt; key)\n\t\t\tstart = mid + 1;\n\t\telse if (arr[mid] \u0026gt; key)\n\t\t\tend = mid - 1;\n\t\telse {            // 最後檢測相等是因為多數搜尋狀況不是大於要不就小於\n\t\t\tret = mid;  \n\t\t\tbreak;\n\t\t}\n\t}\n\n\treturn ret;     // 单一出口\n}\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003cp\u003e对于找边界，有四种情况，如以下例子，查找数值5的四种边界\u003c/p\u003e\n\n\u003cpre\u003e\u003ccode class=\"language-text\"\u003e1 1 1 2 2 5 5 5 5 7 9\n        ^ 1 小于的最右元素\n          ^ 2 大于等于的最左元素\n                ^ 3 小于等于的最右元素\n                  ^ 4 大于的最左元素\n\u003c/code\u003e\u003c/pre\u003e\n\n\u003cp\u003e既然有四种边界，那就有四种写法。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>二分搜索杂谈 | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>二分搜索杂谈</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    May 6, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    5 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20210507-binsearch/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20210507-binsearch/&amp;text=%e4%ba%8c%e5%88%86%e6%90%9c%e7%b4%a2%e6%9d%82%e8%b0%88" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20210507-binsearch/&amp;t=%e4%ba%8c%e5%88%86%e6%90%9c%e7%b4%a2%e6%9d%82%e8%b0%88" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e4%ba%8c%e5%88%86%e6%90%9c%e7%b4%a2%e6%9d%82%e8%b0%88&amp;body=/post/20210507-binsearch/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20210507-binsearch/&amp;title=%e4%ba%8c%e5%88%86%e6%90%9c%e7%b4%a2%e6%9d%82%e8%b0%88" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e4%ba%8c%e5%88%86%e6%90%9c%e7%b4%a2%e6%9d%82%e8%b0%88%20/post/20210507-binsearch/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20210507-binsearch/&amp;title=%e4%ba%8c%e5%88%86%e6%90%9c%e7%b4%a2%e6%9d%82%e8%b0%88" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>二分搜索虽然基本思想简单，但其细节却令人意外的抓狂（Although the basic idea of binary search is comparatively straightforward, the details can be surprisingly tricky）。这里我们来分析一下常见写法的坑。</p>
+
+<h2 id="两类不同的二分">两类不同的二分</h2>
+
+<p>二分有两类，一是找值，即判断某个值存不存在，二是找边界，前者比后者简单很多，以下是找值的典型写法（来自中文wiki百科）</p>
+
+<pre><code class="language-cpp">int binary_search(const int arr[], int start, int end, int key) {
+	int ret = -1;       // 未搜索到数据返回-1下标
+
+	int mid;
+	while (start &lt;= end) {
+		mid = start + (end - start) / 2; //直接平均可能會溢位，所以用此算法
+		if (arr[mid] &lt; key)
+			start = mid + 1;
+		else if (arr[mid] &gt; key)
+			end = mid - 1;
+		else {            // 最後檢測相等是因為多數搜尋狀況不是大於要不就小於
+			ret = mid;  
+			break;
+		}
+	}
+
+	return ret;     // 单一出口
+}
+</code></pre>
+
+<p>对于找边界，有四种情况，如以下例子，查找数值5的四种边界</p>
+
+<pre><code class="language-text">1 1 1 2 2 5 5 5 5 7 9
+        ^ 1 小于的最右元素
+          ^ 2 大于等于的最左元素
+                ^ 3 小于等于的最右元素
+                  ^ 4 大于的最左元素
+</code></pre>
+
+<p>既然有四种边界，那就有四种写法。</p>
+
+<h2 id="常见基本写法">常见基本写法</h2>
+
+<p>为了好理解，这里直接用int写，且使用闭区间写法，而不使用模板</p>
+
+<pre><code class="language-cpp">int bin_search_1(int arr[], int len, int val) {
+  int l = 0, r = len - 1;
+  while (l &lt; r) {
+    int m = l + ((r - l + 1) / 2);
+    if (arr[m] &lt; val) {
+      l = m;
+    } else {
+      r = m - 1;
+    }
+  }
+  return l;
+}
+
+int bin_search_2(int arr[], int len, int val) {
+  int l = 0, r = len - 1;
+  while (l &lt; r) {
+    int m = l + ((r - l) / 2);
+    if (arr[m] &lt; val) {
+      l = m + 1;
+    } else {
+      r = m;
+    }
+  }
+  return l;
+}
+
+int bin_search_3(int arr[], int len, int val) {
+  int l = 0, r = len - 1;
+  while (l &lt; r) {
+    int m = l + ((r - l + 1) / 2);
+    if (arr[m] &lt;= val) {
+      l = m;
+    } else {
+      r = m - 1;
+    }
+  }
+  return l;
+}
+
+int bin_search_4(int arr[], int len, int val) {
+  int l = 0, r = len - 1;
+  while (l &lt; r) {
+    int m = l + ((r - l) / 2);
+    if (arr[m] &lt;= val) {
+      l = m + 1;
+    } else {
+      r = m;
+    }
+  }
+  return l;
+}
+
+int main() {
+  int a[] = {1, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10};
+  int len = 16, val = 5;
+  cout &lt;&lt; bin_search_1(a, len, val) &lt;&lt; endl;
+  cout &lt;&lt; bin_search_2(a, len, val) &lt;&lt; endl;
+  cout &lt;&lt; bin_search_3(a, len, val) &lt;&lt; endl;
+  cout &lt;&lt; bin_search_4(a, len, val) &lt;&lt; endl;
+  return 0;
+}
+</code></pre>
+
+<h2 id="以上写法的坑点">以上写法的坑点</h2>
+
+<p>坑点主要有以下4个，当这4个你搞明白了以后，你就可以肉眼debug出一个二分写法的问题了。</p>
+
+<h3 id="1-区间表示">1. 区间表示</h3>
+
+<p>如果采用闭区间，那么循环的条件就是<code>l &lt; r</code>，当这个条件满足时，这个区间就表示了两个或以上的元素</p>
+
+<p>同理，如果采用半开半闭区间，那么循环的条件就是<code>l + 1 &lt; r</code>，如果采用开区间，那么循环条件就是<code>l + 2 &lt; r</code></p>
+
+<h3 id="2-比较">2. 比较</h3>
+
+<p>比较的方式取决于你的边界是左边界还是右边界，如果是左边界，那么边界左边的数均为小于，而右边的数是大于等于，那么你应该用 <code>arr[m] &lt; val</code>作为判断条件；同理地，如果是右边界，那么边界左边的数均为小于等于，而右边的数是大于，这时应该用<code>arr[m] &lt;= val</code>作为判断条件</p>
+
+<h3 id="3-更新区间">3. 更新区间</h3>
+
+<p>在比较后，更新区间时，有的+1有的-1有的不需要加减，这是怎么决定要不要加呢？这个由你所查找的区间是否包含这个数决定。举个具体例子，在<code>4 5 5 6</code>中，给出要查找的数值<code>5</code>，要查找到小于5的最大那个数，即4，那么比较方式是<code>arr[m] &lt; val</code>。如果这个小于号满足，比如说<code>arr[m]</code>是4，那么这个数是可能在查找区间内，所以不应该+1或-1，但如果<code>arr[m]</code>是5，这个数不应该在查找区间内，那么就果断要+1或-1。在边界查找写法里，必然有一边是需要+1或-1，而另一边不需要，这个会影响下面要介绍的中间数选择。</p>
+
+<h3 id="4-中间数的选择">4. 中间数的选择</h3>
+
+<p>中间数选择，即以上代码中的变量m，有的时候<code>(r - l) / 2</code>，有的时候<code>(r - l + 1) / 2</code>，这个写法取决于当<code>r - l == 1</code>时，那么m要么等于l，要么等于r，为了这个循环能结束，如果下方代码是<code>l = m</code>，那么m要取r，即要+1，如果下方代码是<code>r = m</code>，那么m要取l，不需要+1。这个如果写错就会导致死循环的发生。</p>
+
+<p>另外，还有一个更多人犯的错误，很多人会写<code>m = (l + r) / 2</code>，当然，这个其实在不少情况下确实也不会怎么样，但是，如果我们要做的事情并不是在数组中查找，而是在一个区间里面，比如找一个方程的整数解，或者求3次方根的整数部分，这就会产生问题了，当 l和r是负数的时候，与它们是正数的时候，除以2的含义是不一样的，C语言中的除法实际上是向0取整，比如说，<code>-7/2 == -3</code>，但是，在二分搜索时，我们必须要么向上取整，要么向下取整，但存在负数时，这样做除法可能会导致二分死循环。采用<code>(r - l) / 2</code>可以避免这个问题，或者，你还可以使用位运算技巧<code>(r - l) &gt;&gt; 1</code>。当然，为了减少中坑起见，写<code>m = l + (r - l) / 2</code>最保险。</p>
+
+<h2 id="避免进坑的写法">避免进坑的写法</h2>
+
+<p>以上写法坑太多（其实这些坑的有一部分的本质是你采用了闭区间），怎么样避免掉以上种种问题搞一个坑最少最不容易出错的写法呢？来看这个写法</p>
+
+<pre><code class="language-cpp">int bin_search_r1(int arr[], int len, int val) {
+  int l = -1, r = len;
+  while (l + 1 &lt; r) {
+    int m = l + ((r - l) / 2);
+    if (arr[m] &lt; val) {
+      l = m;
+    } else {
+      r = m;
+    }
+  }
+  return l;
+}
+
+int bin_search_r2(int arr[], int len, int val) {
+  int l = -1, r = len;
+  while (l + 1 &lt; r) {
+    int m = l + ((r - l) / 2);
+    if (arr[m] &lt; val) {
+      l = m;
+    } else {
+      r = m;
+    }
+  }
+  return r;
+}
+
+int bin_search_r3(int arr[], int len, int val) {
+  int l = -1, r = len;
+  while (l + 1 &lt; r) {
+    int m = l + ((r - l) / 2);
+    if (arr[m] &lt;= val) {
+      l = m;
+    } else {
+      r = m;
+    }
+  }
+  return l;
+}
+
+int bin_search_r4(int arr[], int len, int val) {
+  int l = -1, r = len;
+  while (l + 1 &lt; r) {
+    int m = l + ((r - l) / 2);
+    if (arr[m] &lt;= val) {
+      l = m;
+    } else {
+      r = m;
+    }
+  }
+  return r;
+}
+</code></pre>
+
+<p>以上写法看初值似乎是在采用开区间，其实不然，实际上是半开半闭区间表示（看循环条件），表示要查找的值在<code>[l, r)</code>内或<code>(l, r]</code>内，返回值如果是l那区间就是<code>[l, r)</code>，反之就是<code>(l, r]</code>。在循环结束前，区间<code>[l, r]</code>内至少有3个元素，这样m肯定与l或r不相等，不存在死循环的可能性，也不需要关心向上取整还是向下取整的问题，这也是半开半闭区间表示的优点。另外，不论区间是3个还是4个元素，最终都会缩短为刚好2个元素，l指向满足比较条件的最右的元素，r指向不满足比较条件的最左元素。还有一点，由于m永远不会等于l或r，所以这样初始化并不会产生越界访问，而且这个初始化保证了m有可能取到<code>[l+1, r-1]</code>中任何一个。所以，这个二分写法，我们只需要管比较条件的写法来决定找左边界或右边界，以及返回l或r决定具体边界元素即可，几乎就是个无坑版本写法，非常建议在比赛里采用这个写法。</p>
+
+<h2 id="简单的参考模板">简单的参考模板</h2>
+
+<pre><code class="language-cpp">// 等同于std::lower_bound
+template &lt;typename ITER, typename V&gt;
+ITER bin_search_lower(ITER begin, ITER end, const V &amp;val) {
+  ITER l = begin - 1, r = end;
+  while (l + 1 &lt; r) {
+    ITER m = l + (r - l) / 2;
+    if (*m &lt; val) {
+      l = m;
+    } else {
+      r = m;
+    }
+  }
+  return l;
+}
+
+// 等同于std::upper_bound
+template &lt;typename ITER, typename V&gt;
+ITER bin_search_upper(ITER begin, ITER end, const V &amp;val) {
+  ITER l = begin - 1, r = end;
+  while (l + 1 &lt; r) {
+    ITER m = l + (r - l) / 2;
+    if (*m &lt;= val) {
+      l = m;
+    } else {
+      r = m;
+    }
+  }
+  return r;
+}
+
+// cmp为true表示这个数在val的左边，否则在右边
+template &lt;typename ITER, typename V, class COMP&gt;
+ITER bin_search(ITER begin, ITER end, const V &amp;val, COMP cmp) {
+  ITER l = begin - 1, r = end;
+  while (l + 1 &lt; r) {
+    ITER m = l + (r - l) / 2;
+    if (cmp(*m, val)) {
+      l = m;
+    } else {
+      r = m;
+    }
+  }
+  return l;
+}
+</code></pre>
+
+<h2 id="扩展-更通用的写法">扩展：更通用的写法</h2>
+
+<p>前面的写法只能使用随机迭代器，如果现在只有前向迭代器，那这写法就不行了。以下写法来自cppreference</p>
+
+<pre><code class="language-cpp">template&lt;class ForwardIt, class T, class Compare&gt;
+ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T&amp; value, Compare comp)
+{
+  ForwardIt it;
+  typename std::iterator_traits&lt;ForwardIt&gt;::difference_type count, step;
+  count = std::distance(first, last);
+ 
+  while (count &gt; 0) {
+    it = first;
+    step = count / 2;
+    std::advance(it, step);
+    if (comp(*it, value)) {
+      first = ++it;
+      count -= step + 1;
+    }
+    else
+      count = step;
+  }
+  return first;
+}
+</code></pre>
+
+<p>当然，更通用意味着自己写时更容易出问题，尽量直接用STL不自己手写那是最好的。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="">算法</a>
+  
+  <a class="badge badge-light" href="">二分</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+      <div class="article-widget">
+        <div class="hr-light"></div>
+        <h3>Related</h3>
+        <ul>
+          
+          <li><a href="/post/20210320-bigint3/">大整数高精度计算3——快速傅里叶/数论变换及分治除法</a></li>
+          
+          <li><a href="/post/20210308-bigint2/">大整数高精度计算2——乘法优化及进制转换</a></li>
+          
+          <li><a href="/post/20210228-bigint1/">大整数高精度计算1——基础算法</a></li>
+          
+          <li><a href="/post/20200104-xoshiro/">伪随机数生成算法</a></li>
+          
+          <li><a href="/post/20191216-kmp-manacher/">扩展KMP与Manacher</a></li>
+          
+        </ul>
+      </div>
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
