@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-05-06T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-06-21T00:00:00&#43;08:00">
   
 
   
@@ -360,6 +360,99 @@
   
 
   
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Dec 14, 2020
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    1 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20201214-10question/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e6%9d%82%e8%b0%88">杂谈</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20201214-10question/">10个问号拼图</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>刷题经常搞得自己一脸问号，就想到弄一个由问号组成的拼图，如下图</p>
+
+<p><img src="/img/puz/10question.png" alt="" /></p>
+
+<p>因为由10块一样的形似问号组合而成，所以我命名为<code>10个问号</code>。</p>
+
+<p>以上是就是原题，不同颜色来区分不同位置的小块。每个小方块长宽均为1，底板尺寸是10x10。要求把右边的“十”无重叠放入到10个问号里，放入即成功解出，答案就不在这公开了，祝玩得开心。</p>
+</p>
+    <a href="/post/20201214-10question/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
   
     
       
@@ -1559,96 +1652,6 @@ void split(int tp, int k, int &amp;x, int &amp;y)
 }
 </code></pre></p>
     <a href="/post/20191215-fhq-treap/">Read more...</a>
-  </div>
-  
-
-  
-
-</div>
-
-    
-  
-    
-      
-
-
-
-
-
-
-
-
-
-  
-
-
-<div class="card-simple">
-
-  
-    
-
-
-
-<div class="article-metadata">
-
-  
-  
-
-  
-  <span class="article-date">
-    
-    
-      
-    
-    Dec 13, 2019
-  </span>
-  
-
-  
-
-  
-  <span class="middot-divider"></span>
-  <span class="article-reading-time">
-    9 min read
-  </span>
-  
-
-  
-  
-  
-  <span class="middot-divider"></span>
-  <a href="/post/20191213-tree-sequence/#disqus_thread"></a>
-  
-
-  
-  
-  <span class="middot-divider"></span>
-  <span class="article-categories">
-    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
-  
-
-  
-
-</div>
-
-  
-
-  
-  
-  
-
-  <h3 class="article-title mb-1 mt-3">
-    <a href="/post/20191213-tree-sequence/">平衡树与序列维护</a>
-  </h3>
-
-  
-  <div class="article-style">
-    <p><p>平衡树除了用来对存在偏序关系的数据进行维护，还能用于对序列维护，相当于一个数组。阅读本文你需要先看完上一篇关于<a href="/post/20191211-treap-sbt/">treap</a>的文章。</p>
-
-<h2 id="序列维护">序列维护</h2>
-
-<p>在之前的文章，我们介绍过使用树状数组，以及线段树来维护一个序列，可以做区间操作及区间求和，但它们都存在一个缺点，不能动态插入数据。那我们怎么样才能通过平衡树来维护序列呢，之前我们有一个size字段能快速找第k大（或树的中序遍历第k个元素），而旋转操作并不会改变元素之间的相对顺序，那么我们就通过它直接插入到第k个元素的前面，这样我们插入的时候就不再通过要插入的值本身的大小关系，而需要多加一个参数k决定插入的位置。当平衡树用于维护序列的时候，就不用考虑元素相等的问题了。这样我们把元素相等处理的代码删除并修改基本操作的代码就能得到第一个能维护序列的基本模板，以下模板使用Treap修改得来。</p></p>
-    <a href="/post/20191213-tree-sequence/">Read more...</a>
   </div>
   
 
