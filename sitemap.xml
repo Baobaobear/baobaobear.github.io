@@ -4,22 +4,62 @@
   
   <url>
     <loc>/</loc>
-    <lastmod>2021-05-06T00:00:00+08:00</lastmod>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>/categories/</loc>
-    <lastmod>2021-05-06T00:00:00+08:00</lastmod>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>/post/</loc>
-    <lastmod>2021-05-06T00:00:00+08:00</lastmod>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/sd/</loc>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>/tags/</loc>
-    <lastmod>2021-05-06T00:00:00+08:00</lastmod>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/ubuntu/</loc>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/20210621-ubuntu/</loc>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</loc>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/categories/%E6%9D%82%E8%B0%88/</loc>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/%E8%99%9A%E6%8B%9F%E6%9C%BA/</loc>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/%E8%BE%93%E5%85%A5%E6%B3%95/</loc>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/%E9%9F%B3%E9%A2%91/</loc>
+    <lastmod>2021-06-21T00:00:00+08:00</lastmod>
   </url>
   
   <url>
@@ -79,11 +119,6 @@
   
   <url>
     <loc>/post/20210305-bigint_fun/</loc>
-    <lastmod>2021-03-05T00:00:00+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/categories/%E6%9D%82%E8%B0%88/</loc>
     <lastmod>2021-03-05T00:00:00+08:00</lastmod>
   </url>
   

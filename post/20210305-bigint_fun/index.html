@@ -38,7 +38,7 @@
 
 small biginteger library for contest
 
-代码原作者Jane Alam Jan，你可以在Google上直接搜索small_biginteger_library_for_contest.pdf并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。">
+代码原作者Jane Alam Jan，你可以在Google上直接搜索small_biginteger_library_for_contest.pdf并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，乘法效率有优化，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。">
 
   
   <link rel="alternate" hreflang="en-us" href="/post/20210305-bigint_fun/">
@@ -134,7 +134,7 @@ small biginteger library for contest
 
 small biginteger library for contest
 
-代码原作者Jane Alam Jan，你可以在Google上直接搜索small_biginteger_library_for_contest.pdf并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。"><meta property="og:image" content="/img/icon-192.png">
+代码原作者Jane Alam Jan，你可以在Google上直接搜索small_biginteger_library_for_contest.pdf并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，乘法效率有优化，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。"><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
     
@@ -186,7 +186,7 @@ small biginteger library for contest
       "url": "/img/icon-512.png"
     }
   },
-  "description": "\u003cp\u003e这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：\u003c/p\u003e\n\n\u003col\u003e\n\u003cli\u003e支持四则运算，必须包含除法及求余\u003c/li\u003e\n\u003cli\u003e支持字符串输入输出\u003c/li\u003e\n\u003cli\u003e代码不长\u003c/li\u003e\n\u003c/ol\u003e\n\n\u003ch2 id=\"small-biginteger-library-for-contest\"\u003esmall biginteger library for contest\u003c/h2\u003e\n\n\u003cp\u003e代码原作者Jane Alam Jan，你可以在Google上直接搜索\u003ccode\u003esmall_biginteger_library_for_contest.pdf\u003c/code\u003e并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。\u003c/p\u003e"
+  "description": "\u003cp\u003e这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：\u003c/p\u003e\n\n\u003col\u003e\n\u003cli\u003e支持四则运算，必须包含除法及求余\u003c/li\u003e\n\u003cli\u003e支持字符串输入输出\u003c/li\u003e\n\u003cli\u003e代码不长\u003c/li\u003e\n\u003c/ol\u003e\n\n\u003ch2 id=\"small-biginteger-library-for-contest\"\u003esmall biginteger library for contest\u003c/h2\u003e\n\n\u003cp\u003e代码原作者Jane Alam Jan，你可以在Google上直接搜索\u003ccode\u003esmall_biginteger_library_for_contest.pdf\u003c/code\u003e并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，乘法效率有优化，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。\u003c/p\u003e"
 }
 </script>
 
@@ -585,7 +585,7 @@ small biginteger library for contest
 
 <h2 id="small-biginteger-library-for-contest">small biginteger library for contest</h2>
 
-<p>代码原作者Jane Alam Jan，你可以在Google上直接搜索<code>small_biginteger_library_for_contest.pdf</code>并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。</p>
+<p>代码原作者Jane Alam Jan，你可以在Google上直接搜索<code>small_biginteger_library_for_contest.pdf</code>并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，乘法效率有优化，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。</p>
 
 <pre><code class="language-cpp">struct Bigint {
     // representations and structures
@@ -651,6 +651,7 @@ small biginteger library for contest
         return c.normalize(s);
     }
     Bigint operator*(Bigint b) { // multiplication operator overloading
+        if (b &lt; *this) return b * *this;
         Bigint c(&quot;0&quot;);
         for (int i = 0, k = a[i] - 48; i &lt; a.size(); i++, k = a[i] - 48) {
             while (k--)
@@ -700,17 +701,17 @@ small biginteger library for contest
 };
 </code></pre>
 
-<p>这个实现使用string来实现大整数，于是缺点就非常明显了，就是性能低下，非常低，求个300阶乘都要1.5秒。不过，这代码里有不少写法是牺牲性能换代码长度，有的思路确实也不错。在同样代码长度级别下，我实现的<a href="https://github.com/Baobaobear/MiniBigInteger/blob/main/bigint_tiny.h" target="_blank">BigIntTiny</a>有着好得多的性能。或者来直接看以下这份更短的实现。</p>
+<p>这个实现使用string来实现大整数，于是缺点就非常明显了，就是性能低下，求个2000阶乘用时0.7秒，2000位的除法平均用时0.2秒（在mingw下开O2），但对于商全是9的情况下用时0.5秒。不过，这代码里有不少写法是牺牲性能换代码长度，有的思路确实也不错。在同样代码长度级别下，我实现的<a href="https://github.com/Baobaobear/MiniBigInteger/blob/main/bigint_tiny.h" target="_blank">BigIntTiny</a>有着好得多的性能（2000阶乘用时0.03秒，2000位的除法0.02秒）。</p>
 
-<h2 id="一份60行不到的大整数实现">一份60行不到的大整数实现</h2>
+<h2 id="一份70行不到的大整数实现">一份70行不到的大整数实现</h2>
 
-<p>改编自<a href="https://wu-kan.cn/_posts/2019-01-26-%E9%AB%98%E7%B2%BE%E5%BA%A6/" target="_blank">wu-kan</a>以及<a href="https://zhuanlan.zhihu.com/p/72730434" target="_blank">hqztrue</a>的基于bitset实现的定长大整数，支持10进制输入输出，四则运算及位运算均支持。</p>
+<p>改编自<a href="https://wu-kan.cn/_posts/2019-01-26-%E9%AB%98%E7%B2%BE%E5%BA%A6/" target="_blank">wu-kan</a>以及<a href="https://zhuanlan.zhihu.com/p/72730434" target="_blank">hqztrue</a>的基于bitset实现的定长大整数（对定长长度除以3.322就可得到对应的最大10进制位数），支持10进制输入输出，四则运算及位运算均支持。</p>
 
 <pre><code class="language-cpp">#include &lt;algorithm&gt;
 #include &lt;bitset&gt;
 #include &lt;string&gt;
 
-#define BINT_MAXSIZE 2048
+#define BINT_MAXSIZE (1&lt;&lt;15)
 typedef typename std::bitset&lt;BINT_MAXSIZE&gt; Bint;
 bool operator&lt;(const Bint &amp;a, const Bint &amp;b) {
     for (int i = a.size() - 1; i &gt;= 0; --i)
@@ -720,29 +721,37 @@ bool operator&lt;(const Bint &amp;a, const Bint &amp;b) {
 bool operator&gt;(const Bint &amp;a, const Bint &amp;b) { return b &lt; a; }
 bool operator&lt;=(const Bint &amp;a, const Bint &amp;b) { return !(b &lt; a); }
 bool operator&gt;=(const Bint &amp;a, const Bint &amp;b) { return !(a &lt; b); }
-Bint operator+(const Bint &amp;a, const Bint &amp;b) { return b.any() ? (a ^ b) + ((a &amp; b) &lt;&lt; 1) : a; }
-Bint &amp;operator+=(Bint &amp;a, const Bint &amp;b) { return a = a + b; }
+Bint operator+(Bint a, Bint b) {
+    while (b.any()) {
+        Bint c = (a &amp; b) &lt;&lt; 1;
+        a ^= b, b = c;
+    }
+    return a;
+}
 Bint operator-(const Bint &amp;a) { return Bint(1) + ~a; }
-Bint operator-(const Bint &amp;a, const Bint &amp;b) { return b.any() ? (a ^ b) - ((~a &amp; b) &lt;&lt; 1) : a; }
-Bint &amp;operator-=(Bint &amp;a, const Bint &amp;b) { return a = a - b; }
+Bint operator-(Bint a, Bint b) {
+    while (b.any()) {
+        Bint c = (~a &amp; b) &lt;&lt; 1;
+        a ^= b, b = c;
+    }
+    return a;
+}
 Bint operator*(Bint a, Bint b) {
+    if (a &lt; b) return b * a;
     Bint r(0);
-    for (; b.any(); b &gt;&gt;= 1, a &lt;&lt;= 1) if (b[0]) r += a;
+    for (; b.any(); b &gt;&gt;= 1, a &lt;&lt;= 1) if (b[0]) r = r + a;
     return r;
 }
-Bint &amp;operator*=(Bint &amp;a, const Bint &amp;b) { return a = a * b; }
 std::pair&lt;Bint, Bint&gt; divide(Bint a, const Bint &amp;b) {
     Bint c = 0;
     int i = 0;
     while (b &lt;&lt; (i + 1) &lt;= a) ++i;
     for (; i &gt;= 0; --i)
-        if (a &gt;= (b &lt;&lt; i)) a -= b &lt;&lt; i, c.set(i, 1);
+        if (a &gt;= (b &lt;&lt; i)) a = a - (b &lt;&lt; i), c.set(i, 1);
     return std::make_pair(c, a);
 }
 Bint operator/(const Bint &amp;a, const Bint &amp;b) { return divide(a, b).first; }
-Bint &amp;operator/=(Bint &amp;a, const Bint &amp;b) { return a = a / b; }
 Bint operator%(const Bint &amp;a, const Bint &amp;b) { return divide(a, b).second; }
-Bint &amp;operator%=(Bint &amp;a, const Bint &amp;b) { return a = a % b; }
 Bint BintFromStr(const char *p) {
     Bint x = 0;
     int sign = 1;
@@ -763,14 +772,14 @@ std::string BintToStr(Bint x) {
     for (int i = v.size() - 1; i &gt;= 0; --i) {
         int t = 0;
         for (int l = 3; l &gt;= 0; --l)
-            if (x &gt;= (v[i] &lt;&lt; l)) x -= v[i] &lt;&lt; l, t += 1 &lt;&lt; l;
+            if (x &gt;= (v[i] &lt;&lt; l)) x = x - (v[i] &lt;&lt; l), t += 1 &lt;&lt; l;
         out += t + '0';
     }
     return out;
 }
 </code></pre>
 
-<p>这个实现的代码就短到极致了，但性能同样也挺糟糕的，而且负数支持不佳（做除法会出错，需要自己转为正数做除法，或者可以自己写个类封装一下来解决这个问题），还有一个缺点是受bitset所限只能定长，不过在绝大部分情况下还能比前一份代码来得快不少，比如说求阶乘，长度设置为2048，求300的阶乘，这份代码只要0.01秒，前一份代码却要1.5秒，相差上百倍。要是改成求1000阶乘，设置长度为16384，计算时间为0.3秒（事实上这里面大部分时间花在了转出时转换到10进制，实际计算时间不到0.1秒），而前一份代码用时55秒。所以如果真要临时用用大整数，还是这个好，又短又不至于太慢。</p>
+<p>这个实现的代码就短到极致了（原始代码更短，但为了解决较长长度时的递归溢出只好多写几行），但性能同样也挺糟糕的，而且负数支持不佳（做除法会出错，需要自己转为正数做除法，或者可以自己写个类封装一下来解决这个问题），还有一个缺点是受bitset所限只能定长，但部分运算性能上比上一份略好，例如说设置长度为<code>1&lt;&lt;15</code>，求2000阶乘用时0.4秒，但2000位除法用时0.7秒。但对于长度较短的时候不失为一个简易实现。所以这个适用于临时用用的大整数，对于只有加法和乘法运算时会更优于前一个。</p>
 
 <h2 id="其它的github库实现">其它的Github库实现</h2>
 
@@ -784,6 +793,10 @@ std::string BintToStr(Bint x) {
 </ol>
 
 <p>还有一个只能在x64平台且只能用支持AT&amp;T内联汇编编译器(如GCC/clang)的实现 <a href="https://github.com/calebsander/bigint" target="_blank">calebsander/bigint</a>，它的加减法和小规模乘法速度确实飞快，比前面列举到的都快，但受编译环境限制较大。</p>
+
+<h2 id="备注">备注</h2>
+
+<p>以上两份代码于2021/06/22有修改，优化了乘法效率，解决递归溢出，同时更新测试结果。</p>
     </div>
 
     

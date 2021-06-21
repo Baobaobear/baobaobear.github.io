@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-05-06T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2021-06-21T00:00:00&#43;08:00">
   
 
   
@@ -360,6 +360,108 @@
   
 
   
+  
+    
+      
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="card-simple">
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Oct 15, 2019
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    4 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20191015-sorting-3/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e7%a0%94%e7%a9%b6">研究</a></span>
+  
+
+  
+
+</div>
+
+  
+
+  
+  
+  
+
+  <h3 class="article-title mb-1 mt-3">
+    <a href="/post/20191015-sorting-3/">堆排序优化思路</a>
+  </h3>
+
+  
+  <div class="article-style">
+    <p><p>堆排序其实是最不好优化的一个，在数据结构都确定的情况下，优化空间太小，除非优化数据结构本身，但那样就不叫做堆排序了。类似堆排序的还有<code>smooth sort</code>和<code>weakheap sort</code>，有兴趣可以自己查找相关资料。</p>
+
+<h2 id="堆排序原理">堆排序原理</h2>
+
+<p>堆排序其实是选择排序的优化变种，选择排序是把最大或最小的元素放到最边上，然后不断重复以上过程，堆排序也是如此，只不过堆排序通过构建数据结构，让查找最大或最小元素并放到最边上的速度比选择排序快得多。</p>
+
+<p>首先我们先来介绍什么是堆。堆只是个缩写，全名是二叉堆，是一种完全二叉树，它的特点是二叉堆的父节点元素不小于子节点的元素，以下为二叉堆例图</p>
+
+<pre><code class="language-mermaid">graph TD;
+30--&gt;29
+30--&gt;28
+29--&gt;24
+29--&gt;25
+28--&gt;26
+28--&gt;22
+24--&gt;21
+</code></pre></p>
+    <a href="/post/20191015-sorting-3/">Read more...</a>
+  </div>
+  
+
+  
+
+</div>
+
+    
   
     
       
