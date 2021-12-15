@@ -31,7 +31,7 @@
   <meta name="description" content="">
 
   
-  <link rel="alternate" hreflang="en-us" href="/categories/%E6%9D%82%E8%B0%88/">
+  <link rel="alternate" hreflang="en-us" href="/tags/ssd/">
 
   
 
@@ -94,14 +94,14 @@
 
 
   
-  <link rel="alternate" href="/categories/%E6%9D%82%E8%B0%88/index.xml" type="application/rss+xml" title="Baobaobear">
+  <link rel="alternate" href="/tags/ssd/index.xml" type="application/rss+xml" title="Baobaobear">
   
 
   <link rel="manifest" href="/index.webmanifest">
   <link rel="icon" type="image/png" href="/img/icon-32.png">
   <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
 
-  <link rel="canonical" href="/categories/%E6%9D%82%E8%B0%88/">
+  <link rel="canonical" href="/tags/ssd/">
 
   
   
@@ -114,8 +114,8 @@
   <meta property="twitter:card" content="summary">
   
   <meta property="og:site_name" content="Baobaobear">
-  <meta property="og:url" content="/categories/%E6%9D%82%E8%B0%88/">
-  <meta property="og:title" content="杂谈 | Baobaobear">
+  <meta property="og:url" content="/tags/ssd/">
+  <meta property="og:title" content="SSD | Baobaobear">
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
@@ -136,7 +136,7 @@
 
 
 
-  <title>杂谈 | Baobaobear</title>
+  <title>SSD | Baobaobear</title>
 
 </head>
 
@@ -346,7 +346,7 @@
     
   
 <div class="universal-wrapper pt-3">
-  <h1>杂谈</h1>
+  <h1>SSD</h1>
 
   
 
@@ -390,120 +390,8 @@ Wintogo 所谓Wintogo，就是把Windows系统安装在移动设备上，这样�
     </div>
   </div>
   
-  <div>
-    <h2><a href="/post/20210621-ubuntu/">折腾linux</a></h2>
-    <div class="article-style">
-      
-      近期在折腾linux，折腾差不多来写个总结，这货折腾了我很长的时间。由于USB3.0已经发展很久了，现在随便买的MicroSD/SD卡或U盘基本上都是USB3.0 class 10起步，所以考虑直接用这些来安装系统，这样你对哪个系统不满意直接换个U盘或SD卡就搞定了，而且测试下来速度也不慢。即使你的机器只有USB2.0接口，那也是能用的，就是启动时能感觉出来慢一些。这个也是方便咱们在校学生只有一台电脑，能方便更换系统不必每次折腾一次硬盘，同时可以熟悉比赛时所用的linux环境。另外，如果你想偷懒，我在这也准备了一些系统镜像，直接刷入U盘即可使用，请参见本文最末尾。本文主要针对LTS20版ubuntu，存在有效时限。
-在USB存储器上安装linux操作系统 在USB设备上安装个linux系统是很容易的，比起windows和MacOS来说，容易很多。这里有两种操作方式，一是使用虚拟机，这样我们只需要准备一个U盘（或SD或MicroSD卡，下文中说的U盘通常指这三者，且容量必须是16G或以上），二是使用真实机器来安装，这样我们需要准备两个U盘，多出来的一个是用来制作安装盘，安装工具推荐 Rufus 和 YUMI 以及 Ventoy，后两者可以用于制作多启动的U盘。
-
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20210305-bigint_fun/">大整数高精度计算——有趣的实现</a></h2>
-    <div class="article-style">
-      
-      这里收录一些有意思的实现，不过我都有进行改编以更方便使用，不过千万不要指望这性能有多高。收录的条件：
- 支持四则运算，必须包含除法及求余 支持字符串输入输出 代码不长  small biginteger library for contest 代码原作者Jane Alam Jan，你可以在Google上直接搜索small_biginteger_library_for_contest.pdf并下载到原始说明文档及代码，这里提供一份代码，改动不多，增加了int的构造函数和其它不等号的重载，乘法效率有优化，且增加输出到string而不直接输出终端，以便在其它场合使用更方便。
-
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20210118-htt/">很头疼拼图</a></h2>
-    <div class="article-style">
-      
-      本拼图难度较高，是给程序解答专用的题目（手工解我觉得没多少可能，但不排除有运气极佳的人），是检验你的程序效率有多高用的。
-它的名字是很头疼拼图，因为放入的块有H和两种T形状，而HTT就是很头疼。一共有21个块，放入一个12x12的框里，具体形状如下图
-以上是就是原题，每个小方块长宽均为1，底板尺寸是12x12。全部21块放入即成功解出，每一块均可以任意平移、旋转、翻转。你需要确定本题有多少个本质不同的解及相应具体答案。答案就不在这公开了，祝玩得开心。
-
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20210101-dino/">小恐龙拼图</a></h2>
-    <div class="article-style">
-      
-      本拼图难度较高，同时作为2021新年的起点！
-它的名字是小恐龙拼图，因为需要连同右边小恐龙形状的拼图块一起放入，一共有11个块，放入一个12x12的框里，如下图
-以上是就是原题，每个小方块长宽均为1，底板尺寸是12x12。全部11块放入即成功解出，每一块均可以任意平移、旋转、翻转。答案就不在这公开了，祝玩得开心。
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20201231-101010/">101010拼图</a></h2>
-    <div class="article-style">
-      
-      前两个拼图最多算热个身，难度不高，真正有点挑战的是以下这个，作为2020的纪念
-它的名字是101010，因为需要把10个块放入一个10x10的框里，如下图
-以上是就是原题，每个小方块长宽均为1，底板尺寸是10x10。右边的块每一块都写了x2，表示有两块完全一样的形状，全部10块放入即成功解出，每一块均可以任意平移、旋转、翻转。答案就不在这公开了，祝玩得开心。
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20201214-10question/">10个问号拼图</a></h2>
-    <div class="article-style">
-      
-      刷题经常搞得自己一脸问号，就想到弄一个由问号组成的拼图，如下图
-因为由10块一样的形似问号组合而成，所以我命名为10个问号。
-以上是就是原题，不同颜色来区分不同位置的小块。每个小方块长宽均为1，底板尺寸是10x10。要求把右边的“十”无重叠放入到10个问号里，放入即成功解出，答案就不在这公开了，祝玩得开心。
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20201123-orz14puzzle/">Orz14拼图</a></h2>
-    <div class="article-style">
-      
-      为了表达对大佬的膜拜，特设计一款拼图，由14个近似Orz形状的小块组合而成，如下图
-因为由14块一样的小块组合而成，所以我命名为Orz14，同时也有Orz一直到4的含义。
-以上是就是原题，不同颜色来区分不同位置的小块。每个小方块长宽均为1，底板尺寸是11x11。要求把右边的绿色小块也一并无重叠放入，这一块就代表大佬，放入即成功解出，答案就不在这公开了，祝玩得开心。
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20201023-puzzle/">解迷建模</a></h2>
-    <div class="article-style">
-      
-      这次来聊点简单的，也许你偶尔有机会在地摊上看到有人摆了一堆解锁玩具，这回我们通过建模来解决当中属于迷宫类型的玩具。
-魔金·円 第一图是初始状态，第二图是解开后各自的形状。为了更能理解接下来我说的，最好当然是你手上有一个一样的。
-但是，事实上可以存在两种不同的初始状态，其路线也略不相同，以下会做说明。
-编码 稍微操作几下，我们就会发现，它的操作很简单，它的边缘有一上一下，在中间的孔也有一左一右，即边缘的宽度小于等于中间的孔时，就可穿过一格。我们把它如下图摆放(俯视图)：
-
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="/post/20191006-mingw-bug/">Mingw 的 Bug</a></h2>
-    <div class="article-style">
-      
-      这个问题最早的时候是今年8月，我在测试排序算法的速度，发现mingw上总有点不一样，而linux下的gcc是正常的，也在群里问过人，没人明白到底怎么回事，先描述一下当时遇到的情况。
-一开始我使用std::random_shuffle打乱数组并用std::sort排序，在VS上并没有发现什么问题，gcc也正常。但在mingw上，这样打乱的数组排序所花的时间，比起其它打乱方式的，例如直接赋值一个随机数的方式，要明显慢了近1倍，这个诡异的问题一直没想通是为啥。当时觉得可能是std::sort对这种方式打乱的数据排序有点问题导致变慢。
-后来，为了和std函数脱钩，我自己重新写了随机数函数和random_shuffle函数，结果发现我的random_shuffle函数打乱的结果，std::sort的时间是完全正常的，非得std::random_shuffle才会出现两倍的情况，一时间我还以为是我写的有问题，还更换了不同随机函数，怎么也发现不了原因，终于把怀疑转向std::random_shuffle，我就对这个函数的执行结果输出到文件，这一输出立即把我搞懵了，输出的结果分布特别有规律，初值我用的是arr[i] = i，打乱后结果前32768个数都是数组里最大的数值，一时没明白怎么回事，难道它的实现很不寻常吗？我就去翻了一下源代码，在cppreference下源代码长下面这样：
-
-      
-    </div>
-  </div>
-  
 
   
-<nav>
-  <ul class="pagination justify-content-center">
-    
-    
-    <li class="page-item"><a class="page-link" href="/categories/%E6%9D%82%E8%B0%88/page/2/">&raquo;</a></li>
-    
-  </ul>
-</nav>
-
 
 </div>
 

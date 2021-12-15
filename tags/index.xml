@@ -5,12 +5,52 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 21 Jun 2021 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Wed, 15 Dec 2021 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Tags</title>
       <link>/tags/</link>
     </image>
+    
+    <item>
+      <title>NAND</title>
+      <link>/tags/nand/</link>
+      <pubDate>Wed, 15 Dec 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/nand/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SD卡</title>
+      <link>/tags/sd%E5%8D%A1/</link>
+      <pubDate>Wed, 15 Dec 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/sd%E5%8D%A1/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SSD</title>
+      <link>/tags/ssd/</link>
+      <pubDate>Wed, 15 Dec 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/ssd/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>U盘</title>
+      <link>/tags/u%E7%9B%98/</link>
+      <pubDate>Wed, 15 Dec 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/u%E7%9B%98/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>硬件</title>
+      <link>/tags/%E7%A1%AC%E4%BB%B6/</link>
+      <pubDate>Wed, 15 Dec 2021 00:00:00 +0800</pubDate>
+      <guid>/tags/%E7%A1%AC%E4%BB%B6/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>SD</title>
