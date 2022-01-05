@@ -5,7 +5,7 @@
     <link>/post/</link>
       <atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Wed, 15 Dec 2021 00:00:00 +0800</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 01 Jan 2022 00:00:00 +0800</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Posts</title>
@@ -13,13 +13,154 @@
     </image>
     
     <item>
+      <title>体验copilot</title>
+      <link>/post/20220110-copilot/</link>
+      <pubDate>Sat, 01 Jan 2022 00:00:00 +0800</pubDate>
+      <guid>/post/20220110-copilot/</guid>
+      <description>&lt;p&gt;体验了一段时间的copilot，是时候来写个简单的总结了。&lt;/p&gt;
+
+&lt;h2 id=&#34;copilot是什么&#34;&gt;copilot是什么&lt;/h2&gt;
+
+&lt;p&gt;copilot是一个vscode的插件。最初收到这个消息的时候，我就去申请参与内测，可能那时候已经晚了，一直等到公测才用上。它是一款自动提示插件，不过它的自动提示能力远超以前用过的，一用上，就把我惊艳到了，不是一般的函数名完成，或成员提示，而是一整段代码给你提示完成，甚至在尝试猜测你想要写的功能，直接给你补完一个函数甚至一个类。&lt;/p&gt;
+
+&lt;p&gt;先来看几个补全效果图:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/copilot/c1.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;以上没有行号灰色部分就是自动补全的部分，你给出函数名，它就猜出你应该要的代码的效果，那以下来一个更复杂点的排序，当然也是没有问题的。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/copilot/c2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;不止如此，你只要写上接下来的函数的注释，有一些它也能直接给你补完这个函数的实现，你的注释还能帮助它提供更准确的信息。所以这又一次说明注释的作用，不但是给人看的，不但是用来生成自动化文档的，甚至是用来自动生成代码的。&lt;/p&gt;
+
+&lt;h2 id=&#34;对刷题的作用&#34;&gt;对刷题的作用&lt;/h2&gt;
+
+&lt;p&gt;刷题能用它吗？能，比如说写个并查集&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/copilot/c3.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;并查集的代码有点长，就没能全部截图。或者再来写个快速幂&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/copilot/c4.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在写这些基础模板代码的时候，补全的效果又快又不会错（只是大多数情况下，它不总是正确的），简直就是刷题利器。不过更复杂的模板它就帮不了你了，但是它还能在一些细节上给你帮助。更有甚者，直接用这个工具去刷力扣的题，当然，只有早期的题目能给出完整答案就是了。再比如说，我写一个bigint的类，它就直接给提示了一个，带了加法和减法，但可惜它不是我想要的。换言之，空缺的部分较多时，它多数能给你一个能用的代码，但要是想写优秀的代码的话，你最好还是自己来，细节部分再让它给你补全。&lt;/p&gt;
+
+&lt;p&gt;不过还是建议老手使用这个插件，新手在练习阶段，要是依赖了这个插件，上赛场那是没有这个插件可用的，不可能你只靠它来写代码，没了它就不会写这些基础的模板代码吧。而且，它补全的结果很多时候还是需要手动调整的，不过这已经足够让我觉得它非常厉害了。&lt;/p&gt;
+
+&lt;h2 id=&#34;在开发上的帮助&#34;&gt;在开发上的帮助&lt;/h2&gt;
+
+&lt;p&gt;在软件开发上，尤其是逻辑不像算法那么复杂的时候，提示的代码显得更为准确，甚至有一种为什么它能猜出自己想做啥的感觉，有时候显得比自己还要了解自己。用了一次就觉得太香了，香得回不去了。&lt;/p&gt;
+
+&lt;p&gt;另外这个插件产生过很多争议，比如说，因为Github除了通过公开的repo，还通过私有repo代码来训练AI产生的代码，于是提示的内容有时会包含有版权和非公开的代码，结果就很可能被用到其它地方，产生版权问题（详细可以自行Google）。&lt;/p&gt;
+
+&lt;p&gt;网上有太多文章在吹这个插件，我不想吹得太过，毕竟准确率其实还是一般，但只要有20%的提示特别的准确，就已经让你觉得很神了。所以说它还远远没到能替代人的地步，只是大多数情况下提供的代码相当强，提升不少生产力还是没有问题的。&lt;/p&gt;
+
+&lt;h2 id=&#34;一个完整演示&#34;&gt;一个完整演示&lt;/h2&gt;
+
+&lt;p&gt;我用它在几分钟里写了一个简单的压位大整数实现，里面用注释注明哪些函数是自动完成的，哪些是手动写的，写起来还是挺轻松愉快的，只要你不让它给你补除法的话。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;algorithm&amp;gt;
+#include &amp;lt;vector&amp;gt;
+#include &amp;lt;string&amp;gt;
+
+#include &amp;lt;cstdio&amp;gt;
+
+using namespace std;
+typedef long long ll;
+const int maxn = 1000000 + 10;
+
+struct bigint {
+    vector&amp;lt; int &amp;gt; v; // hand write
+    bigint() {} // auto complete
+    bigint(int x) { // hand write
+        v.clear();
+        for (; x; x /= 10000)
+            v.push_back(x % 10000);
+    }
+    bigint operator+(const bigint &amp;amp;b) const { // auto complete
+        bigint c;
+        int carry = 0;
+        c.v.resize(max(v.size(), b.v.size()));
+        for (int i = 0; i &amp;lt; (int)v.size() || i &amp;lt; (int)b.v.size(); i++) {
+            c.v[i] = (i &amp;lt; (int)v.size() ? v[i] : 0) + (i &amp;lt; (int)b.v.size() ? b.v[i] : 0) + carry;
+            carry = c.v[i] / 10000;
+            c.v[i] %= 10000;
+        }
+        if (carry)
+            c.v.push_back(carry);
+        return c;
+    }
+    bigint operator*(const bigint &amp;amp;b) const { // auto complete
+        bigint c;
+        c.v.resize(v.size() + b.v.size());
+        for (int i = 0; i &amp;lt; (int)v.size(); i++) {
+            for (int j = 0; j &amp;lt; (int)b.v.size(); j++) {
+                c.v[i + j] += v[i] * b.v[j];
+                c.v[i + j + 1] += c.v[i + j] / 10000;
+                c.v[i + j] %= 10000;
+            }
+        }
+        while (c.v.back() == 0) // hand write
+            c.v.pop_back();
+        return c;
+    }
+    bigint operator*(int x) const { // auto complete
+        bigint c;
+        c.v.resize(v.size() + 2);
+        for (int i = 0; i &amp;lt; (int)v.size(); i++) {
+            c.v[i] += v[i] * x;
+            c.v[i + 1] += c.v[i] / 10000;
+            c.v[i] %= 10000;
+        }
+        while (c.v.back() == 0)
+            c.v.pop_back();
+        return c;
+    }
+    string to_str() const { // hand write
+        char buf[10];
+        sprintf(buf, &amp;quot;%d&amp;quot;, v.back());
+        string s = buf;
+        for (int i = (int)v.size() - 2; i &amp;gt;= 0; i--) {
+            sprintf(buf, &amp;quot;%04d&amp;quot;, v[i]);
+            s += buf;
+        }
+        return s;
+    }
+};
+
+int main() {
+    bigint s;
+    s = 1;
+    for (int i = 1; i &amp;lt;= 100; i++) {
+        s = s * i;
+    }
+    printf(&amp;quot;%s\n&amp;quot;, s.to_str().c_str());
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;核心代码里面，加法几乎不用动手，乘法修正了一个前导0去除问题，主体的乘法代码我一点不用动就是正确的，就是输出基本得自己写。测试过加法乘法都没有问
+题。减法测试过能正确补全，但除法就不放进来了，因为提示的代码太辣鸡了。更离谱的是如果你打上ntt，它真的给你补上用ntt实现的大整数乘法，只是很多细节还是要去改，核心代码倒是看着没啥大问题。&lt;/p&gt;
+
+&lt;p&gt;还有一个问题，它在不同时间给你的补全是可能不太一样的，我这里的补全结果不见得你能重现，所以以上只供参考。&lt;/p&gt;
+
+&lt;h2 id=&#34;优点和缺点&#34;&gt;优点和缺点&lt;/h2&gt;
+
+&lt;p&gt;优点：提示内容相当完整（除非你希望它给你补全一个红黑树之类的，太长的还是不行），最强的自动提示插件，强大到你会怀疑它是不是知道你在想什么。&lt;/p&gt;
+
+&lt;p&gt;缺点：你需要连网，而且能连上Github，使用前需要申请，并绑定你的Github账号。在linux上使用起来也会因为不同的环境配置起来更麻烦一些。&lt;/p&gt;
+
+&lt;h2 id=&#34;其它替代品&#34;&gt;其它替代品&lt;/h2&gt;
+
+&lt;p&gt;四个字：目前没有。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>折腾NAND</title>
       <link>/post/20211220-ssd/</link>
       <pubDate>Wed, 15 Dec 2021 00:00:00 +0800</pubDate>
       <guid>/post/20211220-ssd/</guid>
-      <description>
-
-&lt;p&gt;近期在折腾SSD、SD、U盘，折腾差不多来写个总结，坑不少。本文部分内容会随着时间而变化，于2021年12月编写。&lt;/p&gt;
+      <description>&lt;p&gt;近期在折腾SSD、SD、U盘，折腾差不多来写个总结，坑不少。本文部分内容会随着时间而变化，于2021年12月编写。&lt;/p&gt;
 
 &lt;h2 id=&#34;常见nand硬件&#34;&gt;常见NAND硬件&lt;/h2&gt;
 
@@ -43,13 +184,11 @@
 
 &lt;p&gt;主控还负责FTL层，即从逻辑地址映射到物理地址的映射。FTL通常包含GC算法、Wear leveling（WL）磨损平衡算法。&lt;/p&gt;
 
-&lt;p&gt;另外还有一个关键点，就是看主控支不支持TRIM指令（在NVME上不叫这个名字，但为了统一通常还是这么称呼），在支持TRIM指令的主控上，配合操作系统，能大大优化GC。绝大多数的MicroSD卡和SD卡都不支持TRIM，大部分低端U盘也不支持，少数移动SSD不支持。不支持TRIM的后果，是当写入量累计达到它的容量时，因为主控并不知道还有哪些地方可以写入，于是只好原地写入，磨损平衡就不存在了。所以，这种不支持TRIM指令的，通常都没有做磨损平衡，会把它当普通硬盘一样写入。&lt;/p&gt;
+&lt;p&gt;另外还有一个关键点，就是看主控支不支持TRIM指令（在NVME上不叫这个名字，但为了统一通常还是这么称呼），在支持TRIM指令的主控上，配合操作系统，能大大优化GC。绝大多数的MicroSD卡和SD卡都不支持TRIM，大部分低端U盘也不支持，少数移动SSD不支持。不支持TRIM的后果，是当写入量累计达到它的容量时，因为主控并不知道还有哪些地方可以写入，于是只好原地写入，磨损平衡就不存在了。当然并不是说不支持TRIM就一定没有磨损平衡，比如说，你的SD卡使用了exfat格式，SD卡主控能认出来，自己找到没有使用的地方进行GC的话，那确实不需要支持TRIM就可以达到相似的效果。如果SD卡厂商宣传上写了支持的文件系统，那有可能就是这个类型。所以，这种不支持TRIM指令的，如果没有做磨损平衡，会把它当普通硬盘一样写入（这种盘最好每次写满了再删掉，或直接做监控视频用），而如果有做，那格式化的时候就只开比如3/4的大小，保留一部分用来做磨损平衡。&lt;/p&gt;
 
 &lt;p&gt;查看硬件支不支持TRIM，在Windows上有很多方式，最简单的方法，插入U盘或SD卡后，右键属性，在工具页面有个优化按钮，点进去就能看到当前所有驱动器的媒体类型，识别为固态硬盘的，就是支持TRIM，如果只是显示硬盘驱动器的，就是不支持TRIM。或者还可以用DiskGenius，对驱动器右键，看有没有“TRIM优化”这一项。&lt;/p&gt;
 
-&lt;p&gt;也就是说，对于大多数SD卡，如果要寿命长，那么最好是老实地放相机之类的使用，就每次存资料放满了，格式化再存，不要只存一点点数据就删除了再存。&lt;/p&gt;
-
-&lt;p&gt;当然并不是说不支持TRIM就一定没有磨损平衡，比如说，你的SD卡使用了exfat格式，SD卡主控能认出来，自己找到没有使用的地方进行GC的话，那确实不需要支持TRIM就可以达到相似的效果。如果SD卡厂商宣传上写了支持的文件系统，那很可能就是这个类型。&lt;/p&gt;
+&lt;p&gt;也就是说，对于大多数SD卡，如果要寿命长，那么最好是老实地放相机之类的使用，就每次存资料放满了，格式化再存，不要只存一点点数据就删除了再存。除非确认它支持磨损平衡。&lt;/p&gt;
 
 &lt;p&gt;对于支持GC和WL的，存在写入放大的问题。比如说，要写入一个10K大小的数据，需要占用2个page，但已经没有一个block可以直接写入2个Page，这时候就需要做一次GC，把2个各有一个空余page的block里有用的数据读出，再重新写入，这样再把原本要写入的数据写入到2个空出来的page里面。于是，原本写入2个page大小的数据，结果是写入了2个block，考虑到1个block里面假设有128个page的话，那就是放大写入128倍。但是，对于不支持GC和WL的，每满一次之后每次写入都在写入放大，每次写入都是把整个block读出，然后和要写入的数据合并，再整个写入。不论你写入的数据量是1字节还是10k，本质上都写入了一个block，这就是掉速原因之一。而且这种掉速无法通过格式化恢复。&lt;/p&gt;
 
@@ -97,8 +236,7 @@
 
 &lt;h2 id=&#34;最后&#34;&gt;最后&lt;/h2&gt;
 
-&lt;p&gt;和硬件打交道，本质上就是和奸商斗智斗勇，并不是你多给钱就一定能得到应有的东西。&lt;/p&gt;
-</description>
+&lt;p&gt;和硬件打交道，本质上就是和奸商斗智斗勇，并不是你多给钱就一定能得到应有的东西。&lt;/p&gt;</description>
     </item>
     
     <item>
@@ -6333,7 +6471,7 @@ static uint64_t i64_distribution(_Eg&amp;amp; eg, uint64_t n)
 
 &lt;p&gt;网上还有很多其它的错误生成方法，以下给大家带来一个视频，我觉得讲解得不错&lt;/p&gt;
 
-&lt;iframe src=&#34;https://channel9.msdn.com/Events/GoingNative/2013/rand-Considered-Harmful/player&#34; width=&#34;960&#34; height=&#34;540&#34; allowFullScreen frameBorder=&#34;0&#34; title=&#34;rand() Considered Harmful - Microsoft Channel 9 Video&#34;&gt;&lt;/iframe&gt;
+&lt;iframe width=&#34;960&#34; height=&#34;540&#34; src=&#34;https://www.youtube.com/embed/LDPMpc-ENqY&#34; title=&#34;YouTube video player&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
 
 &lt;h2 id=&#34;后记&#34;&gt;后记&lt;/h2&gt;
 

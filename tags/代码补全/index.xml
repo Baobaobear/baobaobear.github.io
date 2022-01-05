@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>代码补全 | Baobaobear</title>
+    <link>/tags/%E4%BB%A3%E7%A0%81%E8%A1%A5%E5%85%A8/</link>
+      <atom:link href="/tags/%E4%BB%A3%E7%A0%81%E8%A1%A5%E5%85%A8/index.xml" rel="self" type="application/rss+xml" />
+    <description>代码补全</description>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 01 Jan 2022 00:00:00 +0800</lastBuildDate>
+    <image>
+      <url>/img/icon-192.png</url>
+      <title>代码补全</title>
+      <link>/tags/%E4%BB%A3%E7%A0%81%E8%A1%A5%E5%85%A8/</link>
+    </image>
+    
+    <item>
+      <title>体验copilot</title>
+      <link>/post/20220110-copilot/</link>
+      <pubDate>Sat, 01 Jan 2022 00:00:00 +0800</pubDate>
+      <guid>/post/20220110-copilot/</guid>
+      <description>&lt;p&gt;体验了一段时间的copilot，是时候来写个简单的总结了。&lt;/p&gt;
+
+&lt;h2 id=&#34;copilot是什么&#34;&gt;copilot是什么&lt;/h2&gt;
+
+&lt;p&gt;copilot是一个vscode的插件。最初收到这个消息的时候，我就去申请参与内测，可能那时候已经晚了，一直等到公测才用上。它是一款自动提示插件，不过它的自动提示能力远超以前用过的，一用上，就把我惊艳到了，不是一般的函数名完成，或成员提示，而是一整段代码给你提示完成，甚至在尝试猜测你想要写的功能，直接给你补完一个函数甚至一个类。&lt;/p&gt;
+
+&lt;p&gt;先来看几个补全效果图:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/copilot/c1.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;以上没有行号灰色部分就是自动补全的部分，你给出函数名，它就猜出你应该要的代码的效果，那以下来一个更复杂点的排序，当然也是没有问题的。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/copilot/c2.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;不止如此，你只要写上接下来的函数的注释，有一些它也能直接给你补完这个函数的实现，你的注释还能帮助它提供更准确的信息。所以这又一次说明注释的作用，不但是给人看的，不但是用来生成自动化文档的，甚至是用来自动生成代码的。&lt;/p&gt;
+
+&lt;h2 id=&#34;对刷题的作用&#34;&gt;对刷题的作用&lt;/h2&gt;
+
+&lt;p&gt;刷题能用它吗？能，比如说写个并查集&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/copilot/c3.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;并查集的代码有点长，就没能全部截图。或者再来写个快速幂&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/img/copilot/c4.png&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;在写这些基础模板代码的时候，补全的效果又快又不会错（只是大多数情况下，它不总是正确的），简直就是刷题利器。不过更复杂的模板它就帮不了你了，但是它还能在一些细节上给你帮助。更有甚者，直接用这个工具去刷力扣的题，当然，只有早期的题目能给出完整答案就是了。再比如说，我写一个bigint的类，它就直接给提示了一个，带了加法和减法，但可惜它不是我想要的。换言之，空缺的部分较多时，它多数能给你一个能用的代码，但要是想写优秀的代码的话，你最好还是自己来，细节部分再让它给你补全。&lt;/p&gt;
+
+&lt;p&gt;不过还是建议老手使用这个插件，新手在练习阶段，要是依赖了这个插件，上赛场那是没有这个插件可用的，不可能你只靠它来写代码，没了它就不会写这些基础的模板代码吧。而且，它补全的结果很多时候还是需要手动调整的，不过这已经足够让我觉得它非常厉害了。&lt;/p&gt;
+
+&lt;h2 id=&#34;在开发上的帮助&#34;&gt;在开发上的帮助&lt;/h2&gt;
+
+&lt;p&gt;在软件开发上，尤其是逻辑不像算法那么复杂的时候，提示的代码显得更为准确，甚至有一种为什么它能猜出自己想做啥的感觉，有时候显得比自己还要了解自己。用了一次就觉得太香了，香得回不去了。&lt;/p&gt;
+
+&lt;p&gt;另外这个插件产生过很多争议，比如说，因为Github除了通过公开的repo，还通过私有repo代码来训练AI产生的代码，于是提示的内容有时会包含有版权和非公开的代码，结果就很可能被用到其它地方，产生版权问题（详细可以自行Google）。&lt;/p&gt;
+
+&lt;p&gt;网上有太多文章在吹这个插件，我不想吹得太过，毕竟准确率其实还是一般，但只要有20%的提示特别的准确，就已经让你觉得很神了。所以说它还远远没到能替代人的地步，只是大多数情况下提供的代码相当强，提升不少生产力还是没有问题的。&lt;/p&gt;
+
+&lt;h2 id=&#34;一个完整演示&#34;&gt;一个完整演示&lt;/h2&gt;
+
+&lt;p&gt;我用它在几分钟里写了一个简单的压位大整数实现，里面用注释注明哪些函数是自动完成的，哪些是手动写的，写起来还是挺轻松愉快的，只要你不让它给你补除法的话。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;algorithm&amp;gt;
+#include &amp;lt;vector&amp;gt;
+#include &amp;lt;string&amp;gt;
+
+#include &amp;lt;cstdio&amp;gt;
+
+using namespace std;
+typedef long long ll;
+const int maxn = 1000000 + 10;
+
+struct bigint {
+    vector&amp;lt; int &amp;gt; v; // hand write
+    bigint() {} // auto complete
+    bigint(int x) { // hand write
+        v.clear();
+        for (; x; x /= 10000)
+            v.push_back(x % 10000);
+    }
+    bigint operator+(const bigint &amp;amp;b) const { // auto complete
+        bigint c;
+        int carry = 0;
+        c.v.resize(max(v.size(), b.v.size()));
+        for (int i = 0; i &amp;lt; (int)v.size() || i &amp;lt; (int)b.v.size(); i++) {
+            c.v[i] = (i &amp;lt; (int)v.size() ? v[i] : 0) + (i &amp;lt; (int)b.v.size() ? b.v[i] : 0) + carry;
+            carry = c.v[i] / 10000;
+            c.v[i] %= 10000;
+        }
+        if (carry)
+            c.v.push_back(carry);
+        return c;
+    }
+    bigint operator*(const bigint &amp;amp;b) const { // auto complete
+        bigint c;
+        c.v.resize(v.size() + b.v.size());
+        for (int i = 0; i &amp;lt; (int)v.size(); i++) {
+            for (int j = 0; j &amp;lt; (int)b.v.size(); j++) {
+                c.v[i + j] += v[i] * b.v[j];
+                c.v[i + j + 1] += c.v[i + j] / 10000;
+                c.v[i + j] %= 10000;
+            }
+        }
+        while (c.v.back() == 0) // hand write
+            c.v.pop_back();
+        return c;
+    }
+    bigint operator*(int x) const { // auto complete
+        bigint c;
+        c.v.resize(v.size() + 2);
+        for (int i = 0; i &amp;lt; (int)v.size(); i++) {
+            c.v[i] += v[i] * x;
+            c.v[i + 1] += c.v[i] / 10000;
+            c.v[i] %= 10000;
+        }
+        while (c.v.back() == 0)
+            c.v.pop_back();
+        return c;
+    }
+    string to_str() const { // hand write
+        char buf[10];
+        sprintf(buf, &amp;quot;%d&amp;quot;, v.back());
+        string s = buf;
+        for (int i = (int)v.size() - 2; i &amp;gt;= 0; i--) {
+            sprintf(buf, &amp;quot;%04d&amp;quot;, v[i]);
+            s += buf;
+        }
+        return s;
+    }
+};
+
+int main() {
+    bigint s;
+    s = 1;
+    for (int i = 1; i &amp;lt;= 100; i++) {
+        s = s * i;
+    }
+    printf(&amp;quot;%s\n&amp;quot;, s.to_str().c_str());
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;核心代码里面，加法几乎不用动手，乘法修正了一个前导0去除问题，主体的乘法代码我一点不用动就是正确的，就是输出基本得自己写。测试过加法乘法都没有问
+题。减法测试过能正确补全，但除法就不放进来了，因为提示的代码太辣鸡了。更离谱的是如果你打上ntt，它真的给你补上用ntt实现的大整数乘法，只是很多细节还是要去改，核心代码倒是看着没啥大问题。&lt;/p&gt;
+
+&lt;p&gt;还有一个问题，它在不同时间给你的补全是可能不太一样的，我这里的补全结果不见得你能重现，所以以上只供参考。&lt;/p&gt;
+
+&lt;h2 id=&#34;优点和缺点&#34;&gt;优点和缺点&lt;/h2&gt;
+
+&lt;p&gt;优点：提示内容相当完整（除非你希望它给你补全一个红黑树之类的，太长的还是不行），最强的自动提示插件，强大到你会怀疑它是不是知道你在想什么。&lt;/p&gt;
+
+&lt;p&gt;缺点：你需要连网，而且能连上Github，使用前需要申请，并绑定你的Github账号。在linux上使用起来也会因为不同的环境配置起来更麻烦一些。&lt;/p&gt;
+
+&lt;h2 id=&#34;其它替代品&#34;&gt;其它替代品&lt;/h2&gt;
+
+&lt;p&gt;四个字：目前没有。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

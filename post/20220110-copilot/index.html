@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academic 4.5.0">
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="抱抱熊">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="体验了一段时间的copilot，是时候来写个简单的总结了。
+
+copilot是什么
+
+copilot是一个vscode的插件。最初收到这个消息的时候，我就去申请参与内测，可能那时候已经晚了，一直等到公测才用上。它是一款自动提示插件，不过它的自动提示能力远超以前用过的，一用上，就把我惊艳到了，不是一般的函数名完成，或成员提示，而是一整段代码给你提示完成，甚至在尝试猜测你想要写的功能，直接给你补完一个函数甚至一个类。
+
+先来看几个补全效果图:
+
+
+
+以上没有行号灰色部分就是自动补全的部分，你给出函数名，它就猜出你应该要的代码的效果，那以下来一个更复杂点的排序，当然也是没有问题的。
+
+
+
+不止如此，你只要写上接下来的函数的注释，有一些它也能直接给你补完这个函数的实现，你的注释还能帮助它提供更准确的信息。所以这又一次说明注释的作用，不但是给人看的，不但是用来生成自动化文档的，甚至是用来自动生成代码的。">
+
+  
+  <link rel="alternate" hreflang="en-us" href="/post/20220110-copilot/">
+
+  
+
+
+  
+  
+  
+  <meta name="theme-color" content="#ff3860">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-light">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/atom-one-dark-reasonable.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:400,700%7CRoboto:400,400italic,700%7CRoboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academic.min.3029a502a418216cce7fbc18a9c0af71.css">
+
+  
+
+  
+
+
+
+
+  
+
+
+  
+
+  <link rel="manifest" href="/index.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon-32.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="/post/20220110-copilot/">
+
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary">
+  
+  <meta property="og:site_name" content="Baobaobear">
+  <meta property="og:url" content="/post/20220110-copilot/">
+  <meta property="og:title" content="体验copilot | Baobaobear">
+  <meta property="og:description" content="体验了一段时间的copilot，是时候来写个简单的总结了。
+
+copilot是什么
+
+copilot是一个vscode的插件。最初收到这个消息的时候，我就去申请参与内测，可能那时候已经晚了，一直等到公测才用上。它是一款自动提示插件，不过它的自动提示能力远超以前用过的，一用上，就把我惊艳到了，不是一般的函数名完成，或成员提示，而是一整段代码给你提示完成，甚至在尝试猜测你想要写的功能，直接给你补完一个函数甚至一个类。
+
+先来看几个补全效果图:
+
+
+
+以上没有行号灰色部分就是自动补全的部分，你给出函数名，它就猜出你应该要的代码的效果，那以下来一个更复杂点的排序，当然也是没有问题的。
+
+
+
+不止如此，你只要写上接下来的函数的注释，有一些它也能直接给你补完这个函数的实现，你的注释还能帮助它提供更准确的信息。所以这又一次说明注释的作用，不但是给人看的，不但是用来生成自动化文档的，甚至是用来自动生成代码的。"><meta property="og:image" content="/img/icon-192.png">
+  <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
+  
+    
+      <meta property="article:published_time" content="2022-01-01T00:00:00&#43;08:00">
+    
+    <meta property="article:modified_time" content="2022-01-01T00:00:00&#43;08:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "/post/20220110-copilot/"
+  },
+  "headline": "体验copilot",
+  
+  "datePublished": "2022-01-01T00:00:00+08:00",
+  "dateModified": "2022-01-01T00:00:00+08:00",
+  
+  "author": {
+    "@type": "Person",
+    "name": "抱抱熊"
+  },
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Baobaobear",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "/img/icon-512.png"
+    }
+  },
+  "description": "\u003cp\u003e体验了一段时间的copilot，是时候来写个简单的总结了。\u003c/p\u003e\n\n\u003ch2 id=\"copilot是什么\"\u003ecopilot是什么\u003c/h2\u003e\n\n\u003cp\u003ecopilot是一个vscode的插件。最初收到这个消息的时候，我就去申请参与内测，可能那时候已经晚了，一直等到公测才用上。它是一款自动提示插件，不过它的自动提示能力远超以前用过的，一用上，就把我惊艳到了，不是一般的函数名完成，或成员提示，而是一整段代码给你提示完成，甚至在尝试猜测你想要写的功能，直接给你补完一个函数甚至一个类。\u003c/p\u003e\n\n\u003cp\u003e先来看几个补全效果图:\u003c/p\u003e\n\n\u003cp\u003e\u003cimg src=\"/img/copilot/c1.png\" alt=\"\" /\u003e\u003c/p\u003e\n\n\u003cp\u003e以上没有行号灰色部分就是自动补全的部分，你给出函数名，它就猜出你应该要的代码的效果，那以下来一个更复杂点的排序，当然也是没有问题的。\u003c/p\u003e\n\n\u003cp\u003e\u003cimg src=\"/img/copilot/c2.png\" alt=\"\" /\u003e\u003c/p\u003e\n\n\u003cp\u003e不止如此，你只要写上接下来的函数的注释，有一些它也能直接给你补完这个函数的实现，你的注释还能帮助它提供更准确的信息。所以这又一次说明注释的作用，不但是给人看的，不但是用来生成自动化文档的，甚至是用来自动生成代码的。\u003c/p\u003e"
+}
+</script>
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+
+  <title>体验copilot | Baobaobear</title>
+
+</head>
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search">
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0 compensate-for-scrollbar" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">Baobaobear</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse"
+              data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+
+      
+      
+      <ul class="navbar-nav mr-auto">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>All Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Recent Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+          
+          
+          
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#tags"><span>Tags</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/blogroll/"><span>Blogroll</span></a>
+        </li>
+
+        
+        
+
+      
+      </ul>
+      <ul class="navbar-nav ml-auto">
+      
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-search" href="#"><i class="fas fa-search" aria-hidden="true"></i></a>
+        </li>
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>体验copilot</h1>
+
+  
+
+  
+    
+
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jan 1, 2022
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    2 min read
+  </span>
+  
+
+  
+  
+  
+  <span class="middot-divider"></span>
+  <a href="/post/20220110-copilot/#disqus_thread"></a>
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder mr-1"></i><a href="/categories/%e6%9d%82%e8%b0%88">杂谈</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=/post/20220110-copilot/&amp;text=%e4%bd%93%e9%aa%8ccopilot" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=/post/20220110-copilot/&amp;t=%e4%bd%93%e9%aa%8ccopilot" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%e4%bd%93%e9%aa%8ccopilot&amp;body=/post/20220110-copilot/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=/post/20220110-copilot/&amp;title=%e4%bd%93%e9%aa%8ccopilot" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%e4%bd%93%e9%aa%8ccopilot%20/post/20220110-copilot/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=/post/20220110-copilot/&amp;title=%e4%bd%93%e9%aa%8ccopilot" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+</div>
+
+
+
+  <div class="article-container">
+
+    <div class="article-style">
+      <p>体验了一段时间的copilot，是时候来写个简单的总结了。</p>
+
+<h2 id="copilot是什么">copilot是什么</h2>
+
+<p>copilot是一个vscode的插件。最初收到这个消息的时候，我就去申请参与内测，可能那时候已经晚了，一直等到公测才用上。它是一款自动提示插件，不过它的自动提示能力远超以前用过的，一用上，就把我惊艳到了，不是一般的函数名完成，或成员提示，而是一整段代码给你提示完成，甚至在尝试猜测你想要写的功能，直接给你补完一个函数甚至一个类。</p>
+
+<p>先来看几个补全效果图:</p>
+
+<p><img src="/img/copilot/c1.png" alt="" /></p>
+
+<p>以上没有行号灰色部分就是自动补全的部分，你给出函数名，它就猜出你应该要的代码的效果，那以下来一个更复杂点的排序，当然也是没有问题的。</p>
+
+<p><img src="/img/copilot/c2.png" alt="" /></p>
+
+<p>不止如此，你只要写上接下来的函数的注释，有一些它也能直接给你补完这个函数的实现，你的注释还能帮助它提供更准确的信息。所以这又一次说明注释的作用，不但是给人看的，不但是用来生成自动化文档的，甚至是用来自动生成代码的。</p>
+
+<h2 id="对刷题的作用">对刷题的作用</h2>
+
+<p>刷题能用它吗？能，比如说写个并查集</p>
+
+<p><img src="/img/copilot/c3.png" alt="" /></p>
+
+<p>并查集的代码有点长，就没能全部截图。或者再来写个快速幂</p>
+
+<p><img src="/img/copilot/c4.png" alt="" /></p>
+
+<p>在写这些基础模板代码的时候，补全的效果又快又不会错（只是大多数情况下，它不总是正确的），简直就是刷题利器。不过更复杂的模板它就帮不了你了，但是它还能在一些细节上给你帮助。更有甚者，直接用这个工具去刷力扣的题，当然，只有早期的题目能给出完整答案就是了。再比如说，我写一个bigint的类，它就直接给提示了一个，带了加法和减法，但可惜它不是我想要的。换言之，空缺的部分较多时，它多数能给你一个能用的代码，但要是想写优秀的代码的话，你最好还是自己来，细节部分再让它给你补全。</p>
+
+<p>不过还是建议老手使用这个插件，新手在练习阶段，要是依赖了这个插件，上赛场那是没有这个插件可用的，不可能你只靠它来写代码，没了它就不会写这些基础的模板代码吧。而且，它补全的结果很多时候还是需要手动调整的，不过这已经足够让我觉得它非常厉害了。</p>
+
+<h2 id="在开发上的帮助">在开发上的帮助</h2>
+
+<p>在软件开发上，尤其是逻辑不像算法那么复杂的时候，提示的代码显得更为准确，甚至有一种为什么它能猜出自己想做啥的感觉，有时候显得比自己还要了解自己。用了一次就觉得太香了，香得回不去了。</p>
+
+<p>另外这个插件产生过很多争议，比如说，因为Github除了通过公开的repo，还通过私有repo代码来训练AI产生的代码，于是提示的内容有时会包含有版权和非公开的代码，结果就很可能被用到其它地方，产生版权问题（详细可以自行Google）。</p>
+
+<p>网上有太多文章在吹这个插件，我不想吹得太过，毕竟准确率其实还是一般，但只要有20%的提示特别的准确，就已经让你觉得很神了。所以说它还远远没到能替代人的地步，只是大多数情况下提供的代码相当强，提升不少生产力还是没有问题的。</p>
+
+<h2 id="一个完整演示">一个完整演示</h2>
+
+<p>我用它在几分钟里写了一个简单的压位大整数实现，里面用注释注明哪些函数是自动完成的，哪些是手动写的，写起来还是挺轻松愉快的，只要你不让它给你补除法的话。</p>
+
+<pre><code class="language-cpp">#include &lt;algorithm&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+
+#include &lt;cstdio&gt;
+
+using namespace std;
+typedef long long ll;
+const int maxn = 1000000 + 10;
+
+struct bigint {
+    vector&lt; int &gt; v; // hand write
+    bigint() {} // auto complete
+    bigint(int x) { // hand write
+        v.clear();
+        for (; x; x /= 10000)
+            v.push_back(x % 10000);
+    }
+    bigint operator+(const bigint &amp;b) const { // auto complete
+        bigint c;
+        int carry = 0;
+        c.v.resize(max(v.size(), b.v.size()));
+        for (int i = 0; i &lt; (int)v.size() || i &lt; (int)b.v.size(); i++) {
+            c.v[i] = (i &lt; (int)v.size() ? v[i] : 0) + (i &lt; (int)b.v.size() ? b.v[i] : 0) + carry;
+            carry = c.v[i] / 10000;
+            c.v[i] %= 10000;
+        }
+        if (carry)
+            c.v.push_back(carry);
+        return c;
+    }
+    bigint operator*(const bigint &amp;b) const { // auto complete
+        bigint c;
+        c.v.resize(v.size() + b.v.size());
+        for (int i = 0; i &lt; (int)v.size(); i++) {
+            for (int j = 0; j &lt; (int)b.v.size(); j++) {
+                c.v[i + j] += v[i] * b.v[j];
+                c.v[i + j + 1] += c.v[i + j] / 10000;
+                c.v[i + j] %= 10000;
+            }
+        }
+        while (c.v.back() == 0) // hand write
+            c.v.pop_back();
+        return c;
+    }
+    bigint operator*(int x) const { // auto complete
+        bigint c;
+        c.v.resize(v.size() + 2);
+        for (int i = 0; i &lt; (int)v.size(); i++) {
+            c.v[i] += v[i] * x;
+            c.v[i + 1] += c.v[i] / 10000;
+            c.v[i] %= 10000;
+        }
+        while (c.v.back() == 0)
+            c.v.pop_back();
+        return c;
+    }
+    string to_str() const { // hand write
+        char buf[10];
+        sprintf(buf, &quot;%d&quot;, v.back());
+        string s = buf;
+        for (int i = (int)v.size() - 2; i &gt;= 0; i--) {
+            sprintf(buf, &quot;%04d&quot;, v[i]);
+            s += buf;
+        }
+        return s;
+    }
+};
+
+int main() {
+    bigint s;
+    s = 1;
+    for (int i = 1; i &lt;= 100; i++) {
+        s = s * i;
+    }
+    printf(&quot;%s\n&quot;, s.to_str().c_str());
+    return 0;
+}
+</code></pre>
+
+<p>核心代码里面，加法几乎不用动手，乘法修正了一个前导0去除问题，主体的乘法代码我一点不用动就是正确的，就是输出基本得自己写。测试过加法乘法都没有问
+题。减法测试过能正确补全，但除法就不放进来了，因为提示的代码太辣鸡了。更离谱的是如果你打上ntt，它真的给你补上用ntt实现的大整数乘法，只是很多细节还是要去改，核心代码倒是看着没啥大问题。</p>
+
+<p>还有一个问题，它在不同时间给你的补全是可能不太一样的，我这里的补全结果不见得你能重现，所以以上只供参考。</p>
+
+<h2 id="优点和缺点">优点和缺点</h2>
+
+<p>优点：提示内容相当完整（除非你希望它给你补全一个红黑树之类的，太长的还是不行），最强的自动提示插件，强大到你会怀疑它是不是知道你在想什么。</p>
+
+<p>缺点：你需要连网，而且能连上Github，使用前需要申请，并绑定你的Github账号。在linux上使用起来也会因为不同的环境配置起来更麻烦一些。</p>
+
+<h2 id="其它替代品">其它替代品</h2>
+
+<p>四个字：目前没有。</p>
+    </div>
+
+    
+
+
+    
+
+<div class="article-tags">
+  
+  <a class="badge badge-light" href="/tags/copilot/">copilot</a>
+  
+  <a class="badge badge-light" href="">代码补全</a>
+  
+  <a class="badge badge-light" href="/tags/ai/">AI</a>
+  
+</div>
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu7aaa46bd12fd0c0b960b4100abd18eca_101820_250x250_fill_q90_lanczos_center.jpg" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="/">抱抱熊</a></h5>
+      
+      <p class="card-text">一个喜欢折腾和研究算法的大学生</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/baobaobear" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+      
+      
+    
+
+    
+
+    
+<section id="comments">
+  
+    
+<div id="disqus_thread"></div>
+<script>
+  let disqus_config = function () {
+    
+    
+    
+  };
+  (function() {
+    if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+      document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+      return;
+    }
+    var d = document, s = d.createElement('script'); s.async = true;
+    s.src = 'https://' + "baobaobear" + '.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+  
+</section>
+
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+    
+    <script src="/js/mathjax-config.js"></script>
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.0.0/mermaid.min.js" integrity="sha256-0w92bcB21IY5+rGI84MGj52jNfHNbXVeQLrZ0CGdjNY=" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/languages/cpp.min.js"></script>
+        
+      
+
+      
+      
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_CHTML-full" integrity="sha256-GhM+5JHb6QUzOQPXSJLEWP7R73CbkisjzK5Eyij4U9w=" crossorigin="anonymous" async></script>
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    
+    
+    
+    
+    <script>
+      const search_config = {"indexURI":"/index.json","minLength":1,"threshold":0.3};
+      const i18n = {"no_results":"No results found","placeholder":"Search...","results":"results found"};
+      const content_type = {
+        'post': "Posts",
+        'project': "Projects",
+        'publication' : "Publications",
+        'talk' : "Talks"
+        };
+    </script>
+    
+
+    
+    
+
+    
+    
+    <script id="search-hit-fuse-template" type="text/x-template">
+      <div class="search-hit" id="summary-{{key}}">
+      <div class="search-hit-content">
+        <div class="search-hit-name">
+          <a href="{{relpermalink}}">{{title}}</a>
+          <div class="article-metadata search-hit-type">{{type}}</div>
+          <p class="search-hit-description">{{snippet}}</p>
+        </div>
+      </div>
+      </div>
+    </script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    <script id="dsq-count-scr" src="https://baobaobear.disqus.com/count.js" async></script>
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
+    
+    
+    
+    
+    <script src="/js/academic.min.d6bd04fdad2ad213aa8111c5a3b72fc5.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  
+
+  <p class="powered-by">
+    
+
+    Powered by the
+    <a href="https://sourcethemes.com/academic/" target="_blank" rel="noopener">Academic theme</a> for
+    <a href="https://gohugo.io" target="_blank" rel="noopener">Hugo</a>.
+
+    
+    <span class="float-right" aria-hidden="true">
+      <a href="#" class="back-to-top">
+        <span class="button_icon">
+          <i class="fas fa-chevron-up fa-2x"></i>
+        </span>
+      </a>
+    </span>
+    
+  </p>
+</footer>
+
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

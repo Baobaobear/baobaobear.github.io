@@ -119,7 +119,7 @@
   <meta property="og:description" content=""><meta property="og:image" content="/img/icon-192.png">
   <meta property="twitter:image" content="/img/icon-192.png"><meta property="og:locale" content="en-us">
   
-    <meta property="og:updated_time" content="2021-12-15T00:00:00&#43;08:00">
+    <meta property="og:updated_time" content="2022-01-01T00:00:00&#43;08:00">
   
 
   
@@ -359,6 +359,18 @@
   
 
   
+  
+  <div>
+    <h2><a href="/post/20191006-mingw-bug/">Mingw 的 Bug</a></h2>
+    <div class="article-style">
+      
+      这个问题最早的时候是今年8月，我在测试排序算法的速度，发现mingw上总有点不一样，而linux下的gcc是正常的，也在群里问过人，没人明白到底怎么回事，先描述一下当时遇到的情况。
+一开始我使用std::random_shuffle打乱数组并用std::sort排序，在VS上并没有发现什么问题，gcc也正常。但在mingw上，这样打乱的数组排序所花的时间，比起其它打乱方式的，例如直接赋值一个随机数的方式，要明显慢了近1倍，这个诡异的问题一直没想通是为啥。当时觉得可能是std::sort对这种方式打乱的数据排序有点问题导致变慢。
+后来，为了和std函数脱钩，我自己重新写了随机数函数和random_shuffle函数，结果发现我的random_shuffle函数打乱的结果，std::sort的时间是完全正常的，非得std::random_shuffle才会出现两倍的情况，一时间我还以为是我写的有问题，还更换了不同随机函数，怎么也发现不了原因，终于把怀疑转向std::random_shuffle，我就对这个函数的执行结果输出到文件，这一输出立即把我搞懵了，输出的结果分布特别有规律，初值我用的是arr[i] = i，打乱后结果前32768个数都是数组里最大的数值，一时没明白怎么回事，难道它的实现很不寻常吗？我就去翻了一下源代码，在cppreference下源代码长下面这样：
+
+      
+    </div>
+  </div>
   
   <div>
     <h2><a href="/post/20191005-first-post/">博客第一文，附hugo表格的坑</a></h2>

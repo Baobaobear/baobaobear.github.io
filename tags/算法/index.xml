@@ -4106,7 +4106,7 @@ static uint64_t i64_distribution(_Eg&amp;amp; eg, uint64_t n)
 
 &lt;p&gt;网上还有很多其它的错误生成方法，以下给大家带来一个视频，我觉得讲解得不错&lt;/p&gt;
 
-&lt;iframe src=&#34;https://channel9.msdn.com/Events/GoingNative/2013/rand-Considered-Harmful/player&#34; width=&#34;960&#34; height=&#34;540&#34; allowFullScreen frameBorder=&#34;0&#34; title=&#34;rand() Considered Harmful - Microsoft Channel 9 Video&#34;&gt;&lt;/iframe&gt;
+&lt;iframe width=&#34;960&#34; height=&#34;540&#34; src=&#34;https://www.youtube.com/embed/LDPMpc-ENqY&#34; title=&#34;YouTube video player&#34; frameborder=&#34;0&#34; allow=&#34;accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture&#34; allowfullscreen&gt;&lt;/iframe&gt;
 
 &lt;h2 id=&#34;后记&#34;&gt;后记&lt;/h2&gt;
 
