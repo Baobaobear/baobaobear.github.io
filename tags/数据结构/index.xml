@@ -3290,7 +3290,7 @@ int rank(data v, int upper = 0) { return rank(root, v, upper); }
         if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
         {
             d[tp].sum += (tr - tl + 1) * v;
-            d[tp].lz_add = v;
+            d[tp].lz_add += v;
             return;
         }
         int tmid = (tl + tr) / 2;
@@ -3363,7 +3363,7 @@ int rank(data v, int upper = 0) { return rank(root, v, upper); }
         if (l &amp;lt;= tl &amp;amp;&amp;amp; tr &amp;lt;= r)
         {
             d[tp].sum += (tr - tl) * v;
-            d[tp].lz_add = v;
+            d[tp].lz_add += v;
             return;
         }
         int tmid = (tl + tr) / 2;
@@ -3464,7 +3464,7 @@ int rank(data v, int upper = 0) { return rank(root, v, upper); }
         {
             d[tp].sum += (tr - tl + 1) * v;
             if (d[tp].lz_set != lz_mark) d[tp].lz_set += v;
-            else d[tp].lz_add = v;
+            else d[tp].lz_add += v;
             return;
         }
         int tmid = (tl + tr) / 2;
@@ -3586,7 +3586,7 @@ int rank(data v, int upper = 0) { return rank(root, v, upper); }
         {
             d[tp].sum += (tr - tl) * v;
             if (d[tp].lz_set != lz_mark) d[tp].lz_set += v;
-            else d[tp].lz_add = v;
+            else d[tp].lz_add += v;
             return;
         }
         int tmid = (tl + tr) / 2;
